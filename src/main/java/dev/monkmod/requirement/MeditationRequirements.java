@@ -173,7 +173,7 @@ public final class MeditationRequirements {
 				return;
 			}
 			ServerLevel level = (ServerLevel) player.level();
-			if (level.structureManager().getStructureWithPieceAt(player.blockPosition(), BuiltinStructures.FORTRESS).isValid()) {
+			if (level.structureManager().getStructureWithPieceAt(player.blockPosition(), holder -> holder.is(BuiltinStructures.FORTRESS)).isValid()) {
 				LivingEntity skeleton = Stare.find(player, 20, e -> e.getType() == EntityType.WITHER_SKELETON
 						&& e instanceof Mob mob && mob.getTarget() == player);
 				if (skeleton != null) {
