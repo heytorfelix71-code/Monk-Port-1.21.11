@@ -5,6 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,3 +37,16 @@ jobs:
         with:
           name: monk-mod-jar
           path: build/libs/*.jar
+
+      - name: Publish jar to the latest release and to the jar branch
+        if: success() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          JAR=$(ls build/libs/*.jar | grep -v -E 'sources|dev' | head -1)
+          cp "$JAR" /tmp/monk.jar
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create latest /tmp/monk.jar --title "Monk Mod (latest build)" --notes "Build automatico do commit ${GITHUB_SHA::7}" --target "$GITHUB_SHA"
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git checkout --orphan jar && git rm -rf . -q && cp /tmp/monk.jar . && git add monk.jar
+          git commit -qm "jar for ${GITHUB_SHA::7}" && git push -f origin jar
