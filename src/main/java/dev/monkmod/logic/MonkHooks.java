@@ -7,7 +7,12 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import net.minecraft.core.Holder;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -30,15 +35,26 @@ public final class MonkHooks {
 	private MonkHooks() {
 	}
 
-	/** Water walking: lets the vanilla "stand on fluid" collision (used by striders) apply to monks on water. */
-	public static boolean canWalkOnWater(LivingEntity entity, FluidState fluid) {
-		if (!(entity instanceof Player player) || !fluid.is(FluidTags.WATER)) {
-			return false;
+	private static final VoxelShape WATER_FLOOR = Shapes.block();
+
+	/**
+	 * Water walking: a solid floor on the top water block for monks that are above it (not sneaking,
+	 * not flying, not falling from high up). Returns null to keep the vanilla shape.
+	 */
+	public static VoxelShape waterFloor(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+		if (!(context instanceof EntityCollisionContext ec) || !(ec.getEntity() instanceof Player player)) {
+			return null;
 		}
-		if (player.isShiftKeyDown() || player.fallDistance > 3.0 || player.isEyeInFluid(FluidTags.WATER) || player.getAbilities().flying) {
-			return false;
+		if (!state.getFluidState().is(FluidTags.WATER) || level.getFluidState(pos.above()).is(FluidTags.WATER)) {
+			return null;
 		}
-		return MonkAccess.abilities(player).has("water_walking") && MonkAccess.unarmored(player);
+		if (player.isShiftKeyDown() || player.fallDistance > 3.0 || player.getAbilities().flying || player.isSpectator()) {
+			return null;
+		}
+		if (!context.isAbove(WATER_FLOOR, pos, true)) {
+			return null;
+		}
+		return MonkAccess.abilities(player).has("water_walking") && MonkAccess.unarmored(player) ? WATER_FLOOR : null;
 	}
 
 	public static float modifyIncomingDamage(LivingEntity entity, DamageSource source, float amount) {

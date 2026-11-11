@@ -35,6 +35,12 @@ public final class MonkNetwork {
 				handleBlink(context.player(), new Vec3(payload.x(), payload.y(), payload.z())));
 		PayloadTypeRegistry.playC2S().register(FlySpeedPayload.TYPE, FlySpeedPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(FlySpeedPayload.TYPE, (payload, context) -> handleFlySpeed(context.player(), payload.speed()));
+		PayloadTypeRegistry.playC2S().register(StareTogglePayload.TYPE, StareTogglePayload.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(StareTogglePayload.TYPE, (payload, context) -> {
+			if (MonkPlayers.get(context.player()).abilities().has("withering_stare")) {
+				dev.monkmod.ability.WitheringStare.toggle(context.player());
+			}
+		});
 		PayloadTypeRegistry.playC2S().register(NightVisionPayload.TYPE, NightVisionPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(NightVisionPayload.TYPE, (payload, context) -> {
 			ServerPlayer player = context.player();

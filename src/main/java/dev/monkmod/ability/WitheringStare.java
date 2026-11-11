@@ -32,6 +32,9 @@ public final class WitheringStare extends MonkAbility {
 
 	@Override
 	public void tick(ServerPlayer player, MonkPlayerState state) {
+		if (player.hasAttached(dev.monkmod.data.MonkAttachments.STARE_OFF)) {
+			return; // switched off with the toggle key
+		}
 		int interval = MonkConfigManager.config().performance.stareInterval;
 		if ((player.tickCount + state.tickOffset) % interval != 0) {
 			return;
@@ -44,5 +47,18 @@ public final class WitheringStare extends MonkAbility {
 		if (target.getType() == EntityType.WITHER && witherDamage > 0) {
 			target.hurtServer((net.minecraft.server.level.ServerLevel) player.level(), player.damageSources().wither(), witherDamage * interval / 4.0F);
 		}
+	}
+
+	/** Toggle key: switches the stare on/off and tells the player. */
+	public static void toggle(ServerPlayer player) {
+		boolean nowOff = !player.hasAttached(dev.monkmod.data.MonkAttachments.STARE_OFF);
+		if (nowOff) {
+			player.setAttached(dev.monkmod.data.MonkAttachments.STARE_OFF, true);
+		} else {
+			player.removeAttached(dev.monkmod.data.MonkAttachments.STARE_OFF);
+		}
+		player.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+				nowOff ? "monk.controls.stare.off" : "monk.controls.stare.on")
+				.withStyle(nowOff ? net.minecraft.ChatFormatting.GRAY : net.minecraft.ChatFormatting.DARK_PURPLE), true);
 	}
 }

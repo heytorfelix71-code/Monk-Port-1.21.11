@@ -5,6 +5,7 @@
   "mixins": [
     "LivingEntityMixin",
     "CreeperMixin",
+    "LiquidBlockMixin",
     "MobMixin",
     "PlayerMixin",
     "ServerAdvancementManagerMixin"

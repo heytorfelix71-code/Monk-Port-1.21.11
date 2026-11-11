@@ -54,9 +54,9 @@
   "monk.advancements.ability.water_breathing_partial": "Deep Breaths",
   "monk.advancements.ability.water_breathing_partial.desc": "You can stay underwater much longer and swim faster",
   "monk.advancements.ability.water_walking": "Water Walking",
-  "monk.advancements.ability.water_walking.desc": "You can now walk on water. Press shift to sink.",
+  "monk.advancements.ability.water_walking.desc": "You can now walk on water. Sneak to sink.",
   "monk.advancements.ability.withering_stare": "Withering Stare",
-  "monk.advancements.ability.withering_stare.desc": "Your judging stare can wither any undead creature down.",
+  "monk.advancements.ability.withering_stare.desc": "Your judging stare can wither any undead creature down (K turns it on/off)",
   "monk.advancements.requirement.arrow_dodge": "Dodge a skeleton's arrows %s times in a row without getting hit",
   "monk.advancements.requirement.bedrock_sleep": "Sleep upon a \"Bed of Rock\". Remember to look before you sleep.",
   "monk.advancements.requirement.break_block": "Break %s \"%s\" blocks with your bare hands.",
@@ -438,5 +438,9 @@
   "monk.param.advancement.achievement_name": "Shown name",
   "monk.param.advancement.achievement_name.desc": "Name shown in the description (plain text or JSON text).",
   "monk.param.void_fall.messages": "Visions",
-  "monk.param.void_fall.messages.desc": "Visions shown before ascending."
+  "monk.param.void_fall.messages.desc": "Visions shown before ascending.",
+  "key.monk.withering_stare": "Withering Stare on/off",
+  "monk.controls.stare.on": "Withering stare: ON",
+  "monk.controls.stare.off": "Withering stare: OFF",
+  "monk.controls.stare.locked": "You haven't unlocked the withering stare yet."
 }

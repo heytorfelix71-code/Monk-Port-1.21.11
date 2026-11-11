@@ -32,6 +32,13 @@ jobs:
       - name: Build
         run: chmod +x gradlew && ./gradlew build --stacktrace --no-daemon
 
+      - name: Check signatures (diagnostic)
+        continue-on-error: true
+        run: |
+          M=~/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft
+          CP=$(ls $M/minecraft-common/*/minecraft-common-*.jar | head -1)
+          javap -p -cp "$CP" net.minecraft.world.level.block.LiquidBlock net.minecraft.world.phys.shapes.EntityCollisionContext net.minecraft.world.phys.shapes.CollisionContext | grep -E "class|getCollisionShape|getEntity|isAbove"
+
       - uses: actions/upload-artifact@v4
         if: success()
         with:

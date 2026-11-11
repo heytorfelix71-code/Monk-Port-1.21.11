@@ -60,9 +60,9 @@
   "monk.advancements.ability.water_breathing_full": "Guelras",
   "monk.advancements.ability.water_breathing_full.desc": "Seu ar nunca acaba e você nada ainda mais rápido.",
   "monk.advancements.ability.water_walking": "Andar Sobre as Águas",
-  "monk.advancements.ability.water_walking.desc": "Agora você anda sobre a água. Agache para afundar.",
+  "monk.advancements.ability.water_walking.desc": "Agora você pode andar sobre a água. Agache para afundar.",
   "monk.advancements.ability.withering_stare": "Olhar Fulminante",
-  "monk.advancements.ability.withering_stare.desc": "Seu olhar julgador faz qualquer morto-vivo definhar.",
+  "monk.advancements.ability.withering_stare.desc": "Seu olhar julgador faz qualquer morto-vivo definhar (K liga/desliga)",
   "monk.advancements.requirement.arrow_dodge": "Desvie das flechas de um esqueleto %s vezes seguidas sem ser atingido",
   "monk.advancements.requirement.bedrock_sleep": "Durma sobre uma \"Cama de Pedra\" (rocha-mãe). Olhe antes de dormir.",
   "monk.advancements.requirement.break_block": "Quebre %s blocos de \"%s\" com as mãos nuas.",
@@ -438,5 +438,9 @@
   "monk.param.advancement.achievement_name": "Nome mostrado",
   "monk.param.advancement.achievement_name.desc": "Nome mostrado na descrição (texto simples ou texto JSON).",
   "monk.param.void_fall.messages": "Visões",
-  "monk.param.void_fall.messages.desc": "Visões mostradas antes de ascender."
+  "monk.param.void_fall.messages.desc": "Visões mostradas antes de ascender.",
+  "key.monk.withering_stare": "Olhar Fulminante liga/desliga",
+  "monk.controls.stare.on": "Olhar fulminante: LIGADO",
+  "monk.controls.stare.off": "Olhar fulminante: DESLIGADO",
+  "monk.controls.stare.locked": "Você ainda não desbloqueou o olhar fulminante."
 }

@@ -24,6 +24,7 @@ import dev.monkmod.config.MonkConfig;
 import dev.monkmod.config.MonkConfigManager;
 import dev.monkmod.network.FlySpeedPayload;
 import dev.monkmod.network.NightVisionPayload;
+import dev.monkmod.network.StareTogglePayload;
 
 /**
  * Mouse wheel and key controls of the monk abilities:
@@ -118,6 +119,13 @@ public final class MonkControls {
 				ClientPlayNetworking.send(NightVisionPayload.INSTANCE);
 			} else if (ClientMonkState.connectedToMonkServer()) {
 				show(player, Component.translatable("monk.controls.night_vision.locked").withStyle(ChatFormatting.GRAY));
+			}
+		}
+		while (MonkModClient.stareKey.consumeClick()) {
+			if (ClientMonkState.abilities().has("withering_stare") && ClientPlayNetworking.canSend(StareTogglePayload.TYPE)) {
+				ClientPlayNetworking.send(StareTogglePayload.INSTANCE);
+			} else if (ClientMonkState.connectedToMonkServer()) {
+				show(player, Component.translatable("monk.controls.stare.locked").withStyle(ChatFormatting.GRAY));
 			}
 		}
 		while (MonkModClient.blinkFarther.consumeClick()) {

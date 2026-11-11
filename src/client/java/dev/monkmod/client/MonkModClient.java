@@ -31,6 +31,7 @@ public final class MonkModClient implements ClientModInitializer {
 	public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(MonkMod.id("monk"));
 	public static KeyMapping blinkKey;
 	public static KeyMapping nightVisionKey;
+	public static KeyMapping stareKey;
 	public static KeyMapping blinkFarther;
 	public static KeyMapping blinkCloser;
 	public static KeyMapping runFaster;
@@ -56,6 +57,7 @@ public final class MonkModClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		blinkKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.blink", InputConstants.Type.KEYSYM, InputConstants.KEY_G, CATEGORY));
 		nightVisionKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.night_vision", InputConstants.Type.KEYSYM, InputConstants.KEY_V, CATEGORY));
+		stareKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.withering_stare", InputConstants.Type.KEYSYM, InputConstants.KEY_K, CATEGORY));
 		blinkFarther = unbound("key.monk.blink_farther");
 		blinkCloser = unbound("key.monk.blink_closer");
 		runFaster = unbound("key.monk.run_faster");
@@ -79,7 +81,6 @@ public final class MonkModClient implements ClientModInitializer {
 			MonkHud.tick(client);
 			BlinkClient.tick(client);
 			MonkControls.tick(client);
-			WaterWalkClient.tick(client);
 		});
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, MonkMod.id("progress"), MonkHud::render);
 		// Water breathing with "hide_bubbles": no air bubbles above the hotbar.
