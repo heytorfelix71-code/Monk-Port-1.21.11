@@ -29,14 +29,16 @@ public final class LevelTable {
 	private final MonkRequirement[] requirements;
 	private final AbilitySet[] abilities;
 	private final String[] icons;
+	private final String[] names;
 	private final List<List<MonkAbility>> added;
 	private final List<MonkRequirement> deathListeners;
 	private final int version;
 
-	private LevelTable(MonkRequirement[] requirements, AbilitySet[] abilities, String[] icons, List<List<MonkAbility>> added, int version) {
+	private LevelTable(MonkRequirement[] requirements, AbilitySet[] abilities, String[] icons, String[] names, List<List<MonkAbility>> added, int version) {
 		this.requirements = requirements;
 		this.abilities = abilities;
 		this.icons = icons;
+		this.names = names;
 		this.added = added;
 		this.version = version;
 		List<MonkRequirement> listeners = new ArrayList<>();
@@ -78,6 +80,12 @@ public final class LevelTable {
 		return icons[level];
 	}
 
+	/** Custom level title from levels.json, or null for the default "Level N". */
+	public String name(int level) {
+		String n = names[level];
+		return n == null || n.isBlank() ? null : n.trim();
+	}
+
 	public List<MonkAbility> addedAt(int level) {
 		return added.get(level);
 	}
@@ -93,12 +101,14 @@ public final class LevelTable {
 		MonkRequirement[] reqs = new MonkRequirement[n];
 		AbilitySet[] sets = new AbilitySet[n];
 		String[] icons = new String[n];
+		String[] names = new String[n];
 		List<List<MonkAbility>> added = new ArrayList<>(n);
 		Set<String> disabled = Set.copyOf(disabledAbilities);
 		Map<String, MonkAbility> current = new LinkedHashMap<>();
 
 		for (int level = 0; level < n; level++) {
 			LevelsFile.LevelEntry entry = file.levels.get(level);
+			names[level] = entry.name;
 			icons[level] = entry.icon == null || entry.icon.isBlank() ? "monk:icon/meditate" : entry.icon.trim();
 
 			MonkRequirement req = buildRequirement(entry.requirement, level, errors);
@@ -126,7 +136,7 @@ public final class LevelTable {
 			added.add(List.copyOf(levelAdded));
 			sets[level] = new AbilitySet(new ArrayList<>(current.values()));
 		}
-		return new LevelTable(reqs, sets, icons, added, version);
+		return new LevelTable(reqs, sets, icons, names, added, version);
 	}
 
 	private static boolean enabled(JsonObject json) {

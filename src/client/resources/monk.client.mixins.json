@@ -2,8 +2,11 @@
   "required": true,
   "package": "dev.monkmod.mixin.client",
   "compatibilityLevel": "JAVA_21",
-  "client": [],
+  "client": [
+    "MouseHandlerMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "refmap": "monk.client.refmap.json"
 }

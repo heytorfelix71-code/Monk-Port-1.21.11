@@ -8,14 +8,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 
+import net.minecraft.world.entity.monster.Creeper;
+
 import dev.monkmod.data.MonkAttachments;
+import dev.monkmod.logic.MonkHooks;
 
 @Mixin(Mob.class)
 public abstract class MobMixin {
 	/** A kissed creeper never picks a target again (so it never fuses). */
 	@Inject(method = "setTarget", at = @At("HEAD"), cancellable = true)
 	private void monk$calmed(LivingEntity target, CallbackInfo ci) {
-		if (target != null && MonkAttachments.isCalmed((Mob) (Object) this)) {
+		Mob self = (Mob) (Object) this;
+		if (target != null && (MonkAttachments.isCalmed(self) || (self instanceof Creeper && MonkHooks.creeperIgnores(target)))) {
 			ci.cancel();
 		}
 	}

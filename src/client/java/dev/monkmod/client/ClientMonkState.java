@@ -24,6 +24,11 @@ public final class ClientMonkState {
 	private static AbilitySet abilities = AbilitySet.EMPTY;
 	private static float blinkRange = 16;
 	private static int blinkCooldown = 40;
+	private static boolean blinkAllowAir;
+	private static float blinkMinRange = 2;
+	private static int groundSearchDepth = 6;
+	private static float flyMin = 0.02F;
+	private static float flyMax = 0.3F;
 	private static boolean connectedToMonkServer;
 
 	private ClientMonkState() {
@@ -38,6 +43,11 @@ public final class ClientMonkState {
 		nextIcon = next.length > 1 ? MonkAdvancements.icon(next[1]) : ItemStack.EMPTY;
 		blinkRange = payload.blinkRange();
 		blinkCooldown = payload.blinkCooldown();
+		blinkAllowAir = payload.blinkAllowAir();
+		blinkMinRange = payload.blinkMinRange();
+		groundSearchDepth = payload.groundSearchDepth();
+		flyMin = payload.flyMin();
+		flyMax = payload.flyMax();
 		List<MonkAbility> list = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
 		for (String json : payload.abilities()) {
@@ -90,6 +100,26 @@ public final class ClientMonkState {
 
 	public static int blinkCooldown() {
 		return blinkCooldown;
+	}
+
+	public static boolean blinkAllowAir() {
+		return blinkAllowAir;
+	}
+
+	public static float blinkMinRange() {
+		return blinkMinRange;
+	}
+
+	public static int groundSearchDepth() {
+		return groundSearchDepth;
+	}
+
+	public static float flyMin() {
+		return flyMin;
+	}
+
+	public static float flyMax() {
+		return flyMax;
 	}
 
 	public static boolean connectedToMonkServer() {

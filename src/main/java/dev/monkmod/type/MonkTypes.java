@@ -18,6 +18,7 @@ import dev.monkmod.ability.EffectAbilities;
 import dev.monkmod.ability.MiningAbility;
 import dev.monkmod.ability.MonkAbility;
 import dev.monkmod.ability.MovementAbilities;
+import dev.monkmod.ability.PassiveAbilities;
 import dev.monkmod.ability.ProtectionAbility;
 import dev.monkmod.ability.SimpleAbility;
 import dev.monkmod.ability.WitheringStare;
@@ -30,6 +31,7 @@ import dev.monkmod.requirement.SocialRequirements;
 
 import static dev.monkmod.ability.MonkAbility.number;
 import static dev.monkmod.ability.MonkAbility.percent;
+import static dev.monkmod.type.ParamSpec.ofBool;
 import static dev.monkmod.type.ParamSpec.ofFloat;
 import static dev.monkmod.type.ParamSpec.ofInt;
 import static dev.monkmod.type.ParamSpec.ofList;
@@ -77,13 +79,11 @@ public final class MonkTypes {
 						List.of(new Mod(Attributes.MAX_HEALTH, "health", Operation.ADD_MULTIPLIED_BASE, (pl, s) -> p.getFloat("health_increase"))),
 						a -> new Object[]{percent(p.getFloat("health_increase"))}),
 				ofFloat("health_increase", 0.5, 0, 100, "Multiplier added to base max health (0.5 = +50%)."));
-		ability("swift", "Faster movement while unarmored (doubled while sprinting, like the original).",
-				p -> new AttributeAbility("swift", p, Condition.UNARMORED,
-						List.of(new Mod(Attributes.MOVEMENT_SPEED, "speed", Operation.ADD_MULTIPLIED_BASE,
-								(pl, s) -> p.getFloat("increase") * (pl.isSprinting() ? p.getFloat("sprint_multiplier") : 1.0F))),
-						a -> new Object[]{percent(p.getFloat("increase"))}),
+		ability("swift", "Run faster while unarmored (bonus doubled while sprinting). Does not change your FOV; Ctrl + mouse wheel adjusts it.",
+				PassiveAbilities.Swift::new,
 				ofFloat("increase", 0.4, 0, 10, "Speed bonus (0.4 = +40%)."),
-				ofFloat("sprint_multiplier", 2, 0, 10, "Bonus multiplier while sprinting."));
+				ofFloat("sprint_multiplier", 2, 0, 10, "Bonus multiplier while sprinting."),
+				ofBool("only_unarmored", true, "Only works while wearing no armor."));
 		ability("jump", "Jump higher and take fall damage later.",
 				p -> new AttributeAbility("jump", p, Condition.ALWAYS,
 						List.of(new Mod(Attributes.JUMP_STRENGTH, "jump", Operation.ADD_MULTIPLIED_BASE, (pl, s) -> p.getFloat("jump") - 1.0),
@@ -102,22 +102,27 @@ public final class MonkTypes {
 						List.of(new Mod(Attributes.FALL_DAMAGE_MULTIPLIER, "fall", Operation.ADD_MULTIPLIED_TOTAL, (pl, s) -> p.getFloat("multiplier") - 1.0)),
 						a -> new Object[]{percent(1.0 - p.getFloat("multiplier"))}),
 				ofFloat("multiplier", 0.2, 0, 1, "Fraction of fall damage still taken (0.2 = 80% less)."));
-		ability("water_breathing_partial", "Hold your breath much longer.",
-				p -> new AttributeAbility("water_breathing_partial", p, Condition.ALWAYS,
-						List.of(new Mod(Attributes.OXYGEN_BONUS, "oxygen", Operation.ADD_VALUE, (pl, s) -> p.getFloat("oxygen_bonus"))),
-						a -> new Object[0]),
-				ofFloat("oxygen_bonus", 3, 0, 1024, "Oxygen bonus (like Respiration levels)."));
-		ability("water_breathing_full", "Never drown.", EffectAbilities.FullWaterBreathing::new);
+		ability("water_breathing_partial", "Hold your breath much longer and swim faster.",
+				p -> new PassiveAbilities.WaterBreathing("water_breathing_partial", p, false),
+				ofFloat("oxygen_bonus", 3, 0, 1024, "Oxygen bonus (like Respiration levels)."),
+				ofBool("infinite", false, "Never run out of air at all."),
+				ofFloat("swim_speed", 0.33, 0, 1, "Extra swimming speed (0.33 = like Depth Strider I, 1 = Depth Strider III)."),
+				ofBool("hide_bubbles", false, "Hide the air bubbles above the hotbar."));
+		ability("water_breathing_full", "Never drown; swim faster.",
+				p -> new PassiveAbilities.WaterBreathing("water_breathing_full", p, true),
+				ofFloat("swim_speed", 0.66, 0, 1, "Extra swimming speed (0.33 = like Depth Strider I, 1 = Depth Strider III)."),
+				ofBool("hide_bubbles", true, "Hide the air bubbles above the hotbar."));
 		ability("fire_resistance", "Less fire damage.",
 				p -> new ProtectionAbility("fire_resistance", p, s -> s.is(DamageTypeTags.IS_FIRE), p.getFloat("multiplier")),
 				ofFloat("multiplier", 0.5, 0, 1, "Fraction of fire damage still taken."));
 		ability("explosion_resistance", "Less explosion damage.",
 				p -> new ProtectionAbility("explosion_resistance", p, s -> s.is(DamageTypeTags.IS_EXPLOSION), p.getFloat("multiplier")),
 				ofFloat("multiplier", 0.5, 0, 1, "Fraction of explosion damage still taken."));
-		ability("lava_protection", "Entering lava grants a few seconds of fire immunity.",
+		ability("lava_protection", "Entering lava makes you immune to fire for a while (no potion effect).",
 				MovementAbilities.LavaProtection::new,
-				ofInt("duration", 80, 1, 72000, "Fire resistance duration in ticks."),
-				ofInt("cooldown", 200, 0, 72000, "Ticks before it can trigger again."));
+				ofInt("duration", 80, 1, 72000, "Immunity duration in ticks (20 ticks = 1 second)."),
+				ofInt("cooldown", 200, 0, 72000, "Ticks before it can trigger again."),
+				ofBool("infinite", false, "Always immune to fire and lava."));
 		ability("hunger", "Hunger drains slower.", MovementAbilities.Hunger::new,
 				ofFloat("hunger_chance", 0.5, 0, 1, "How much slower (0.5 = 50% slower)."));
 		ability("mining", "Mine with bare hands.", MiningAbility::new,
@@ -125,8 +130,10 @@ public final class MonkTypes {
 				ofFloat("speed_increase", 0, 0, 1000, "Bare-hand speed bonus (2 = 3x as fast)."),
 				ofList("harvest_tools", MiningAbility.defaultTools(), "Tool kinds your hands replace: pickaxe, shovel, axe, hoe (\"\" = none needed)."));
 		ability("blindness", "Permanent blindness.", EffectAbilities.Blindness::new);
-		ability("potion_immunity", "Harmful effects are removed instantly.", EffectAbilities.PotionImmunity::new,
-				ofList("ignored_effects", List.of(), "Effect ids that are NOT removed (e.g. minecraft:bad_omen)."));
+		ability("potion_immunity", "Immune to the listed effects; can also block dragon breath and creeper explosions.",
+				EffectAbilities.PotionImmunity::new,
+				ofList("ignored_effects", EffectAbilities.PotionImmunity.DEFAULT_IMMUNITIES,
+						"Effects you are immune to. Extra entries: monk:dragon_breath, monk:creeper_explosion, * (every harmful effect)."));
 		ability("fly", "Creative-style flight while unarmored.", MovementAbilities.Fly::new);
 		ability("withering_stare", "Looking at undead withers them.", WitheringStare::new,
 				ofInt("range", 20, 1, 128, "Stare distance in blocks."),
@@ -135,7 +142,10 @@ public final class MonkTypes {
 		ability("blink", "Teleport where you look with the Blink key.", p -> new SimpleAbility("blink", p));
 		ability("catch_arrows", "Catch arrows flying at you (when unarmed and facing them).", p -> new SimpleAbility("catch_arrows", p),
 				ofFloat("max_angle_dot", 0.2, -1, 1, "How far to the side arrows can be caught (higher = wider)."));
-		ability("kiss_creeper", "Kiss creepers to calm them forever.", p -> new SimpleAbility("kiss_creeper", p));
+		ability("kiss_creeper", "Ask creepers kindly not to explode (right click with an empty hand); calmed creepers never explode.",
+				p -> new SimpleAbility("kiss_creeper", p),
+				ofBool("passive", true, "Creepers also never chase or explode at you, even without asking."));
+		ability("night_vision", "Toggle night vision with its key (V by default).", PassiveAbilities.NightVision::new);
 		ability("tame_animals", "Pet animals to calm them or make them fall in love.", p -> new SimpleAbility("tame_animals", p));
 		ability("water_walking", "Walk on water (sneak to sink).", p -> new SimpleAbility("water_walking", p));
 		ability("glass_touch", "Break glass bare-handed without shattering it.", p -> new SimpleAbility("glass_touch", p));

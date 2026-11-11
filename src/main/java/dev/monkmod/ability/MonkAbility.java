@@ -52,15 +52,30 @@ public abstract class MonkAbility {
 		return new Object[0];
 	}
 
-	public Component name() {
-		return Component.translatable(translationKey());
+	/** Optional "name" / "description" text set in levels.json; null when not customised. */
+	private String custom(String field) {
+		com.google.gson.JsonElement e = params.json().get(field);
+		if (e == null || !e.isJsonPrimitive()) {
+			return null;
+		}
+		String s = e.getAsString().trim();
+		return s.isEmpty() ? null : s;
+	}
+
+	public MutableComponent name() {
+		String custom = custom("name");
+		return custom != null ? Component.literal(custom) : Component.translatable(translationKey());
+	}
+
+	public MutableComponent description() {
+		String custom = custom("description");
+		return custom != null ? Component.literal(custom) : Component.translatable(translationKey() + ".desc", descriptionArgs());
 	}
 
 	/** "Name: description" used in the reward advancements and /monk info. */
 	public Component describe() {
-		MutableComponent name = Component.translatable(translationKey()).withStyle(ChatFormatting.AQUA);
-		MutableComponent desc = Component.literal(": ").append(Component.translatable(translationKey() + ".desc", descriptionArgs()))
-				.withStyle(ChatFormatting.RESET);
+		MutableComponent name = name().withStyle(ChatFormatting.AQUA);
+		MutableComponent desc = Component.literal(": ").append(description()).withStyle(ChatFormatting.RESET);
 		return name.append(desc);
 	}
 

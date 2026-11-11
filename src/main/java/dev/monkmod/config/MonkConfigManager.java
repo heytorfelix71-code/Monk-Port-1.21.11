@@ -77,6 +77,9 @@ public final class MonkConfigManager {
 			MonkMod.LOGGER.warn("levels.json has no levels, regenerating the default 21 levels");
 			loaded = DefaultLevels.create();
 		}
+		if (loaded.migrate()) {
+			MonkMod.LOGGER.info("Updated config/monk/levels.json to version {}", LevelsFile.CURRENT_VERSION);
+		}
 		levels = loaded;
 		write("levels.json", levels);
 		writeReference();

@@ -61,7 +61,8 @@ public final class DefaultLevels {
 		level(f, "bed", req("bedrock_sleep"),
 				ab("mining").p("harvest_level", 5).p("speed_increase", 12.0),
 				ab("strength").p("damage", 8.0),
-				ab("blindness"));
+				ab("blindness"),
+				ab("night_vision"));
 		LevelsFile.LevelEntry blind = level(f, "blind_eye", req("kill_blind").p("kills", 5),
 				ab("strength").p("damage", 16.0));
 		blind.remove.add("blindness");

@@ -25,6 +25,8 @@ loom {
 	mixin {
 		useLegacyMixinAp = true
 		defaultRefmapName = "monk.refmap.json"
+		add sourceSets.main, "monk.refmap.json"
+		add sourceSets.client, "monk.client.refmap.json"
 	}
 
 	mods {

@@ -11,19 +11,35 @@ import dev.monkmod.MonkMod;
 
 /**
  * Server → client: current level, the next requirement type and the active abilities (as their JSON
- * config entries, so the client builds identical ability objects for client-side mechanics).
+ * config entries, so the client builds identical ability objects for client-side mechanics), plus the
+ * server settings the client needs to aim blinks and choose flight speeds.
  */
-public record StatePayload(int level, int maxLevel, String nextRequirement, List<String> abilities, float blinkRange, int blinkCooldown)
-		implements CustomPacketPayload {
+public record StatePayload(int level, int maxLevel, String nextRequirement, List<String> abilities,
+		float blinkRange, int blinkCooldown, boolean blinkAllowAir, float blinkMinRange, int groundSearchDepth,
+		float flyMin, float flyMax) implements CustomPacketPayload {
 	public static final Type<StatePayload> TYPE = new Type<>(MonkMod.id("state"));
-	public static final StreamCodec<RegistryFriendlyByteBuf, StatePayload> CODEC = StreamCodec.composite(
-			ByteBufCodecs.VAR_INT, StatePayload::level,
-			ByteBufCodecs.VAR_INT, StatePayload::maxLevel,
-			ByteBufCodecs.STRING_UTF8, StatePayload::nextRequirement,
-			ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), StatePayload::abilities,
-			ByteBufCodecs.FLOAT, StatePayload::blinkRange,
-			ByteBufCodecs.VAR_INT, StatePayload::blinkCooldown,
-			StatePayload::new);
+	private static final StreamCodec<io.netty.buffer.ByteBuf, List<String>> STRINGS = ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list());
+	public static final StreamCodec<RegistryFriendlyByteBuf, StatePayload> CODEC = StreamCodec.ofMember(StatePayload::write, StatePayload::read);
+
+	private void write(RegistryFriendlyByteBuf buf) {
+		buf.writeVarInt(level);
+		buf.writeVarInt(maxLevel);
+		buf.writeUtf(nextRequirement);
+		STRINGS.encode(buf, abilities);
+		buf.writeFloat(blinkRange);
+		buf.writeVarInt(blinkCooldown);
+		buf.writeBoolean(blinkAllowAir);
+		buf.writeFloat(blinkMinRange);
+		buf.writeVarInt(groundSearchDepth);
+		buf.writeFloat(flyMin);
+		buf.writeFloat(flyMax);
+	}
+
+	private static StatePayload read(RegistryFriendlyByteBuf buf) {
+		return new StatePayload(buf.readVarInt(), buf.readVarInt(), buf.readUtf(), STRINGS.decode(buf),
+				buf.readFloat(), buf.readVarInt(), buf.readBoolean(), buf.readFloat(), buf.readVarInt(),
+				buf.readFloat(), buf.readFloat());
+	}
 
 	@Override
 	public Type<? extends CustomPacketPayload> type() {

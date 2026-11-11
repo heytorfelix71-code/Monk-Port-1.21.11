@@ -1,8 +1,6 @@
 package dev.monkmod.ability;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.tags.DamageTypeTags;
@@ -52,6 +50,7 @@ public final class MovementAbilities {
 				Abilities abilities = player.getAbilities();
 				abilities.mayfly = false;
 				abilities.flying = false;
+				abilities.setFlyingSpeed(0.05F);
 				player.onUpdateAbilities();
 			}
 			state.flyGranted = false;
@@ -78,35 +77,51 @@ public final class MovementAbilities {
 	}
 
 	/**
-	 * Entering lava grants a few seconds of fire resistance (with a cooldown so it can't be chained forever,
-	 * unlike the 1.12 version which could be abused).
+	 * Entering lava makes you immune to fire and lava for a while (or always, with "infinite").
+	 * Works without the Fire Resistance effect: no icon, no particles. Cooldown so it can't be chained.
 	 */
 	public static final class LavaProtection extends ProtectionAbility {
 		private final int duration;
 		private final int cooldown;
+		private final boolean infinite;
 
 		public LavaProtection(Params params) {
 			super("lava_protection", params, s -> s.is(DamageTypeTags.IS_FIRE), 1.0F);
 			this.duration = params.getInt("duration");
 			this.cooldown = params.getInt("cooldown");
+			this.infinite = params.getBool("infinite");
+		}
+
+		@Override
+		public boolean isTicking() {
+			return true;
+		}
+
+		private boolean immune(ServerPlayer player, MonkPlayerState state) {
+			return infinite || player.level().getGameTime() < state.lavaImmuneUntil;
+		}
+
+		@Override
+		public void tick(ServerPlayer player, MonkPlayerState state) {
+			long now = player.level().getGameTime();
+			if (!infinite && player.isInLava() && now >= state.lavaReadyAt) {
+				state.lavaImmuneUntil = now + duration;
+				state.lavaReadyAt = now + duration + cooldown;
+			}
+			if (player.isOnFire() && immune(player, state)) {
+				player.clearFire();
+			}
 		}
 
 		@Override
 		public float factor(ServerPlayer player, MonkPlayerState state, DamageSource source) {
-			if (!player.isInLava()) {
-				return 1.0F;
-			}
-			long now = player.level().getGameTime();
-			if (player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+			if (infinite) {
 				return 0.0F;
 			}
-			if (now >= state.lavaReadyAt) {
-				player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, duration, 2));
-				player.clearFire();
-				state.lavaReadyAt = now + duration + cooldown;
-				return 0.0F;
+			if (player.isInLava() && player.level().getGameTime() >= state.lavaReadyAt) {
+				tick(player, state);
 			}
-			return 1.0F;
+			return immune(player, state) ? 0.0F : 1.0F;
 		}
 
 		@Override

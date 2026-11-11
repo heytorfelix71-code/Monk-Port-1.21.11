@@ -32,26 +32,6 @@ jobs:
       - name: Build
         run: chmod +x gradlew && ./gradlew build --stacktrace --no-daemon
 
-      - name: Dump Minecraft signatures (diagnostic)
-        if: github.ref == 'refs/heads/main'
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          M=~/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft
-          CP=$(ls $M/minecraft-common/*/minecraft-common-*.jar | head -1):$(ls $M/minecraft-clientonly/*/minecraft-clientonly-*.jar | head -1)
-          mkdir -p /tmp/diag
-          for c in net.minecraft.world.entity.LivingEntity net.minecraft.world.entity.player.Player net.minecraft.world.entity.monster.Creeper net.minecraft.client.MouseHandler net.minecraft.world.entity.player.Abilities net.minecraft.world.entity.ai.attributes.Attributes net.minecraft.world.entity.Entity net.minecraft.world.effect.MobEffects net.minecraft.world.damagesource.DamageTypes net.minecraft.world.damagesource.DamageSource net.minecraft.world.entity.AreaEffectCloud net.minecraft.client.player.LocalPlayer net.minecraft.client.player.AbstractClientPlayer net.minecraft.world.effect.MobEffectInstance net.minecraft.client.KeyMapping net.minecraft.client.gui.Gui net.minecraft.world.entity.ai.goal.SwellGoal net.minecraft.client.renderer.GameRenderer net.minecraft.client.renderer.LightTexture net.minecraft.network.chat.Component net.minecraft.world.level.ServerExplosion net.minecraft.world.entity.player.Input net.minecraft.client.player.ClientInput net.minecraft.client.Options; do
-            javap -p -cp "$CP" $c > /tmp/diag/$c.txt 2>&1
-          done
-          F=$HOME/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api
-          for j in $(find $F -name '*hud*.jar' -o -name '*rendering-v1*.jar' | grep -v sources); do unzip -l $j | grep -i hud >> /tmp/diag/fabric-hud.txt; done
-          V=$(find $F -name 'fabric-rendering-v1*.jar' | grep -v sources | head -1); [ -n "$V" ] && javap -cp "$V" net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry > /tmp/diag/fabric-hud-api.txt 2>&1
-          git config user.name "github-actions"; git config user.email "actions@github.com"
-          cp -r /tmp/diag /tmp/diag2; git stash -u -q || true
-          git checkout --orphan diag && git rm -rf . -q && cp /tmp/diag2/* . && git add -A && git commit -qm diag && git push -f origin diag
-          git checkout -q -f ${GITHUB_SHA}
-
       - uses: actions/upload-artifact@v4
         if: success()
         with:

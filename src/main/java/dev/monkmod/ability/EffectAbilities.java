@@ -47,18 +47,72 @@ public final class EffectAbilities {
 		}
 	}
 
-	/** Purges harmful effects. */
+	/**
+	 * Immunity to every effect listed in "ignored_effects" (all harmful vanilla effects by default).
+	 * The list may also hold two special entries that block damage instead of an effect:
+	 * monk:dragon_breath and monk:creeper_explosion.
+	 */
 	public static final class PotionImmunity extends MonkAbility {
-		private final Set<Identifier> keep = new HashSet<>();
+		public static final String DRAGON_BREATH = "monk:dragon_breath";
+		public static final String CREEPER_EXPLOSION = "monk:creeper_explosion";
+		public static final List<String> DEFAULT_IMMUNITIES = List.of(
+				"minecraft:poison", "minecraft:wither", "minecraft:slowness", "minecraft:mining_fatigue",
+				"minecraft:instant_damage", "minecraft:nausea", "minecraft:blindness", "minecraft:hunger",
+				"minecraft:weakness", "minecraft:levitation", "minecraft:unluck", "minecraft:darkness",
+				"minecraft:wind_charged", "minecraft:weaving", "minecraft:oozing", "minecraft:infested",
+				DRAGON_BREATH, CREEPER_EXPLOSION);
+
+		private final Set<Identifier> immune = new HashSet<>();
+		private final boolean allHarmful;
+		private final boolean dragonBreath;
+		private final boolean creeperExplosion;
 
 		public PotionImmunity(Params params) {
 			super("potion_immunity", params);
-			for (String s : params.getList("ignored_effects")) {
-				Identifier id = Identifier.tryParse(s);
-				if (id != null && !s.isBlank()) {
-					keep.add(id);
+			boolean dragon = false;
+			boolean creeper = false;
+			boolean all = false;
+			for (String raw : params.getList("ignored_effects")) {
+				String s = raw.trim().toLowerCase(java.util.Locale.ROOT);
+				if (s.isEmpty()) {
+					continue;
+				}
+				switch (s) {
+					case DRAGON_BREATH, "dragon_breath" -> dragon = true;
+					case CREEPER_EXPLOSION, "creeper_explosion" -> creeper = true;
+					case "*", "all", "monk:all_harmful" -> all = true;
+					default -> {
+						Identifier id = Identifier.tryParse(s);
+						if (id != null) {
+							immune.add(id);
+						}
+					}
 				}
 			}
+			this.dragonBreath = dragon;
+			this.creeperExplosion = creeper;
+			this.allHarmful = all;
+		}
+
+		public boolean blocksDragonBreath() {
+			return dragonBreath;
+		}
+
+		public boolean blocksCreeperExplosions() {
+			return creeperExplosion;
+		}
+
+		/** True if the effect must not be applied to this player. */
+		public boolean blocks(Holder<MobEffect> effect, MonkPlayerState state) {
+			// Blindness granted by the monk path itself is never blocked.
+			if (effect.equals(MobEffects.BLINDNESS) && state != null && state.abilities().has("blindness")) {
+				return false;
+			}
+			if (allHarmful && effect.value().getCategory() == MobEffectCategory.HARMFUL) {
+				return true;
+			}
+			Identifier id = BuiltInRegistries.MOB_EFFECT.getKey(effect.value());
+			return id != null && immune.contains(id);
 		}
 
 		@Override
@@ -66,6 +120,7 @@ public final class EffectAbilities {
 			return true;
 		}
 
+		/** Removes listed effects that slipped through (commands, forced effects). */
 		@Override
 		public void tick(ServerPlayer player, MonkPlayerState state) {
 			if (player.getActiveEffects().isEmpty()) {
@@ -73,22 +128,12 @@ public final class EffectAbilities {
 			}
 			List<Holder<MobEffect>> toRemove = null;
 			for (MobEffectInstance instance : player.getActiveEffects()) {
-				Holder<MobEffect> effect = instance.getEffect();
-				if (effect.value().getCategory() != MobEffectCategory.HARMFUL) {
-					continue;
+				if (blocks(instance.getEffect(), state)) {
+					if (toRemove == null) {
+						toRemove = new ArrayList<>(2);
+					}
+					toRemove.add(instance.getEffect());
 				}
-				// Blindness granted by the monk path is not a "toxin".
-				if (effect.equals(MobEffects.BLINDNESS) && state.abilities().has("blindness")) {
-					continue;
-				}
-				Identifier id = BuiltInRegistries.MOB_EFFECT.getKey(effect.value());
-				if (id != null && keep.contains(id)) {
-					continue;
-				}
-				if (toRemove == null) {
-					toRemove = new ArrayList<>(2);
-				}
-				toRemove.add(effect);
 			}
 			if (toRemove != null) {
 				toRemove.forEach(player::removeEffect);
@@ -96,22 +141,4 @@ public final class EffectAbilities {
 		}
 	}
 
-	/** Never runs out of air. */
-	public static final class FullWaterBreathing extends MonkAbility {
-		public FullWaterBreathing(Params params) {
-			super("water_breathing_full", params);
-		}
-
-		@Override
-		public boolean isTicking() {
-			return true;
-		}
-
-		@Override
-		public void tick(ServerPlayer player, MonkPlayerState state) {
-			if (player.getAirSupply() < player.getMaxAirSupply()) {
-				player.setAirSupply(player.getMaxAirSupply());
-			}
-		}
-	}
 }

@@ -36,4 +36,14 @@ public abstract class PlayerMixin {
 	private float monk$fasting(float exhaustion) {
 		return MonkHooks.modifyExhaustion((Player) (Object) this, exhaustion);
 	}
+
+	/** Swiftness without a speed attribute: the camera FOV does not stretch. */
+	@Inject(method = "getSpeed", at = @At("RETURN"), cancellable = true)
+	private void monk$swift(CallbackInfoReturnable<Float> cir) {
+		float vanilla = cir.getReturnValueF();
+		float modified = MonkHooks.modifySpeed((Player) (Object) this, vanilla);
+		if (modified != vanilla) {
+			cir.setReturnValue(modified);
+		}
+	}
 }

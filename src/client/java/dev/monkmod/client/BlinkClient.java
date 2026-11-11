@@ -85,15 +85,43 @@ final class BlinkClient {
 
 	private static Vec3 aimPoint(LocalPlayer player, ClientLevel level) {
 		Vec3 eye = player.getEyePosition();
-		Vec3 end = eye.add(player.getViewVector(1.0F).scale(ClientMonkState.blinkRange()));
+		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
 		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
 		return hit.getType() == HitResult.Type.MISS ? end : hit.getLocation();
 	}
 
-	/** Feet position to land on, or null if there is no free space near the aim point. */
+	/**
+	 * Feet position to land on, or null. Unless the server allows mid-air targets, the spot must have a
+	 * block (or water) under it; when aiming at nothing, the ground below the aim point is searched.
+	 */
 	static Vec3 findTarget(LocalPlayer player, ClientLevel level) {
+		Vec3 r = rawTarget(player, level);
+		if (r == null || ClientMonkState.blinkAllowAir()) {
+			return r;
+		}
+		AABB box = player.getBoundingBox().move(r.subtract(player.position()));
+		if (dev.monkmod.network.MonkNetwork.hasGround(player, level, box)) {
+			return r;
+		}
+		int depth = ClientMonkState.groundSearchDepth();
+		if (depth <= 0) {
+			return null;
+		}
+		BlockHitResult down = level.clip(new ClipContext(r.add(0, 0.01, 0), r.subtract(0, depth, 0),
+				ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, player));
+		if (down.getType() != HitResult.Type.BLOCK || down.getDirection() != Direction.UP) {
+			return null;
+		}
+		Vec3 ground = fits(player, level, down.getLocation());
+		if (ground == null || player.getEyePosition().distanceTo(ground) > ClientMonkState.blinkRange() + 2.5) {
+			return null;
+		}
+		return ground;
+	}
+
+	private static Vec3 rawTarget(LocalPlayer player, ClientLevel level) {
 		Vec3 eye = player.getEyePosition();
-		Vec3 end = eye.add(player.getViewVector(1.0F).scale(ClientMonkState.blinkRange()));
+		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
 		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
 		if (hit.getType() == HitResult.Type.BLOCK) {
 			BlockPos pos = hit.getBlockPos();

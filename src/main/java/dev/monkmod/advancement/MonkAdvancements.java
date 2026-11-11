@@ -41,7 +41,7 @@ public final class MonkAdvancements {
 			MutableComponent rootDesc = Component.translatable("monk.advancements.level.start.desc")
 					.append("\n").append(table.requirement(0).description());
 			put(map, MonkMod.id("root"), Advancement.Builder.advancement()
-					.display(icon(table.icon(0)), Component.translatable("monk.advancements.level.start"), rootDesc,
+					.display(icon(table.icon(0)), table.name(0) != null ? Component.literal(table.name(0)) : Component.translatable("monk.advancements.level.start"), rootDesc,
 							BACKGROUND, AdvancementType.TASK, true, false, false)
 					.addCriterion("level", criterion(0)));
 
@@ -49,7 +49,7 @@ public final class MonkAdvancements {
 				Identifier parent = level == 1 ? MonkMod.id("root") : MonkMod.id("level_" + (level - 1));
 				put(map, MonkMod.id("level_" + level), Advancement.Builder.advancement()
 						.parent(parent)
-						.display(icon(table.icon(level)), Component.translatable("monk.advancements.level", level),
+						.display(icon(table.icon(level)), table.name(level) != null ? Component.literal(table.name(level)) : Component.translatable("monk.advancements.level", level),
 								table.requirement(level).description(), null, AdvancementType.TASK, true, announce, false)
 						.addCriterion("level", criterion(level)));
 

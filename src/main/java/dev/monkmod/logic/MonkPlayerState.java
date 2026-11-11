@@ -30,6 +30,7 @@ public final class MonkPlayerState {
 
 	public boolean flyGranted;
 	public long lavaReadyAt;
+	public long lavaImmuneUntil;
 	public long blinkReadyAt;
 
 	// Requirement scratch space (only the requirement of the next level uses it).

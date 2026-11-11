@@ -13,6 +13,8 @@ public final class MonkConfig {
 	public Equipment equipment = new Equipment();
 	public Gameplay gameplay = new Gameplay();
 	public Performance performance = new Performance();
+	public Flight flight = new Flight();
+	public Controls controls = new Controls();
 
 	public enum HudStyle { RING, BAR, TEXT }
 
@@ -42,6 +44,35 @@ public final class MonkConfig {
 		public float fallDamage = 2.0F;
 		public boolean previewParticles = true;
 		public boolean requireUnarmored = false;
+		/** Allow landing in mid-air. Off = you only land on a block (or water). */
+		public boolean allowAirTarget = false;
+		/** Shortest distance the scroll wheel can choose. */
+		public float minRange = 2.0F;
+		/** When aiming at nothing, how far below the aim point the ground is searched (blocks). */
+		public int groundSearchDepth = 6;
+	}
+
+	public static final class Flight {
+		/** Vanilla flying speed is 0.05. */
+		public float minSpeed = 0.02F;
+		public float maxSpeed = 0.30F;
+	}
+
+	/** Client-side controls (scroll wheel modifiers and step sizes). */
+	public static final class Controls {
+		/** Blink key + mouse wheel changes the blink distance. */
+		public boolean scrollBlinkDistance = true;
+		/** Sprint key (Ctrl) + mouse wheel changes the running speed bonus. */
+		public boolean scrollRunSpeed = true;
+		/** Jump key (Space) + mouse wheel changes the flight speed while flying. */
+		public boolean scrollFlySpeed = true;
+		public float blinkStep = 1.0F;
+		/** Step of the running bonus scale (1.0 = the full bonus of your level). */
+		public float runStep = 0.1F;
+		public float maxRunScale = 2.0F;
+		public float flyStep = 0.01F;
+		/** Show the new value in the action bar when it changes. */
+		public boolean showChanges = true;
 	}
 
 	public static final class Equipment {
@@ -79,6 +110,16 @@ public final class MonkConfig {
 		if (equipment == null) equipment = new Equipment();
 		if (gameplay == null) gameplay = new Gameplay();
 		if (performance == null) performance = new Performance();
+		if (flight == null) flight = new Flight();
+		if (controls == null) controls = new Controls();
+		blink.minRange = Math.max(0.5F, Math.min(blink.range, blink.minRange));
+		blink.groundSearchDepth = clamp(blink.groundSearchDepth, 0, 64);
+		flight.minSpeed = Math.max(0.001F, Math.min(1F, flight.minSpeed));
+		flight.maxSpeed = Math.max(flight.minSpeed, Math.min(2F, flight.maxSpeed));
+		controls.blinkStep = Math.max(0.1F, Math.min(16F, controls.blinkStep));
+		controls.runStep = Math.max(0.01F, Math.min(5F, controls.runStep));
+		controls.maxRunScale = Math.max(0F, Math.min(10F, controls.maxRunScale));
+		controls.flyStep = Math.max(0.001F, Math.min(0.5F, controls.flyStep));
 		if (hud.style == null) hud.style = HudStyle.RING;
 		if (hud.corner == null) hud.corner = HudCorner.BOTTOM_RIGHT;
 		hud.size = clamp(hud.size, 8, 128);

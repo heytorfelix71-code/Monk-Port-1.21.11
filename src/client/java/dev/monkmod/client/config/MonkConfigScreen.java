@@ -131,6 +131,30 @@ public final class MonkConfigScreen {
 				.option(floatSlider("blink.fall_damage", bd.fallDamage, 0F, 20F, 0.5F, () -> b.fallDamage, v -> b.fallDamage = v))
 				.option(bool("blink.preview", bd.previewParticles, () -> b.previewParticles, v -> b.previewParticles = v))
 				.option(bool("blink.require_unarmored", bd.requireUnarmored, () -> b.requireUnarmored, v -> b.requireUnarmored = v))
+				.option(bool("blink.allow_air", bd.allowAirTarget, () -> b.allowAirTarget, v -> b.allowAirTarget = v))
+				.option(floatSlider("blink.min_range", bd.minRange, 0.5F, 16F, 0.5F, () -> b.minRange, v -> b.minRange = v))
+				.option(intSlider("blink.ground_depth", bd.groundSearchDepth, 0, 64, 1, () -> b.groundSearchDepth, v -> b.groundSearchDepth = v))
+				.build();
+
+		MonkConfig.Flight f = cfg.flight;
+		MonkConfig.Flight fd = def.flight;
+		OptionGroup flight = OptionGroup.createBuilder().name(t("flight")).description(d("flight"))
+				.option(floatSlider("flight.min_speed", fd.minSpeed, 0.01F, 0.1F, 0.005F, () -> f.minSpeed, v -> f.minSpeed = v))
+				.option(floatSlider("flight.max_speed", fd.maxSpeed, 0.05F, 1F, 0.01F, () -> f.maxSpeed, v -> f.maxSpeed = v))
+				.build();
+
+		MonkConfig.Controls c = cfg.controls;
+		MonkConfig.Controls cd = def.controls;
+		OptionGroup controls = OptionGroup.createBuilder().name(t("controls")).description(d("controls"))
+				.option(LabelOption.create(t("controls.info")))
+				.option(bool("controls.scroll_blink", cd.scrollBlinkDistance, () -> c.scrollBlinkDistance, v -> c.scrollBlinkDistance = v))
+				.option(bool("controls.scroll_run", cd.scrollRunSpeed, () -> c.scrollRunSpeed, v -> c.scrollRunSpeed = v))
+				.option(bool("controls.scroll_fly", cd.scrollFlySpeed, () -> c.scrollFlySpeed, v -> c.scrollFlySpeed = v))
+				.option(floatSlider("controls.blink_step", cd.blinkStep, 0.5F, 8F, 0.5F, () -> c.blinkStep, v -> c.blinkStep = v))
+				.option(floatSlider("controls.run_step", cd.runStep, 0.05F, 1F, 0.05F, () -> c.runStep, v -> c.runStep = v))
+				.option(floatSlider("controls.max_run_scale", cd.maxRunScale, 0.5F, 5F, 0.25F, () -> c.maxRunScale, v -> c.maxRunScale = v))
+				.option(floatSlider("controls.fly_step", cd.flyStep, 0.005F, 0.05F, 0.005F, () -> c.flyStep, v -> c.flyStep = v))
+				.option(bool("controls.show_changes", cd.showChanges, () -> c.showChanges, v -> c.showChanges = v))
 				.build();
 
 		MonkConfig.Gameplay g = cfg.gameplay;
@@ -150,7 +174,7 @@ public final class MonkConfigScreen {
 				.build();
 
 		return ConfigCategory.createBuilder().name(t("category.general"))
-				.group(hud).group(blink).group(gameplay).group(performance)
+				.group(hud).group(controls).group(blink).group(flight).group(gameplay).group(performance)
 				.option(ButtonOption.createBuilder().name(t("open_folder")).description(d("open_folder"))
 						.action((screen, opt) -> Util.getPlatform().openPath(MonkConfigManager.dir())).build())
 				.build();
@@ -181,7 +205,7 @@ public final class MonkConfigScreen {
 			String key = type.key();
 			category.option(Option.<Boolean>createBuilder()
 					.name(Component.translatable("monk.advancements.ability." + (key.equals("mining") ? "mining.0" : key)).append(" (" + key + ")"))
-					.description(OptionDescription.of(Component.literal(type.summary())))
+					.description(OptionDescription.of(summary("ability", type)))
 					.binding(true, () -> !cfg.gameplay.disabledAbilities.contains(key), v -> {
 						cfg.gameplay.disabledAbilities.remove(key);
 						if (!v) {
@@ -212,6 +236,9 @@ public final class MonkConfigScreen {
 					.name(t("levels.level", i, Component.translatable("monk.config.req." + reqType)))
 					.description(OptionDescription.of(t("levels.level.desc")))
 					.collapsed(true);
+			group.option(Option.<String>createBuilder().name(t("levels.name")).description(d("levels.name"))
+					.binding("", () -> entry.name == null ? "" : entry.name, v -> entry.name = v)
+					.controller(StringControllerBuilder::create).build());
 			group.option(Option.<String>createBuilder().name(t("levels.icon")).description(d("levels.icon"))
 					.binding(entry.icon, () -> entry.icon, v -> entry.icon = v)
 					.controller(StringControllerBuilder::create).build());
@@ -220,7 +247,7 @@ public final class MonkConfigScreen {
 			group.option(LabelOption.create(t("levels.requirement", Component.translatable("monk.config.req." + reqType))));
 			if (req != null) {
 				for (ParamSpec spec : req.params().values()) {
-					group.option(param(entry.requirement, spec, "  "));
+					group.option(param(entry.requirement, reqType, spec, "  "));
 				}
 			}
 
@@ -229,8 +256,8 @@ public final class MonkConfigScreen {
 					String abType = ability.has("type") ? ability.get("type").getAsString() : "?";
 					MonkType<?> type = MonkTypes.ABILITIES.get(abType);
 					group.option(Option.<Boolean>createBuilder()
-							.name(t("levels.ability", abType))
-							.description(OptionDescription.of(Component.literal(type == null ? "Unknown ability" : type.summary())))
+							.name(t("levels.ability", Component.translatable("monk.advancements.ability." + (abType.equals("mining") ? "mining.0" : abType)), abType))
+							.description(OptionDescription.of(type == null ? t("levels.unknown_ability") : summary("ability", type)))
 							.binding(true, () -> !ability.has("enabled") || ability.get("enabled").getAsBoolean(), v -> {
 								if (v) {
 									ability.remove("enabled");
@@ -239,9 +266,11 @@ public final class MonkConfigScreen {
 								}
 							})
 							.controller(TickBoxControllerBuilder::create).build());
+					group.option(text(ability, "name", "levels.custom_name"));
+					group.option(text(ability, "description", "levels.custom_desc"));
 					if (type != null) {
 						for (ParamSpec spec : type.params().values()) {
-							group.option(param(ability, spec, "    "));
+							group.option(param(ability, abType, spec, "    "));
 						}
 					}
 				}
@@ -254,11 +283,31 @@ public final class MonkConfigScreen {
 		return category.build();
 	}
 
+	/** Translated summary of an ability / requirement type (English text as fallback). */
+	private static Component summary(String kind, MonkType<?> type) {
+		return Component.translatableWithFallback("monk.type." + kind + "." + type.key(), type.summary());
+	}
+
+	/** Optional free text ("name" / "description") stored in an ability entry; empty = default text. */
+	private static Option<String> text(JsonObject json, String field, String key) {
+		return Option.<String>createBuilder().name(Component.literal("    ").append(t(key))).description(d(key))
+				.binding("", () -> json.has(field) && json.get(field).isJsonPrimitive() ? json.get(field).getAsString() : "", v -> {
+					if (v == null || v.isBlank()) {
+						json.remove(field);
+					} else {
+						json.addProperty(field, v);
+					}
+				})
+				.controller(StringControllerBuilder::create).build();
+	}
+
 	/** Builds an editable option for one parameter stored inside a JSON entry. */
-	private static Option<?> param(JsonObject json, ParamSpec spec, String indent) {
+	private static Option<?> param(JsonObject json, String owner, ParamSpec spec, String indent) {
 		Params view = new Params(json, Map.of(spec.name(), spec));
-		Component name = Component.literal(indent + spec.name());
-		OptionDescription desc = OptionDescription.of(Component.literal(spec.comment()));
+		String base = "monk.param." + owner + "." + spec.name();
+		Component name = Component.literal(indent).append(Component.translatableWithFallback(base, spec.name()))
+				.append(Component.literal(" (" + spec.name() + ")").withStyle(ChatFormatting.DARK_GRAY));
+		OptionDescription desc = OptionDescription.of(Component.translatableWithFallback(base + ".desc", spec.comment()));
 		String key = spec.name();
 		return switch (spec.type()) {
 			case INT -> Option.<Integer>createBuilder().name(name).description(desc)
@@ -278,7 +327,8 @@ public final class MonkConfigScreen {
 					.controller(StringControllerBuilder::create)
 					.build();
 			case STRING_LIST -> Option.<String>createBuilder().name(name)
-					.description(OptionDescription.of(Component.literal(spec.comment() + " (comma separated)")))
+					.description(OptionDescription.of(Component.translatableWithFallback(base + ".desc", spec.comment())
+							.append("\n").append(t("levels.comma_separated"))))
 					.binding(String.join(",", view.getList(key)), () -> String.join(",", view.getList(key)), v -> {
 						JsonArray array = new JsonArray();
 						for (String s : v.split(",", -1)) {
