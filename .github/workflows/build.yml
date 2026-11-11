@@ -29,15 +29,21 @@ jobs:
           echo "== YACL beta"; curl -s https://beta.maven.isxander.dev/releases/dev/isxander/yet-another-config-lib/maven-metadata.xml | grep -o '<version>[^<]*1\.21\.1[01][^<]*</version>' | tail -8
           echo "== Fabric API"; curl -s https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml | grep -o '<version>[^<]*1\.21\.11</version>' | tail -3
 
-      - name: Diagnose mixin annotation processor
-        continue-on-error: true
-        run: |
-          chmod +x gradlew
-          ./gradlew --no-daemon dependencies --configuration annotationProcessor 2>&1 | tail -25
-          ./gradlew --no-daemon compileJava --rerun-tasks --info 2>&1 | grep -i -E "mixin|refmap|processor|-A[a-zA-Z]+=" | head -30
-
       - name: Build
         run: chmod +x gradlew && ./gradlew build --stacktrace --no-daemon
+
+      - name: Inspect Minecraft method names (diagnostic)
+        continue-on-error: true
+        run: |
+          find ~/.gradle/caches/fabric-loom -name '*.jar' -size +5M 2>/dev/null | head -20
+          JAR=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-merged*.jar' -o -name 'minecraft-project-@*.jar' 2>/dev/null | head -1)
+          [ -z "$JAR" ] && JAR=$(find ~/.gradle/caches/fabric-loom -name '*.jar' -size +20M | head -1)
+          echo "USING $JAR"
+          for c in net.minecraft.world.entity.LivingEntity net.minecraft.world.entity.player.Player net.minecraft.world.entity.monster.Creeper net.minecraft.client.MouseHandler net.minecraft.client.gui.Gui net.minecraft.world.entity.player.Abilities net.minecraft.world.entity.ai.attributes.Attributes net.minecraft.world.entity.Entity; do
+            echo "=== $c"; javap -p -cp "$JAR" $c | grep -E "getSpeed|decreaseAirSupply|increaseAirSupply|canBeAffected|onScroll|swell|ignite|explode|Swell|isIgnited|AIR|WATER_MOVEMENT|setFlyingSpeed|onUpdateAbilities|getJumpPower|getJumpBoost|hurtServer|isInWater|getAirSupply|setAirSupply|getMaxAirSupply|renderAirBubbles|renderPlayerHealth|renderHotbar|getFlyingSpeed|aiStep|addEffect|isFood|fallDistance|startSwell|startIgnite|isSwimming|ENTITY_INTERACTION|JUMP_STRENGTH" ; done
+          javap -p -cp "$JAR" net.minecraft.world.effect.MobEffects | head -60
+          javap -p -cp "$JAR" net.minecraft.world.damagesource.DamageTypes | head -60
+          javap -p -cp "$JAR" net.minecraft.client.gui.contextualbar.ContextualBarRenderer 2>&1 | head; ls ~/.gradle/caches/fabric-loom || true
 
       - uses: actions/upload-artifact@v4
         if: success()
