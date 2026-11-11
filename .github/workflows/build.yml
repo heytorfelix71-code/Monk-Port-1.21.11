@@ -29,6 +29,13 @@ jobs:
           echo "== YACL beta"; curl -s https://beta.maven.isxander.dev/releases/dev/isxander/yet-another-config-lib/maven-metadata.xml | grep -o '<version>[^<]*1\.21\.1[01][^<]*</version>' | tail -8
           echo "== Fabric API"; curl -s https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml | grep -o '<version>[^<]*1\.21\.11</version>' | tail -3
 
+      - name: Diagnose mixin annotation processor
+        continue-on-error: true
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon dependencies --configuration annotationProcessor 2>&1 | tail -25
+          ./gradlew --no-daemon compileJava --rerun-tasks --info 2>&1 | grep -i -E "mixin|refmap|processor|-A[a-zA-Z]+=" | head -30
+
       - name: Build
         run: chmod +x gradlew && ./gradlew build --stacktrace --no-daemon
 
