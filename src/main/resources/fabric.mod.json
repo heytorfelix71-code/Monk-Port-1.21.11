@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "monk",
+  "version": "${version}",
+  "name": "Monk Mod",
+  "description": "Walk the Way of the Square Fist. Complete unarmed challenges to unlock monk abilities. Fabric 1.21.11 port of RWTema's Monk Mod, optimized and fully configurable.",
+  "authors": ["RWTema (original mod)", "AH Felix (port)"],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/monk/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.monkmod.MonkMod"],
+    "client": ["dev.monkmod.client.MonkModClient"],
+    "modmenu": ["dev.monkmod.client.config.ModMenuIntegration"]
+  },
+  "mixins": [
+    "monk.mixins.json",
+    {
+      "config": "monk.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.2",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*",
+    "yet_another_config_lib_v3": "*"
+  }
+}

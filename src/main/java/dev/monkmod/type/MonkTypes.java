@@ -1,0 +1,213 @@
+package dev.monkmod.type;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Enemy;
+
+import dev.monkmod.ability.AttributeAbility;
+import dev.monkmod.ability.AttributeAbility.Condition;
+import dev.monkmod.ability.AttributeAbility.Mod;
+import dev.monkmod.ability.EffectAbilities;
+import dev.monkmod.ability.MiningAbility;
+import dev.monkmod.ability.MonkAbility;
+import dev.monkmod.ability.MovementAbilities;
+import dev.monkmod.ability.ProtectionAbility;
+import dev.monkmod.ability.SimpleAbility;
+import dev.monkmod.ability.WitheringStare;
+import dev.monkmod.requirement.BlockRequirements;
+import dev.monkmod.requirement.BodyRequirements;
+import dev.monkmod.requirement.CombatRequirements;
+import dev.monkmod.requirement.MeditationRequirements;
+import dev.monkmod.requirement.MonkRequirement;
+import dev.monkmod.requirement.SocialRequirements;
+
+import static dev.monkmod.ability.MonkAbility.number;
+import static dev.monkmod.ability.MonkAbility.percent;
+import static dev.monkmod.type.ParamSpec.ofFloat;
+import static dev.monkmod.type.ParamSpec.ofInt;
+import static dev.monkmod.type.ParamSpec.ofList;
+import static dev.monkmod.type.ParamSpec.ofString;
+
+/** Every ability and requirement type available in levels.json. */
+public final class MonkTypes {
+	public static final Map<String, MonkType<MonkAbility>> ABILITIES = new LinkedHashMap<>();
+	public static final Map<String, MonkType<MonkRequirement>> REQUIREMENTS = new LinkedHashMap<>();
+	private static final int BIG = Integer.MAX_VALUE;
+
+	private MonkTypes() {
+	}
+
+	private static void ability(String key, String summary, Function<Params, MonkAbility> factory, ParamSpec... params) {
+		ABILITIES.put(key, new MonkType<>(key, summary, List.of(params), factory));
+	}
+
+	private static void requirement(String key, String summary, Function<Params, MonkRequirement> factory, ParamSpec... params) {
+		REQUIREMENTS.put(key, new MonkType<>(key, summary, List.of(params), factory));
+	}
+
+	public static void bootstrap() {
+		if (!ABILITIES.isEmpty()) {
+			return;
+		}
+		// ---------------------------------------------------------------- abilities
+		ability("armor", "Natural armor points while wearing no armor.",
+				p -> new AttributeAbility("armor", p, Condition.UNARMORED,
+						List.of(new Mod(Attributes.ARMOR, "armor", Operation.ADD_VALUE, (pl, s) -> p.getFloat("armor"))),
+						a -> new Object[]{number(p.getFloat("armor"))}),
+				ofFloat("armor", 1, 0, 1024, "Armor points added."));
+		ability("armor_toughness", "Natural armor toughness while wearing no armor.",
+				p -> new AttributeAbility("armor_toughness", p, Condition.UNARMORED,
+						List.of(new Mod(Attributes.ARMOR_TOUGHNESS, "toughness", Operation.ADD_VALUE, (pl, s) -> p.getFloat("armor_toughness"))),
+						a -> new Object[]{number(p.getFloat("armor_toughness"))}),
+				ofFloat("armor_toughness", 1, 0, 1024, "Armor toughness added."));
+		ability("strength", "Extra bare-hand damage.",
+				p -> new AttributeAbility("strength", p, Condition.UNARMED,
+						List.of(new Mod(Attributes.ATTACK_DAMAGE, "damage", Operation.ADD_VALUE, (pl, s) -> p.getFloat("damage"))),
+						a -> new Object[]{number(p.getFloat("damage"))}),
+				ofFloat("damage", 1, 0, 2048, "Damage points added to unarmed attacks."));
+		ability("health", "More max health.",
+				p -> new AttributeAbility("health", p, Condition.ALWAYS,
+						List.of(new Mod(Attributes.MAX_HEALTH, "health", Operation.ADD_MULTIPLIED_BASE, (pl, s) -> p.getFloat("health_increase"))),
+						a -> new Object[]{percent(p.getFloat("health_increase"))}),
+				ofFloat("health_increase", 0.5, 0, 100, "Multiplier added to base max health (0.5 = +50%)."));
+		ability("swift", "Faster movement while unarmored (doubled while sprinting, like the original).",
+				p -> new AttributeAbility("swift", p, Condition.UNARMORED,
+						List.of(new Mod(Attributes.MOVEMENT_SPEED, "speed", Operation.ADD_MULTIPLIED_BASE,
+								(pl, s) -> p.getFloat("increase") * (pl.isSprinting() ? p.getFloat("sprint_multiplier") : 1.0F))),
+						a -> new Object[]{percent(p.getFloat("increase"))}),
+				ofFloat("increase", 0.4, 0, 10, "Speed bonus (0.4 = +40%)."),
+				ofFloat("sprint_multiplier", 2, 0, 10, "Bonus multiplier while sprinting."));
+		ability("jump", "Jump higher and take fall damage later.",
+				p -> new AttributeAbility("jump", p, Condition.ALWAYS,
+						List.of(new Mod(Attributes.JUMP_STRENGTH, "jump", Operation.ADD_MULTIPLIED_BASE, (pl, s) -> p.getFloat("jump") - 1.0),
+								new Mod(Attributes.SAFE_FALL_DISTANCE, "safe_fall", Operation.ADD_VALUE, (pl, s) -> p.getFloat("safe_fall"))),
+						a -> new Object[]{percent(p.getFloat("jump") - 1.0)}),
+				ofFloat("jump", 1.2, 1, 10, "Jump strength multiplier (1.2 = +20%)."),
+				ofFloat("safe_fall", 3, 0, 256, "Extra blocks you can fall without damage."));
+		ability("step_up", "Walk up full blocks without jumping (hold sneak to disable).",
+				p -> new AttributeAbility("step_up", p, Condition.UNARMORED,
+						List.of(new Mod(Attributes.STEP_HEIGHT, "step", Operation.ADD_VALUE,
+								(pl, s) -> pl.isShiftKeyDown() ? 0.0 : Math.max(0.0, p.getFloat("height") - 0.6))),
+						a -> new Object[0]),
+				ofFloat("height", 1.5, 0.6, 10, "Total step height in blocks (vanilla is 0.6)."));
+		ability("feather_fall", "Less fall damage.",
+				p -> new AttributeAbility("feather_fall", p, Condition.ALWAYS,
+						List.of(new Mod(Attributes.FALL_DAMAGE_MULTIPLIER, "fall", Operation.ADD_MULTIPLIED_TOTAL, (pl, s) -> p.getFloat("multiplier") - 1.0)),
+						a -> new Object[]{percent(1.0 - p.getFloat("multiplier"))}),
+				ofFloat("multiplier", 0.2, 0, 1, "Fraction of fall damage still taken (0.2 = 80% less)."));
+		ability("water_breathing_partial", "Hold your breath much longer.",
+				p -> new AttributeAbility("water_breathing_partial", p, Condition.ALWAYS,
+						List.of(new Mod(Attributes.OXYGEN_BONUS, "oxygen", Operation.ADD_VALUE, (pl, s) -> p.getFloat("oxygen_bonus"))),
+						a -> new Object[0]),
+				ofFloat("oxygen_bonus", 3, 0, 1024, "Oxygen bonus (like Respiration levels)."));
+		ability("water_breathing_full", "Never drown.", EffectAbilities.FullWaterBreathing::new);
+		ability("fire_resistance", "Less fire damage.",
+				p -> new ProtectionAbility("fire_resistance", p, s -> s.is(DamageTypeTags.IS_FIRE), p.getFloat("multiplier")),
+				ofFloat("multiplier", 0.5, 0, 1, "Fraction of fire damage still taken."));
+		ability("explosion_resistance", "Less explosion damage.",
+				p -> new ProtectionAbility("explosion_resistance", p, s -> s.is(DamageTypeTags.IS_EXPLOSION), p.getFloat("multiplier")),
+				ofFloat("multiplier", 0.5, 0, 1, "Fraction of explosion damage still taken."));
+		ability("lava_protection", "Entering lava grants a few seconds of fire immunity.",
+				MovementAbilities.LavaProtection::new,
+				ofInt("duration", 80, 1, 72000, "Fire resistance duration in ticks."),
+				ofInt("cooldown", 200, 0, 72000, "Ticks before it can trigger again."));
+		ability("hunger", "Hunger drains slower.", MovementAbilities.Hunger::new,
+				ofFloat("hunger_chance", 0.5, 0, 1, "How much slower (0.5 = 50% slower)."));
+		ability("mining", "Mine with bare hands.", MiningAbility::new,
+				ofInt("harvest_level", 0, 0, 5, "0 wood, 1 stone, 2 iron, 3 diamond, 4 netherite, 5 anything."),
+				ofFloat("speed_increase", 0, 0, 1000, "Bare-hand speed bonus (2 = 3x as fast)."),
+				ofList("harvest_tools", MiningAbility.defaultTools(), "Tool kinds your hands replace: pickaxe, shovel, axe, hoe (\"\" = none needed)."));
+		ability("blindness", "Permanent blindness.", EffectAbilities.Blindness::new);
+		ability("potion_immunity", "Harmful effects are removed instantly.", EffectAbilities.PotionImmunity::new,
+				ofList("ignored_effects", List.of(), "Effect ids that are NOT removed (e.g. minecraft:bad_omen)."));
+		ability("fly", "Creative-style flight while unarmored.", MovementAbilities.Fly::new);
+		ability("withering_stare", "Looking at undead withers them.", WitheringStare::new,
+				ofInt("range", 20, 1, 128, "Stare distance in blocks."),
+				ofInt("duration", 200, 1, 72000, "Wither effect duration in ticks."),
+				ofFloat("wither_boss_damage", 5, 0, 1000, "Damage dealt to the Wither boss per stare check."));
+		ability("blink", "Teleport where you look with the Blink key.", p -> new SimpleAbility("blink", p));
+		ability("catch_arrows", "Catch arrows flying at you (when unarmed and facing them).", p -> new SimpleAbility("catch_arrows", p),
+				ofFloat("max_angle_dot", 0.2, -1, 1, "How far to the side arrows can be caught (higher = wider)."));
+		ability("kiss_creeper", "Kiss creepers to calm them forever.", p -> new SimpleAbility("kiss_creeper", p));
+		ability("tame_animals", "Pet animals to calm them or make them fall in love.", p -> new SimpleAbility("tame_animals", p));
+		ability("water_walking", "Walk on water (sneak to sink).", p -> new SimpleAbility("water_walking", p));
+		ability("glass_touch", "Break glass bare-handed without shattering it.", p -> new SimpleAbility("glass_touch", p));
+
+		// ---------------------------------------------------------------- requirements
+		requirement("break_block", "Break N blocks (or a #tag) with an empty hand.", BlockRequirements.BreakBlock::fromSpec,
+				ofString("block", "minecraft:stone", "Block id, or #tag id."),
+				ofInt("number", 5, 1, BIG, "How many."));
+		requirement("break_wood", "Break N logs with an empty hand.", BlockRequirements.BreakBlock::wood,
+				ofInt("number", 10, 1, BIG, "How many."));
+		requirement("drown", "Stay underwater until almost out of air.", MeditationRequirements.Drown::new,
+				ofInt("swim_time", 280, 1, BIG, "Ticks of holding breath needed."));
+		requirement("mediate_sunrise", "Look at the sun at sunrise or sunset.", MeditationRequirements.Sunrise::new,
+				ofInt("time", 200, 1, BIG, "Ticks of staring."));
+		requirement("pet", "Pet N different animals with an empty hand.", SocialRequirements.Pet::new,
+				ofInt("number", 20, 1, BIG, "How many animals."));
+		requirement("sprint", "Sprint a distance unarmored (jumps don't count).",
+				p -> new BodyRequirements.Walk("sprint", p, BodyRequirements.Walk.Mode.SPRINT),
+				ofFloat("distance", 200, 1, 1_000_000, "Blocks."));
+		requirement("walk_fire", "Walk through fire.",
+				p -> new BodyRequirements.Walk("walk_fire", p, BodyRequirements.Walk.Mode.FIRE),
+				ofFloat("distance", 10, 1, 1_000_000, "Blocks."));
+		requirement("kill_undead", "Kill N undead unarmed.",
+				p -> new CombatRequirements.Kill("kill_undead", p, e -> e.getType().is(EntityTypeTags.UNDEAD), false),
+				ofInt("kills", 10, 1, BIG, "How many."));
+		requirement("kill_hostile", "Kill N hostile mobs unarmed.",
+				p -> new CombatRequirements.Kill("kill_hostile", p, e -> e instanceof Enemy, false),
+				ofInt("kills", 10, 1, BIG, "How many."));
+		requirement("kill_blind", "Kill N hostile mobs unarmed; cures blindness.",
+				p -> new CombatRequirements.Kill("kill_blind", p, e -> e instanceof Enemy, true),
+				ofInt("kills", 5, 1, BIG, "How many."));
+		requirement("kill_entity_type", "Defeat N mobs of a type in fair melee (25%+ of its health, no armor/weapons/projectiles).",
+				CombatRequirements.EnemyDefeat::new,
+				ofString("entity_type", "minecraft:wither", "Entity id."),
+				ofInt("kills", 1, 1, BIG, "How many."));
+		requirement("fall", "Fall from high up onto a block (hay).", BodyRequirements.Fall::new,
+				ofFloat("distance", 40, 1, 10_000, "Minimum fall height in blocks."),
+				ofString("block", "minecraft:hay_block", "Block you must land on."));
+		requirement("kiss_creeper", "Kiss a creeper (empty hand).", SocialRequirements.KissCreeper::new);
+		requirement("arrow_dodge", "Dodge N skeleton arrows in a row.", CombatRequirements.ArrowDodge::new,
+				ofInt("dodges", 5, 1, BIG, "How many."));
+		requirement("meditate_water_moon", "From a boat, look at the midnight moon.", MeditationRequirements.WaterMoon::new,
+				ofInt("stare_time", 200, 1, BIG, "Ticks."));
+		requirement("wither_stare", "Stare down a wither skeleton in a nether fortress.", MeditationRequirements.WitherStare::new,
+				ofInt("stare_time", 200, 1, BIG, "Ticks."));
+		requirement("meditate_endermen", "Stay near endermen without angering them.", MeditationRequirements.Endermen::new,
+				ofInt("time", 600, 1, BIG, "Enderman-ticks needed (more endermen = faster)."),
+				ofFloat("radius", 20, 1, 128, "Search radius."));
+		requirement("bedrock_sleep", "Sleep on a 2-block 'bed of rock' (bedrock).",
+				p -> new BodyRequirements.Sleep("bedrock_sleep", p, BodyRequirements.Sleep.Kind.BEDROCK));
+		requirement("sleep_cactus", "Sleep on a cactus.",
+				p -> new BodyRequirements.Sleep("sleep_cactus", p, BodyRequirements.Sleep.Kind.CACTUS));
+		requirement("advancement", "Complete an advancement.", SocialRequirements.Advancement::new,
+				ofString("advancement_resource_location", "minecraft:story/mine_diamond", "Advancement id."),
+				ofString("achievement_name", "Diamonds!", "Name shown in the description (plain text or JSON text)."));
+		requirement("void_fall", "Fall into the void and come back.", BodyRequirements.VoidFall::new,
+				ofInt("messages", 14, 0, 14, "Visions shown before ascending."));
+		requirement("none", "Granted immediately.", SocialRequirements.Free::new);
+	}
+
+	/** Text listing every type and parameter, written to config/monk/README.txt. */
+	public static String reference() {
+		StringBuilder b = new StringBuilder();
+		b.append("ABILITIES (use in \"add\")\n=========================\n");
+		ABILITIES.values().forEach(t -> describe(b, t));
+		b.append("\nREQUIREMENTS (use as \"requirement\")\n====================================\n");
+		REQUIREMENTS.values().forEach(t -> describe(b, t));
+		return b.toString();
+	}
+
+	private static void describe(StringBuilder b, MonkType<?> t) {
+		b.append("\n").append(t.key()).append(" - ").append(t.summary()).append('\n');
+		t.params().values().forEach(p -> b.append("    ").append(p.describe()).append('\n'));
+	}
+}

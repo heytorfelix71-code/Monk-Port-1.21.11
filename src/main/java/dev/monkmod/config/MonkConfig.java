@@ -1,0 +1,101 @@
+package dev.monkmod.config;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * General settings, saved as config/monk/monk.json. The level layout lives in levels.json.
+ * Field names are the JSON keys, so keep them stable.
+ */
+public final class MonkConfig {
+	public Hud hud = new Hud();
+	public Blink blink = new Blink();
+	public Equipment equipment = new Equipment();
+	public Gameplay gameplay = new Gameplay();
+	public Performance performance = new Performance();
+
+	public enum HudStyle { RING, BAR, TEXT }
+
+	public enum HudCorner { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT }
+
+	public static final class Hud {
+		public boolean enabled = true;
+		public HudStyle style = HudStyle.RING;
+		public HudCorner corner = HudCorner.BOTTOM_RIGHT;
+		public int offsetX = 6;
+		public int offsetY = 6;
+		public int size = 28;
+		public float opacity = 1.0F;
+		public boolean showPercent = true;
+		public boolean showIcon = true;
+		/** Keep the indicator on screen instead of fading out after progress stops changing. */
+		public boolean alwaysVisible = false;
+		/** Ticks the indicator stays fully visible after the last change. */
+		public int visibleTicks = 40;
+		public int colorGain = 0x55FF55;
+		public int colorLoss = 0xFF5555;
+	}
+
+	public static final class Blink {
+		public float range = 16.0F;
+		public int cooldownTicks = 40;
+		public float fallDamage = 2.0F;
+		public boolean previewParticles = true;
+		public boolean requireUnarmored = false;
+	}
+
+	public static final class Equipment {
+		/** In strict mode anything worn in an armor slot counts as armor (except whitelisted items). */
+		public boolean strictArmor = false;
+		public List<String> whitelist = new ArrayList<>(List.of(
+				"minecraft:carved_pumpkin", "minecraft:skeleton_skull", "minecraft:wither_skeleton_skull",
+				"minecraft:zombie_head", "minecraft:creeper_head", "minecraft:player_head",
+				"minecraft:piglin_head", "minecraft:dragon_head"));
+		public List<String> blacklist = new ArrayList<>();
+	}
+
+	public static final class Gameplay {
+		public boolean announceLevelUps = true;
+		/** Ability types switched off everywhere, whatever levels.json says. */
+		public List<String> disabledAbilities = new ArrayList<>();
+		/** Progress messages in the action bar when progress changes. */
+		public boolean actionBarProgress = false;
+		/** Allow /monk info for non-operators. */
+		public boolean infoCommandForEveryone = true;
+	}
+
+	public static final class Performance {
+		/** Ticks between "stare" ray casts (withering stare, wither skeleton staring contest). */
+		public int stareInterval = 4;
+		/** Ticks between enderman scans for the meditation requirement. */
+		public int endermanScanInterval = 5;
+		/** Ticks between equipment checks (armor / weapons) per player. */
+		public int equipmentCheckInterval = 5;
+	}
+
+	public void sanitize() {
+		if (hud == null) hud = new Hud();
+		if (blink == null) blink = new Blink();
+		if (equipment == null) equipment = new Equipment();
+		if (gameplay == null) gameplay = new Gameplay();
+		if (performance == null) performance = new Performance();
+		if (hud.style == null) hud.style = HudStyle.RING;
+		if (hud.corner == null) hud.corner = HudCorner.BOTTOM_RIGHT;
+		hud.size = clamp(hud.size, 8, 128);
+		hud.opacity = Math.max(0.05F, Math.min(1F, hud.opacity));
+		hud.visibleTicks = clamp(hud.visibleTicks, 0, 1200);
+		blink.range = Math.max(1F, Math.min(128F, blink.range));
+		blink.cooldownTicks = clamp(blink.cooldownTicks, 0, 1200);
+		blink.fallDamage = Math.max(0F, blink.fallDamage);
+		if (equipment.whitelist == null) equipment.whitelist = new ArrayList<>();
+		if (equipment.blacklist == null) equipment.blacklist = new ArrayList<>();
+		if (gameplay.disabledAbilities == null) gameplay.disabledAbilities = new ArrayList<>();
+		performance.stareInterval = clamp(performance.stareInterval, 1, 40);
+		performance.endermanScanInterval = clamp(performance.endermanScanInterval, 1, 40);
+		performance.equipmentCheckInterval = clamp(performance.equipmentCheckInterval, 1, 40);
+	}
+
+	private static int clamp(int v, int min, int max) {
+		return Math.max(min, Math.min(max, v));
+	}
+}

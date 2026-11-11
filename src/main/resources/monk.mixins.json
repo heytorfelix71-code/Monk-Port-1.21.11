@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.monkmod.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "LivingEntityMixin",
+    "MobMixin",
+    "PlayerMixin",
+    "ServerAdvancementManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
