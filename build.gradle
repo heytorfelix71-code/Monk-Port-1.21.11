@@ -22,6 +22,11 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 
+	mixin {
+		useLegacyMixinAp = true
+		defaultRefmapName = "monk.refmap.json"
+	}
+
 	mods {
 		"monk" {
 			sourceSet sourceSets.main
