@@ -80,6 +80,7 @@ public final class MonkModClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			MonkHud.tick(client);
 			BlinkClient.tick(client);
+			WaterWalkClient.tick(client);
 			MonkControls.tick(client);
 		});
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, MonkMod.id("progress"), MonkHud::render);

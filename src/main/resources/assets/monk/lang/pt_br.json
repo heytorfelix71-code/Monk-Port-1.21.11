@@ -442,5 +442,9 @@
   "key.monk.withering_stare": "Olhar Fulminante liga/desliga",
   "monk.controls.stare.on": "Olhar fulminante: LIGADO",
   "monk.controls.stare.off": "Olhar fulminante: DESLIGADO",
-  "monk.controls.stare.locked": "Você ainda não desbloqueou o olhar fulminante."
+  "monk.controls.stare.locked": "Você ainda não desbloqueou o olhar fulminante.",
+  "monk.param.water_walking.height": "Altura sobre a água",
+  "monk.param.water_walking.height.desc": "Altura dos pés dentro do bloco de água. 0,89 = pés bem na superfície (recomendado). 1 = um pixel acima. Abaixo de 0,89 os pés encostam na água e o jogo te trata como nadando (mais lento, respingos).",
+  "monk.param.water_walking.lift": "Subir de volta à superfície",
+  "monk.param.water_walking.lift.desc": "Se você entrar na água rasa (vindo da margem, caindo de um pulo), volta para a superfície. Mergulhar com a cabeça debaixo d'água continua funcionando."
 }

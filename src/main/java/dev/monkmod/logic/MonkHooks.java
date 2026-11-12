@@ -35,26 +35,48 @@ public final class MonkHooks {
 	private MonkHooks() {
 	}
 
-	private static final VoxelShape WATER_FLOOR = Shapes.block();
+	private static float floorHeight = -1;
+	private static VoxelShape floorShape = Shapes.block();
+
+	private static VoxelShape floor(float height) {
+		if (height != floorHeight) {
+			floorShape = Shapes.box(0, 0, 0, 1, height, 1);
+			floorHeight = height;
+		}
+		return floorShape;
+	}
+
+	/** The water walking ability if the player can use it right now (unarmored, not sneaking or flying), else null. */
+	public static SimpleAbility waterWalker(Player player) {
+		if (player.isShiftKeyDown() || player.getAbilities().flying || player.isSpectator() || player.fallDistance > 3.0) {
+			return null;
+		}
+		SimpleAbility ability = MonkAccess.abilities(player).get("water_walking", SimpleAbility.class);
+		return ability != null && MonkAccess.unarmored(player) ? ability : null;
+	}
+
+	/** Top water block (no water above it): the one that becomes a floor. */
+	public static boolean isSurfaceWater(BlockState state, BlockGetter level, BlockPos pos) {
+		return state.getFluidState().is(FluidTags.WATER) && !level.getFluidState(pos.above()).is(FluidTags.WATER);
+	}
 
 	/**
-	 * Water walking: a solid floor on the top water block for monks that are above it (not sneaking,
-	 * not flying, not falling from high up). Returns null to keep the vanilla shape.
+	 * Water walking: a solid floor at the water surface for monks that are above it. Returns null to keep
+	 * the vanilla (empty) shape.
 	 */
 	public static VoxelShape waterFloor(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		if (!(context instanceof EntityCollisionContext ec) || !(ec.getEntity() instanceof Player player)) {
 			return null;
 		}
-		if (!state.getFluidState().is(FluidTags.WATER) || level.getFluidState(pos.above()).is(FluidTags.WATER)) {
+		if (!isSurfaceWater(state, level, pos)) {
 			return null;
 		}
-		if (player.isShiftKeyDown() || player.fallDistance > 3.0 || player.getAbilities().flying || player.isSpectator()) {
+		SimpleAbility ability = waterWalker(player);
+		if (ability == null) {
 			return null;
 		}
-		if (!context.isAbove(WATER_FLOOR, pos, true)) {
-			return null;
-		}
-		return MonkAccess.abilities(player).has("water_walking") && MonkAccess.unarmored(player) ? WATER_FLOOR : null;
+		VoxelShape shape = floor(ability.params().getFloat("height"));
+		return context.isAbove(shape, pos, true) ? shape : null;
 	}
 
 	public static float modifyIncomingDamage(LivingEntity entity, DamageSource source, float amount) {

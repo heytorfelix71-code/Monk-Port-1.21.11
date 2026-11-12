@@ -147,7 +147,9 @@ public final class MonkTypes {
 				ofBool("passive", true, "Creepers also never chase or explode at you, even without asking."));
 		ability("night_vision", "Toggle night vision with its key (V by default).", PassiveAbilities.NightVision::new);
 		ability("tame_animals", "Pet animals to calm them or make them fall in love.", p -> new SimpleAbility("tame_animals", p));
-		ability("water_walking", "Walk on water (sneak to sink).", p -> new SimpleAbility("water_walking", p));
+		ability("water_walking", "Walk on water (sneak to sink).", p -> new SimpleAbility("water_walking", p),
+				ofFloat("height", 0.89, 0.6, 1.0, "Height of your feet above the bottom of the water block (0.89 = right on the surface, 1 = one pixel above)."),
+				ofBool("lift", true, "When you end up in shallow water (walking in from the shore, jumping in), you are lifted back onto the surface."));
 		ability("glass_touch", "Break glass bare-handed without shattering it.", p -> new SimpleAbility("glass_touch", p));
 
 		// ---------------------------------------------------------------- requirements

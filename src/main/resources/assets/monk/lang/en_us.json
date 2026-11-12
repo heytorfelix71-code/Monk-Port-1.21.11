@@ -442,5 +442,9 @@
   "key.monk.withering_stare": "Withering Stare on/off",
   "monk.controls.stare.on": "Withering stare: ON",
   "monk.controls.stare.off": "Withering stare: OFF",
-  "monk.controls.stare.locked": "You haven't unlocked the withering stare yet."
+  "monk.controls.stare.locked": "You haven't unlocked the withering stare yet.",
+  "monk.param.water_walking.height": "Height above the water",
+  "monk.param.water_walking.height.desc": "Height of your feet inside the water block. 0.89 = feet right on the surface (recommended). 1 = a pixel above. Below 0.89 your feet touch the water and the game treats you as swimming (slower, splashes).",
+  "monk.param.water_walking.lift": "Lift back to the surface",
+  "monk.param.water_walking.lift.desc": "If you end up in shallow water (walking in from the shore, landing from a jump), you are put back on the surface. Diving with your head underwater still works."
 }
