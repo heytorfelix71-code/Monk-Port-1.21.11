@@ -21,4 +21,12 @@ public abstract class ProjectileMixin {
 			cir.setReturnValue(ProjectileDeflection.NONE);
 		}
 	}
+
+	/** A projectile being dodged ignores that player completely, so it flies on instead of sticking to them. */
+	@Inject(method = "canHitEntity", at = @At("HEAD"), cancellable = true)
+	private void monk$dodged(net.minecraft.world.entity.Entity target, CallbackInfoReturnable<Boolean> cir) {
+		if (MonkProjectiles.isDodging((Projectile) (Object) this, target)) {
+			cir.setReturnValue(false);
+		}
+	}
 }

@@ -22,6 +22,15 @@ public final class MonkProjectiles {
 	private MonkProjectiles() {
 	}
 
+	/** True while this player is dodging that projectile. */
+	public static boolean isDodging(Projectile projectile, Entity target) {
+		if (!(target instanceof ServerPlayer player)) {
+			return false;
+		}
+		MonkPlayerState state = MonkPlayers.getIfPresent(player);
+		return state != null && !state.dodgedProjectiles.isEmpty() && state.dodgedProjectiles.contains(projectile.getId());
+	}
+
 	/** True if the projectile must not hit this entity (it was caught or dodged). */
 	public static boolean intercept(Projectile projectile, Entity target) {
 		if (!(target instanceof ServerPlayer player) || player.isSpectator() || !player.isAlive() || projectile.isRemoved()) {
