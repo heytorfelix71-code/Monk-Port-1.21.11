@@ -58,7 +58,9 @@ public final class MonkEvents {
 			for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 				MonkLogic.tickPlayer(player);
 			}
+			dev.monkmod.ability.CombatAbilities.TimeStop.serverTick(server);
 		});
+		ServerLifecycleEvents.SERVER_STOPPING.register(dev.monkmod.ability.CombatAbilities.TimeStop::end);
 		ServerLifecycleEvents.SERVER_STOPPED.register(server -> MonkPlayers.clear());
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> MonkPlayers.remove(handler.getPlayer()));
 		ServerPlayerEvents.JOIN.register(MonkLogic::resync);
@@ -79,6 +81,12 @@ public final class MonkEvents {
 		ServerLivingEntityEvents.AFTER_DEATH.register(MonkEvents::onDeath);
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register(MonkEvents::allowDamage);
 		ServerLivingEntityEvents.AFTER_DAMAGE.register((victim, source, base, taken, blocked) -> {
+			if (victim instanceof ServerPlayer hurt && taken > 0 && source.getEntity() != null) {
+				MonkPlayers.get(hurt).lastCombatTick = hurt.level().getServer().getTickCount();
+			}
+			if (source.getEntity() instanceof ServerPlayer fighter && victim != fighter) {
+				MonkPlayers.get(fighter).lastCombatTick = fighter.level().getServer().getTickCount();
+			}
 			if (source.getEntity() instanceof ServerPlayer attacker && victim != attacker && taken > 0) {
 				MonkData data = MonkAttachments.data(attacker);
 				MonkRequirement req = next(attacker, data);
@@ -180,31 +188,6 @@ public final class MonkEvents {
 		if (req != null && !req.allowDamage(player, data, state, source, amount)) {
 			return false;
 		}
-		return !tryCatchArrow(player, state, source);
-	}
-
-	/** Catch arrows coming from the front while unarmed. */
-	private static boolean tryCatchArrow(ServerPlayer player, MonkPlayerState state, DamageSource source) {
-		Entity direct = source.getDirectEntity();
-		if (direct == null || !direct.getType().is(EntityTypeTags.ARROWS) || !state.unarmed()) {
-			return false;
-		}
-		MonkAbility ability = state.abilities().get("catch_arrows");
-		if (ability == null) {
-			return false;
-		}
-		Vec3 look = player.getViewVector(1.0F);
-		Vec3 fromArrow = new Vec3(player.getX() - direct.getX(), 0.0, player.getZ() - direct.getZ()).normalize();
-		if (fromArrow.dot(look) > ability.params().getFloat("max_angle_dot")) {
-			return false; // arrow came from behind / the side
-		}
-		if (direct instanceof AbstractArrow arrow && arrow.pickup == AbstractArrow.Pickup.ALLOWED) {
-			ItemStack stack = arrow.getPickupItemStackOrigin().copy();
-			if (!stack.isEmpty() && !player.getInventory().add(stack)) {
-				player.drop(stack, false);
-			}
-		}
-		direct.discard();
 		return true;
 	}
 

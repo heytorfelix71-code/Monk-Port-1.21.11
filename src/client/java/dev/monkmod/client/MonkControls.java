@@ -25,6 +25,7 @@ import dev.monkmod.config.MonkConfigManager;
 import dev.monkmod.network.FlySpeedPayload;
 import dev.monkmod.network.NightVisionPayload;
 import dev.monkmod.network.StareTogglePayload;
+import dev.monkmod.network.TimeStopPayload;
 
 /**
  * Mouse wheel and key controls of the monk abilities:
@@ -119,6 +120,13 @@ public final class MonkControls {
 				ClientPlayNetworking.send(NightVisionPayload.INSTANCE);
 			} else if (ClientMonkState.connectedToMonkServer()) {
 				show(player, Component.translatable("monk.controls.night_vision.locked").withStyle(ChatFormatting.GRAY));
+			}
+		}
+		while (MonkModClient.timeStopKey.consumeClick()) {
+			if (ClientMonkState.abilities().has("time_stop") && ClientPlayNetworking.canSend(TimeStopPayload.TYPE)) {
+				ClientPlayNetworking.send(TimeStopPayload.INSTANCE);
+			} else if (ClientMonkState.connectedToMonkServer()) {
+				show(player, Component.translatable("monk.time_stop.locked").withStyle(ChatFormatting.GRAY));
 			}
 		}
 		while (MonkModClient.stareKey.consumeClick()) {

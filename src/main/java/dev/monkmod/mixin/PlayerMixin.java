@@ -31,12 +31,6 @@ public abstract class PlayerMixin {
 		}
 	}
 
-	/** Fasting: slower hunger drain. */
-	@ModifyVariable(method = "causeFoodExhaustion", at = @At("HEAD"), argsOnly = true)
-	private float monk$fasting(float exhaustion) {
-		return MonkHooks.modifyExhaustion((Player) (Object) this, exhaustion);
-	}
-
 	/** Swiftness without a speed attribute: the camera FOV does not stretch. */
 	@Inject(method = "getSpeed", at = @At("RETURN"), cancellable = true)
 	private void monk$swift(CallbackInfoReturnable<Float> cir) {

@@ -32,6 +32,12 @@ public final class MonkPlayerState {
 	public long lavaReadyAt;
 	public long lavaImmuneUntil;
 	public long blinkReadyAt;
+	/** Server tick of the last time this player dealt or took damage (out-of-combat regeneration). */
+	public int lastCombatTick;
+	/** Server tick from which the time stop can be used again. */
+	public int timeStopReadyAt;
+	/** Ids of projectiles this player is dodging right now (they pass through for a few ticks). */
+	public final java.util.Set<Integer> dodgedProjectiles = new java.util.HashSet<>();
 
 	// Requirement scratch space (only the requirement of the next level uses it).
 	public boolean tracking;

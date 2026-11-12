@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 2;
+	public static final int CURRENT_VERSION = 3;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -66,8 +66,65 @@ public final class LevelsFile {
 				}
 			}
 		}
+		if (config_version < 3 && !levels.isEmpty()) {
+			if (!hasType("armor_toughness")) {
+				addTo("monk:icon/ghast", "armor_toughness", "armor_toughness", 4.0);
+				addTo("monk:icon/ocelot", "armor_toughness", "armor_toughness", 8.0);
+				addTo("monk:icon/wither", "armor_toughness", "armor_toughness", 12.0);
+			}
+			if (!hasType("iron_body")) {
+				addTo("monk:icon/wither", "iron_body", "multiplier", 0.6);
+			}
+			if (!hasType("time_stop")) {
+				addTo("monk:icon/ascend", "time_stop", null, 0);
+			}
+			if (!hasType("regeneration")) {
+				addTo("monk:icon/ascend", "regeneration", null, 0);
+			}
+			LevelEntry top = find("monk:icon/ascend");
+			if (top.add.stream().noneMatch(a -> a.has("type") && "catch_arrows".equals(a.get("type").getAsString()))) {
+				JsonObject up = new JsonObject();
+				up.addProperty("type", "catch_arrows");
+				up.addProperty("back_dodge", true);
+				up.addProperty("back_catch_chance", 0.2);
+				top.add.add(up);
+			}
+		}
 		config_version = CURRENT_VERSION;
 		return true;
+	}
+
+	private boolean hasType(String type) {
+		for (LevelEntry e : levels) {
+			if (e.add != null && e.add.stream().anyMatch(a -> a.has("type") && type.equals(a.get("type").getAsString()))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Level with this icon, or the last level when the icons were customised. */
+	private LevelEntry find(String icon) {
+		LevelEntry found = levels.get(levels.size() - 1);
+		for (LevelEntry e : levels) {
+			if (icon.equals(e.icon)) {
+				found = e;
+				break;
+			}
+		}
+		if (found.add == null) {
+			found.add = new ArrayList<>();
+		}
+		return found;
+	}
+
+	private void addTo(String icon, String type, String param, double value) {
+		JsonObject o = new JsonObject();
+		o.addProperty("type", type);
+		if (param != null) {
+			o.addProperty(param, value);
+		}
+		find(icon).add.add(o);
 	}
 
 	public LevelsFile copy() {

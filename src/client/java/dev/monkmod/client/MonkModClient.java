@@ -32,6 +32,7 @@ public final class MonkModClient implements ClientModInitializer {
 	public static KeyMapping blinkKey;
 	public static KeyMapping nightVisionKey;
 	public static KeyMapping stareKey;
+	public static KeyMapping timeStopKey;
 	public static KeyMapping blinkFarther;
 	public static KeyMapping blinkCloser;
 	public static KeyMapping runFaster;
@@ -58,6 +59,7 @@ public final class MonkModClient implements ClientModInitializer {
 		blinkKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.blink", InputConstants.Type.KEYSYM, InputConstants.KEY_G, CATEGORY));
 		nightVisionKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.night_vision", InputConstants.Type.KEYSYM, InputConstants.KEY_V, CATEGORY));
 		stareKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.withering_stare", InputConstants.Type.KEYSYM, InputConstants.KEY_K, CATEGORY));
+		timeStopKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.time_stop", InputConstants.Type.KEYSYM, InputConstants.KEY_J, CATEGORY));
 		blinkFarther = unbound("key.monk.blink_farther");
 		blinkCloser = unbound("key.monk.blink_closer");
 		runFaster = unbound("key.monk.run_faster");

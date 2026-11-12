@@ -41,6 +41,9 @@ public final class MonkNetwork {
 				dev.monkmod.ability.WitheringStare.toggle(context.player());
 			}
 		});
+		PayloadTypeRegistry.playC2S().register(TimeStopPayload.TYPE, TimeStopPayload.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(TimeStopPayload.TYPE, (payload, context) ->
+				dev.monkmod.ability.CombatAbilities.TimeStop.toggle(context.player()));
 		PayloadTypeRegistry.playC2S().register(NightVisionPayload.TYPE, NightVisionPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(NightVisionPayload.TYPE, (payload, context) -> {
 			ServerPlayer player = context.player();

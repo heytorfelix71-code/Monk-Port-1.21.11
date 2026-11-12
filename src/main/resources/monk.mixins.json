@@ -3,11 +3,13 @@
   "package": "dev.monkmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "LivingEntityMixin",
     "CreeperMixin",
+    "FoodDataMixin",
     "LiquidBlockMixin",
+    "LivingEntityMixin",
     "MobMixin",
     "PlayerMixin",
+    "ProjectileMixin",
     "ServerAdvancementManagerMixin"
   ],
   "injectors": {

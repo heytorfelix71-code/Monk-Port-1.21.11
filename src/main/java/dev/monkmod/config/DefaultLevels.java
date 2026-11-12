@@ -49,7 +49,8 @@ public final class DefaultLevels {
 				ab("lava_protection"));
 		level(f, "ghast", req("break_block").p("block", "minecraft:obsidian").p("number", 1),
 				ab("mining").p("harvest_level", 3).p("speed_increase", 9.0),
-				ab("armor").p("armor", 14.0));
+				ab("armor").p("armor", 14.0),
+				ab("armor_toughness").p("armor_toughness", 4.0));
 		level(f, "creeper", req("kiss_creeper"),
 				ab("kiss_creeper"),
 				ab("explosion_resistance").p("multiplier", 0.5));
@@ -57,7 +58,8 @@ public final class DefaultLevels {
 				ab("withering_stare"));
 		level(f, "ocelot", req("fall").p("distance", 40.0),
 				ab("feather_fall").p("multiplier", 0.2),
-				ab("armor").p("armor", 18.0));
+				ab("armor").p("armor", 18.0),
+				ab("armor_toughness").p("armor_toughness", 8.0));
 		level(f, "bed", req("bedrock_sleep"),
 				ab("mining").p("harvest_level", 5).p("speed_increase", 12.0),
 				ab("strength").p("damage", 8.0),
@@ -68,9 +70,14 @@ public final class DefaultLevels {
 		blind.remove.add("blindness");
 		level(f, "wither", req("kill_entity_type").p("kills", 1).p("entity_type", "minecraft:wither"),
 				ab("potion_immunity"),
-				ab("armor").p("armor", 20.0));
+				ab("armor").p("armor", 20.0),
+				ab("armor_toughness").p("armor_toughness", 12.0),
+				ab("iron_body").p("multiplier", 0.6));
 		level(f, "ascend", req("void_fall"),
-				ab("fly"));
+				ab("fly"),
+				ab("time_stop"),
+				ab("regeneration"),
+				ab("catch_arrows").p("back_dodge", true).p("back_catch_chance", 0.2));
 		return f;
 	}
 
@@ -102,6 +109,11 @@ public final class DefaultLevels {
 		}
 
 		J p(String k, Number v) {
+			o.addProperty(k, v);
+			return this;
+		}
+
+		J p(String k, boolean v) {
 			o.addProperty(k, v);
 			return this;
 		}

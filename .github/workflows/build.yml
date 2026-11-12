@@ -32,22 +32,6 @@ jobs:
       - name: Build
         run: chmod +x gradlew && ./gradlew build --stacktrace --no-daemon
 
-      - name: Dump Minecraft signatures (diagnostic)
-        if: github.ref == 'refs/heads/main'
-        continue-on-error: true
-        run: |
-          M=~/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft
-          CP=$(ls $M/minecraft-common/*/minecraft-common-*.jar | head -1):$(ls $M/minecraft-clientonly/*/minecraft-clientonly-*.jar | head -1)
-          mkdir -p /tmp/diag2
-          for c in net.minecraft.world.entity.projectile.Projectile net.minecraft.world.entity.projectile.arrow.AbstractArrow net.minecraft.world.entity.projectile.AbstractArrow net.minecraft.world.entity.projectile.ThrowableItemProjectile net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile net.minecraft.world.entity.projectile.FireworkRocketEntity net.minecraft.world.entity.projectile.ItemSupplier net.minecraft.world.entity.projectile.ProjectileDeflection net.minecraft.world.food.FoodData net.minecraft.server.ServerTickRateManager net.minecraft.world.TickRateManager net.minecraft.server.MinecraftServer net.minecraft.world.entity.monster.Enemy net.minecraft.world.entity.player.Inventory net.minecraft.world.entity.LivingEntity net.minecraft.world.entity.Entity net.minecraft.world.entity.player.Player net.minecraft.server.level.ServerPlayer; do
-            javap -p -cp "$CP" $c > /tmp/diag2/$c.txt 2>&1 || true
-          done
-          unzip -l $(ls $M/minecraft-common/*/minecraft-common-*.jar | head -1) | grep "world/entity/projectile" | awk '{print $4}' > /tmp/diag2/projectile-classes.txt || true
-          git config user.name "github-actions"; git config user.email "actions@github.com"
-          git stash -u -q || true
-          git checkout -q --orphan diag && git rm -rf . -q && cp /tmp/diag2/* . && git add *.txt && git commit -qm diag && git push -f origin diag
-          git checkout -q -f ${GITHUB_SHA}
-
       - uses: actions/upload-artifact@v4
         if: success()
         with:

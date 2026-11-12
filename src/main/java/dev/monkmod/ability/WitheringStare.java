@@ -17,12 +17,14 @@ public final class WitheringStare extends MonkAbility {
 	private final int range;
 	private final int duration;
 	private final float witherDamage;
+	private final boolean hostile;
 
 	public WitheringStare(Params params) {
 		super("withering_stare", params);
 		this.range = params.getInt("range");
 		this.duration = params.getInt("duration");
 		this.witherDamage = params.getFloat("wither_boss_damage");
+		this.hostile = params.getBool("hostile_mobs");
 	}
 
 	@Override
@@ -39,7 +41,7 @@ public final class WitheringStare extends MonkAbility {
 		if ((player.tickCount + state.tickOffset) % interval != 0) {
 			return;
 		}
-		LivingEntity target = Stare.find(player, range, e -> e.getType().is(EntityTypeTags.UNDEAD));
+		LivingEntity target = Stare.find(player, range, e -> e.getType().is(EntityTypeTags.UNDEAD) || (hostile && e instanceof net.minecraft.world.entity.monster.Enemy));
 		if (target == null) {
 			return;
 		}

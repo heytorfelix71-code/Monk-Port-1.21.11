@@ -17,6 +17,7 @@ import dev.monkmod.ability.AttributeAbility.Mod;
 import dev.monkmod.ability.EffectAbilities;
 import dev.monkmod.ability.MiningAbility;
 import dev.monkmod.ability.MonkAbility;
+import dev.monkmod.ability.CombatAbilities;
 import dev.monkmod.ability.MovementAbilities;
 import dev.monkmod.ability.PassiveAbilities;
 import dev.monkmod.ability.ProtectionAbility;
@@ -138,13 +139,29 @@ public final class MonkTypes {
 		ability("withering_stare", "Looking at undead withers them.", WitheringStare::new,
 				ofInt("range", 20, 1, 128, "Stare distance in blocks."),
 				ofInt("duration", 200, 1, 72000, "Wither effect duration in ticks."),
-				ofFloat("wither_boss_damage", 5, 0, 1000, "Damage dealt to the Wither boss per stare check."));
+				ofFloat("wither_boss_damage", 5, 0, 1000, "Damage dealt to the Wither boss per stare check."),
+				ofBool("hostile_mobs", true, "Also withers every hostile mob (creepers, spiders...), not only the undead."));
 		ability("blink", "Teleport where you look with the Blink key.", p -> new SimpleAbility("blink", p));
-		ability("catch_arrows", "Catch arrows flying at you (when unarmed and facing them).", p -> new SimpleAbility("catch_arrows", p),
-				ofFloat("max_angle_dot", 0.2, -1, 1, "How far to the side arrows can be caught (higher = wider)."));
+		ability("catch_arrows", "Catch projectiles flying at you from the front; they go to your inventory.", p -> new SimpleAbility("catch_arrows", p),
+				ofFloat("max_angle_dot", 0.2, -1, 1, "How far to the side projectiles can be caught (higher = wider)."),
+				ofBool("catch_all", true, "Catch everything thrown (tridents, snowballs, eggs, ender pearls, potions, fireworks, fire charges), not only arrows."),
+				ofBool("to_inventory", true, "Caught projectiles go to your inventory."),
+				ofBool("require_empty_hand", true, "You need an empty main hand to catch."),
+				ofBool("back_dodge", false, "Projectiles coming from behind are dodged (they fly through without hitting you)."),
+				ofFloat("back_catch_chance", 0, 0, 1, "With back dodge: chance to catch a projectile from behind instead of just dodging it (0.2 = 20%)."));
 		ability("kiss_creeper", "Ask creepers kindly not to explode (right click with an empty hand); calmed creepers never explode.",
 				p -> new SimpleAbility("kiss_creeper", p),
-				ofBool("passive", true, "Creepers also never chase or explode at you, even without asking."));
+				ofBool("passive", false, "Creepers also never chase or explode at you, even without asking."));
+		ability("iron_body", "Take less damage of every kind while wearing no armor.", CombatAbilities.IronBody::new,
+				ofFloat("multiplier", 0.6, 0, 1, "Fraction of damage still taken (0.6 = 40% less)."));
+		ability("regeneration", "Heal slowly after some time without fighting.", CombatAbilities.Regeneration::new,
+				ofInt("delay", 1800, 0, 72000, "Ticks without dealing or taking damage before healing starts (1800 = 90 seconds)."),
+				ofInt("interval", 40, 1, 72000, "Ticks between heals."),
+				ofFloat("amount", 1, 0, 1024, "Health restored each time (1 = half a heart)."));
+		ability("time_stop", "Stop time with its key (J): only players keep moving.", CombatAbilities.TimeStop::new,
+				ofInt("duration", 200, 20, 72000, "How long time stays stopped, in ticks (200 = 10 seconds)."),
+				ofInt("cooldown", 1200, 0, 720000, "Ticks before it can be used again (1200 = 60 seconds)."),
+				ofBool("flight", true, "You can fly while time is stopped."));
 		ability("night_vision", "Toggle night vision with its key (V by default).", PassiveAbilities.NightVision::new);
 		ability("tame_animals", "Pet animals to calm them or make them fall in love.", p -> new SimpleAbility("tame_animals", p));
 		ability("water_walking", "Walk on water (sneak to sink).", p -> new SimpleAbility("water_walking", p),
