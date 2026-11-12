@@ -1,0 +1,15 @@
+Compiled from "ThrowableItemProjectile.java"
+public abstract class net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile extends net.minecraft.world.entity.projectile.ThrowableProjectile implements net.minecraft.world.entity.projectile.ItemSupplier {
+  private static final net.minecraft.network.syncher.EntityDataAccessor<net.minecraft.world.item.ItemStack> DATA_ITEM_STACK;
+  public net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile(net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile>, net.minecraft.world.level.Level);
+  public net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile(net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile>, double, double, double, net.minecraft.world.level.Level, net.minecraft.world.item.ItemStack);
+  public net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile(net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile>, net.minecraft.world.entity.LivingEntity, net.minecraft.world.level.Level, net.minecraft.world.item.ItemStack);
+  public void setItem(net.minecraft.world.item.ItemStack);
+  protected abstract net.minecraft.world.item.Item getDefaultItem();
+  public net.minecraft.world.item.ItemStack getItem();
+  protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData$Builder);
+  protected void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput);
+  protected void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput);
+  private net.minecraft.world.item.ItemStack method_57319();
+  static {};
+}

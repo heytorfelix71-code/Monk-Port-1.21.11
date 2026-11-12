@@ -1,0 +1,4 @@
+Compiled from "ItemSupplier.java"
+public interface net.minecraft.world.entity.projectile.ItemSupplier {
+  public abstract net.minecraft.world.item.ItemStack getItem();
+}

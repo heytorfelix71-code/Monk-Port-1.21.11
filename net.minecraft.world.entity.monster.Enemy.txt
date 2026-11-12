@@ -1,0 +1,9 @@
+Compiled from "Enemy.java"
+public interface net.minecraft.world.entity.monster.Enemy {
+  public static final int XP_REWARD_NONE;
+  public static final int XP_REWARD_SMALL;
+  public static final int XP_REWARD_MEDIUM;
+  public static final int XP_REWARD_LARGE;
+  public static final int XP_REWARD_HUGE;
+  public static final int XP_REWARD_BOSS;
+}

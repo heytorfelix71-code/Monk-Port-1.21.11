@@ -1,0 +1,22 @@
+Compiled from "TickRateManager.java"
+public class net.minecraft.world.TickRateManager {
+  public static final float MIN_TICKRATE;
+  protected float tickrate;
+  protected long nanosecondsPerTick;
+  protected int frozenTicksToRun;
+  protected boolean runGameElements;
+  protected boolean isFrozen;
+  public net.minecraft.world.TickRateManager();
+  public void setTickRate(float);
+  public float tickrate();
+  public float millisecondsPerTick();
+  public long nanosecondsPerTick();
+  public boolean runsNormally();
+  public boolean isSteppingForward();
+  public void setFrozenTicksToRun(int);
+  public int frozenTicksToRun();
+  public void setFrozen(boolean);
+  public boolean isFrozen();
+  public void tick();
+  public boolean isEntityFrozen(net.minecraft.world.entity.Entity);
+}

@@ -1,0 +1,24 @@
+Compiled from "ServerTickRateManager.java"
+public class net.minecraft.server.ServerTickRateManager extends net.minecraft.world.TickRateManager {
+  private long remainingSprintTicks;
+  private long sprintTickStartTime;
+  private long sprintTimeSpend;
+  private long scheduledCurrentSprintTicks;
+  private boolean previousIsFrozen;
+  private final net.minecraft.server.MinecraftServer server;
+  public net.minecraft.server.ServerTickRateManager(net.minecraft.server.MinecraftServer);
+  public boolean isSprinting();
+  public void setFrozen(boolean);
+  private void updateStateToClients();
+  private void updateStepTicks();
+  public boolean stepGameIfPaused(int);
+  public boolean stopStepping();
+  public boolean stopSprinting();
+  public boolean requestGameToSprint(int);
+  private void finishTickSprint();
+  public boolean checkShouldSprintThisTick();
+  public void endTickWork();
+  public void setTickRate(float);
+  public void updateJoiningPlayer(net.minecraft.server.level.ServerPlayer);
+  private static net.minecraft.network.chat.Component method_54673(int, java.lang.String);
+}

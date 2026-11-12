@@ -1,0 +1,13 @@
+Compiled from "ProjectileDeflection.java"
+public interface net.minecraft.world.entity.projectile.ProjectileDeflection {
+  public static final net.minecraft.world.entity.projectile.ProjectileDeflection NONE;
+  public static final net.minecraft.world.entity.projectile.ProjectileDeflection REVERSE;
+  public static final net.minecraft.world.entity.projectile.ProjectileDeflection AIM_DEFLECT;
+  public static final net.minecraft.world.entity.projectile.ProjectileDeflection MOMENTUM_DEFLECT;
+  public abstract void deflect(net.minecraft.world.entity.projectile.Projectile, net.minecraft.world.entity.Entity, net.minecraft.util.RandomSource);
+  private static void method_59861(net.minecraft.world.entity.projectile.Projectile, net.minecraft.world.entity.Entity, net.minecraft.util.RandomSource);
+  private static void method_59862(net.minecraft.world.entity.projectile.Projectile, net.minecraft.world.entity.Entity, net.minecraft.util.RandomSource);
+  private static void method_56095(net.minecraft.world.entity.projectile.Projectile, net.minecraft.world.entity.Entity, net.minecraft.util.RandomSource);
+  private static void method_56096(net.minecraft.world.entity.projectile.Projectile, net.minecraft.world.entity.Entity, net.minecraft.util.RandomSource);
+  static {};
+}
