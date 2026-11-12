@@ -483,7 +483,7 @@
   "monk.param.regeneration.amount": "Heal amount",
   "monk.param.regeneration.amount.desc": "Health restored each time (1 = half a heart).",
   "monk.param.time_stop.duration": "Duration",
-  "monk.param.time_stop.duration.desc": "How long time stays stopped, in ticks (200 = 10 seconds).",
+  "monk.param.time_stop.duration.desc": "How long time stays stopped, in ticks (600 = 30 seconds).",
   "monk.param.time_stop.cooldown": "Cooldown",
   "monk.param.time_stop.cooldown.desc": "Ticks before it can be used again (1200 = 60 seconds).",
   "monk.param.time_stop.flight": "Fly while stopped",

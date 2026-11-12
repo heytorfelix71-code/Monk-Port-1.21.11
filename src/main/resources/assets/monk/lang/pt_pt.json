@@ -483,7 +483,7 @@
   "monk.param.regeneration.amount": "Quantidade de cura",
   "monk.param.regeneration.amount.desc": "Vida recuperada a cada vez (1 = meio coração).",
   "monk.param.time_stop.duration": "Duração",
-  "monk.param.time_stop.duration.desc": "Quanto tempo o tempo fica parado, em ticks (200 = 10 segundos).",
+  "monk.param.time_stop.duration.desc": "Quanto tempo o tempo fica parado, em ticks (600 = 30 segundos).",
   "monk.param.time_stop.cooldown": "Recarga",
   "monk.param.time_stop.cooldown.desc": "Ticks até poder usar de novo (1200 = 60 segundos).",
   "monk.param.time_stop.flight": "Voar com o tempo parado",

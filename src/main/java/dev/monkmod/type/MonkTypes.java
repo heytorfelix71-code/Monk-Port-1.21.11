@@ -159,7 +159,7 @@ public final class MonkTypes {
 				ofInt("interval", 40, 1, 72000, "Ticks between heals."),
 				ofFloat("amount", 1, 0, 1024, "Health restored each time (1 = half a heart)."));
 		ability("time_stop", "Stop time with its key (J): only players keep moving.", CombatAbilities.TimeStop::new,
-				ofInt("duration", 200, 20, 72000, "How long time stays stopped, in ticks (200 = 10 seconds)."),
+				ofInt("duration", 600, 20, 72000, "How long time stays stopped, in ticks (600 = 30 seconds)."),
 				ofInt("cooldown", 1200, 0, 720000, "Ticks before it can be used again (1200 = 60 seconds)."),
 				ofBool("flight", true, "You can fly while time is stopped."));
 		ability("night_vision", "Toggle night vision with its key (V by default).", PassiveAbilities.NightVision::new);
