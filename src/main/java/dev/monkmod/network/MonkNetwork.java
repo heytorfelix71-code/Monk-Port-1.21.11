@@ -68,7 +68,7 @@ public final class MonkNetwork {
 		MonkConfig.Flight flight = MonkConfigManager.config().flight;
 		ServerPlayNetworking.send(player, new StatePayload(data.level(), table.maxLevel(), nextInfo,
 				abilities, blink.range, blink.cooldownTicks, blink.allowAirTarget, blink.minRange, blink.groundSearchDepth,
-				flight.minSpeed, flight.maxSpeed));
+				flight.minSpeed, flight.maxSpeed, runScaleMax(data.level(), table)));
 	}
 
 	public static void sendProgress(ServerPlayer player, MonkData data) {
@@ -132,5 +132,29 @@ public final class MonkNetwork {
 			player.getAbilities().setFlyingSpeed(clamped);
 			player.onUpdateAbilities();
 		}
+	}
+
+	/**
+	 * Highest running bonus the player may choose with Ctrl + wheel: 100% when Swiftness is first
+	 * unlocked, growing level by level up to controls.maxRunScale (200%) at the last level.
+	 */
+	public static float runScaleMax(int level, LevelTable table) {
+		float top = MonkConfigManager.config().controls.maxRunScale;
+		int max = table.maxLevel();
+		int first = -1;
+		for (int l = 0; l <= max; l++) {
+			if (table.abilitiesAt(l).has("swift")) {
+				first = l;
+				break;
+			}
+		}
+		if (first < 0 || level < first) {
+			return Math.min(1.0F, top);
+		}
+		if (max <= first || top <= 1.0F) {
+			return top;
+		}
+		float progress = Math.min(1.0F, (level - first) / (float) (max - first));
+		return 1.0F + (top - 1.0F) * progress;
 	}
 }

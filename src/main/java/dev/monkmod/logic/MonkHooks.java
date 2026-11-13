@@ -160,7 +160,18 @@ public final class MonkHooks {
 		}
 		AbilitySet set = MonkAccess.abilities(player);
 		MovementAbilities.Hunger hunger = set.get("hunger", MovementAbilities.Hunger.class);
-		return hunger == null ? exhaustion : exhaustion * hunger.exhaustionMultiplier();
+		if (hunger == null) {
+			return exhaustion;
+		}
+		exhaustion *= hunger.exhaustionMultiplier();
+		if (player.isSprinting() || player.isSwimming() || player.isInWater()) {
+			exhaustion *= hunger.movementMultiplier();
+			PassiveAbilities.Swift swift = set.get("swift", PassiveAbilities.Swift.class);
+			if (swift != null && player.isSprinting() && !player.isInWater()) {
+				exhaustion /= Math.max(1.0F, swift.multiplier(player)); // more distance per second, same cost
+			}
+		}
+		return exhaustion;
 	}
 
 	/** Swiftness: multiplies ground speed (no attribute, so the FOV stays the same). */

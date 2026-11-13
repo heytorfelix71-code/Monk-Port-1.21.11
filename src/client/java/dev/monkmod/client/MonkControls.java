@@ -57,7 +57,7 @@ public final class MonkControls {
 	// ------------------------------------------------------------------ values
 
 	public static float runScale() {
-		return saved.runScale;
+		return Math.min(saved.runScale, ClientMonkState.runScaleMax());
 	}
 
 	/** Chosen blink distance, inside [min, range] of the server. */
@@ -85,7 +85,7 @@ public final class MonkControls {
 		if (!Float.isFinite(saved.runScale)) {
 			saved.runScale = 1.0F;
 		}
-		PassiveAbilities.installRunScale(() -> saved.runScale);
+		PassiveAbilities.installRunScale(MonkControls::runScale);
 	}
 
 	private static void markDirty() {
@@ -213,11 +213,12 @@ public final class MonkControls {
 			return;
 		}
 		MonkConfig.Controls c = cfg();
-		float value = Math.round((saved.runScale + dir * c.runStep) * 100.0F) / 100.0F;
-		value = Math.max(0.0F, Math.min(c.maxRunScale, value));
+		float cap = ClientMonkState.runScaleMax();
+		float value = Math.round((runScale() + dir * c.runStep) * 100.0F) / 100.0F;
+		value = Math.max(0.0F, Math.min(cap, value));
 		saved.runScale = value;
 		markDirty();
-		show(player, Component.translatable("monk.controls.run_speed", Math.round(value * 100.0F) + "%"));
+		show(player, Component.translatable("monk.controls.run_speed_max", Math.round(value * 100.0F) + "%", Math.round(cap * 100.0F) + "%"));
 	}
 
 	private static void adjustFly(LocalPlayer player, int dir) {

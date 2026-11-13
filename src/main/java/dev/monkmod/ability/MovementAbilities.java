@@ -64,6 +64,14 @@ public final class MovementAbilities {
 		public Hunger(Params params) {
 			super("hunger", params);
 			this.reduction = params.getFloat("hunger_chance");
+			this.movement = params.getFloat("movement_reduction");
+		}
+
+		private final float movement;
+
+		/** Multiplier for exhaustion caused while sprinting or swimming. */
+		public float movementMultiplier() {
+			return 1.0F - movement;
 		}
 
 		public float exhaustionMultiplier() {

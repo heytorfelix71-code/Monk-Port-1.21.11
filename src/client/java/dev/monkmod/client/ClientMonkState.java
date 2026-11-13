@@ -29,6 +29,7 @@ public final class ClientMonkState {
 	private static int groundSearchDepth = 6;
 	private static float flyMin = 0.02F;
 	private static float flyMax = 0.3F;
+	private static float runScaleMax = 1.0F;
 	private static boolean connectedToMonkServer;
 
 	private ClientMonkState() {
@@ -48,6 +49,7 @@ public final class ClientMonkState {
 		groundSearchDepth = payload.groundSearchDepth();
 		flyMin = payload.flyMin();
 		flyMax = payload.flyMax();
+		runScaleMax = payload.runScaleMax();
 		List<MonkAbility> list = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
 		for (String json : payload.abilities()) {
@@ -120,6 +122,11 @@ public final class ClientMonkState {
 
 	public static float flyMax() {
 		return flyMax;
+	}
+
+	/** Highest running bonus allowed at the current level (1 = 100%). */
+	public static float runScaleMax() {
+		return runScaleMax;
 	}
 
 	public static boolean connectedToMonkServer() {

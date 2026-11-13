@@ -129,7 +129,8 @@ public final class MonkTypes {
 				ofInt("cooldown", 200, 0, 72000, "Ticks before it can trigger again."),
 				ofBool("infinite", false, "Always immune to fire and lava."));
 		ability("hunger", "Hunger drains slower.", MovementAbilities.Hunger::new,
-				ofFloat("hunger_chance", 0.5, 0, 1, "How much slower (0.5 = 50% slower)."));
+				ofFloat("hunger_chance", 0.5, 0, 1, "How much slower (0.5 = 50% slower)."),
+				ofFloat("movement_reduction", 0.6, 0, 1, "Extra reduction while sprinting or swimming (0.6 = 60% less on top). Running faster with Swiftness never costs more hunger than normal running."));
 		ability("mining", "Mine with your hands (also while holding an item or the wrong tool).", MiningAbility::new,
 				ofInt("harvest_level", 0, 0, 5, "0 wood, 1 stone, 2 iron, 3 diamond, 4 netherite, 5 anything."),
 				ofFloat("speed_increase", 0, 0, 1000, "Bare-hand speed bonus (2 = 3x as fast)."),

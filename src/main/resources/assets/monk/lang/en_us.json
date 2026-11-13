@@ -268,7 +268,7 @@
   "monk.config.controls.run_step": "Running speed step",
   "monk.config.controls.run_step.desc": "Change per wheel notch (0.1 = 10% of your level's bonus).",
   "monk.config.controls.max_run_scale": "Maximum running bonus",
-  "monk.config.controls.max_run_scale.desc": "How far above your level's bonus you can go (2 = up to 200%).",
+  "monk.config.controls.max_run_scale.desc": "Highest running bonus, reached at the last level. When Swiftness is unlocked you can choose 0–100%; the maximum grows with each level up to this value (2 = 200%).",
   "monk.config.controls.fly_step": "Flight speed step",
   "monk.config.controls.fly_step.desc": "Change per wheel notch (vanilla flight speed is 0.05).",
   "monk.config.controls.show_changes": "Show new values",
@@ -501,5 +501,8 @@
   "monk.param.water_breathing_partial.hold_depth": "Don't sink",
   "monk.param.water_breathing_partial.hold_depth.desc": "You stay at your depth: sneak to go down, press jump once to stop going down.",
   "monk.param.water_breathing_full.hold_depth": "Don't sink",
-  "monk.param.water_breathing_full.hold_depth.desc": "You stay at your depth: sneak to go down, press jump once to stop going down."
+  "monk.param.water_breathing_full.hold_depth.desc": "You stay at your depth: sneak to go down, press jump once to stop going down.",
+  "monk.controls.run_speed_max": "Running bonus: %s (max %s)",
+  "monk.param.hunger.movement_reduction": "Sprint / swim reduction",
+  "monk.param.hunger.movement_reduction.desc": "Extra reduction while sprinting or swimming (0.6 = 60% less on top of the normal reduction). Running faster with Swiftness never costs more hunger than normal running."
 }
