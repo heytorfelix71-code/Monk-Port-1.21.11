@@ -530,10 +530,10 @@
   "monk.config.flight.default_speed": "Starting flight speed",
   "monk.config.flight.default_speed.desc": "Speed set when monk flight is unlocked or comes back (vanilla is 0.05).",
   "monk.config.req.meditate": "Meditate",
-  "monk.advancements.requirement.meditate": "Meditate: sneak without moving for a minute, with no armor and empty hands, under the open sky.",
+  "monk.advancements.requirement.meditate": "Meditate: sneak without moving for two minutes, with no armor and empty hands, under the open sky.",
   "monk.type.requirement.meditate": "Meditate: sneak without moving, unarmored and empty-handed, under the open sky.",
   "monk.param.meditate.time": "Time",
-  "monk.param.meditate.time.desc": "Ticks of still meditation needed (1200 = 1 minute). Moving or getting hurt starts over.",
+  "monk.param.meditate.time.desc": "Ticks of still meditation needed (2400 = 2 minutes). Moving or getting hurt starts over.",
   "monk.param.meditate.open_sky": "Open sky",
   "monk.param.meditate.open_sky.desc": "You must be under the open sky.",
   "monk.param.swift.jump_height": "Jump height at 100%",
@@ -541,5 +541,10 @@
   "monk.param.swift.double_jump": "Double jump at 100%",
   "monk.param.swift.double_jump.desc": "Extra height of the second jump (press jump again in the air) at 100%. 0 = no double jump.",
   "monk.param.swift.max_double_jump": "Double jump at the maximum",
-  "monk.param.swift.max_double_jump.desc": "Extra height of the second jump with the highest running bonus."
+  "monk.param.swift.max_double_jump.desc": "Extra height of the second jump with the highest running bonus.",
+  "monk.advancements.ability.knockback_resistance": "Rooted Stance",
+  "monk.advancements.ability.knockback_resistance.desc": "+%s knockback resistance while wearing no armor",
+  "monk.type.ability.knockback_resistance": "Resist knockback while wearing no armor.",
+  "monk.param.knockback_resistance.knockback_resistance": "Knockback resistance",
+  "monk.param.knockback_resistance.knockback_resistance.desc": "Knockback resistance points (full netherite armor = 4, 10 = no knockback at all)."
 }

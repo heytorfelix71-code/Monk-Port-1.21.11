@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 6;
+	public static final int CURRENT_VERSION = 7;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -135,6 +135,18 @@ public final class LevelsFile {
 			}
 			levels = fresh.levels;
 			rebalanced = true;
+		}
+		if (config_version < 7 && !rebalanced && looksLikeDefaults()) {
+			JsonObject first = levels.get(0).requirement;
+			if (first != null && first.has("type") && "meditate".equals(first.get("type").getAsString())
+					&& first.has("time") && first.get("time").getAsInt() == 1200) {
+				first.addProperty("time", 2400);
+			}
+			if (!hasType("knockback_resistance")) {
+				addTo("monk:icon/ascend", "armor", "armor", 20.0);
+				addTo("monk:icon/ascend", "armor_toughness", "armor_toughness", 14.0);
+				addTo("monk:icon/ascend", "knockback_resistance", "knockback_resistance", 5.0);
+			}
 		}
 		config_version = CURRENT_VERSION;
 		return true;

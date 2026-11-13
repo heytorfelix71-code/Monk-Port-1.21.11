@@ -71,6 +71,11 @@ public final class MonkTypes {
 						List.of(new Mod(Attributes.ARMOR_TOUGHNESS, "toughness", Operation.ADD_VALUE, (pl, s) -> p.getFloat("armor_toughness"))),
 						a -> new Object[]{number(p.getFloat("armor_toughness"))}),
 				ofFloat("armor_toughness", 1, 0, 1024, "Armor toughness added."));
+		ability("knockback_resistance", "Resist knockback while wearing no armor.",
+				p -> new AttributeAbility("knockback_resistance", p, Condition.UNARMORED,
+						List.of(new Mod(Attributes.KNOCKBACK_RESISTANCE, "knockback", Operation.ADD_VALUE, (pl, s) -> p.getFloat("knockback_resistance") / 10.0)),
+						a -> new Object[]{number(p.getFloat("knockback_resistance"))}),
+				ofFloat("knockback_resistance", 5, 0, 10, "Knockback resistance points (full netherite armor = 4, 10 = no knockback at all)."));
 		ability("strength", "Extra bare-hand damage.",
 				p -> new AttributeAbility("strength", p, Condition.UNARMED,
 						List.of(new Mod(Attributes.ATTACK_DAMAGE, "damage", Operation.ADD_VALUE, (pl, s) -> p.getFloat("damage"))),
@@ -187,7 +192,7 @@ public final class MonkTypes {
 
 		// ---------------------------------------------------------------- requirements
 		requirement("meditate", "Meditate: sneak without moving, unarmored and empty-handed, under the open sky.", MeditationRequirements.Meditate::new,
-				ofInt("time", 1200, 1, BIG, "Ticks of still meditation needed (1200 = 1 minute)."),
+				ofInt("time", 2400, 1, BIG, "Ticks of still meditation needed (2400 = 2 minutes)."),
 				ofBool("open_sky", true, "Must be under the open sky."));
 		requirement("break_block", "Break N blocks (or a #tag) with an empty hand.", BlockRequirements.BreakBlock::fromSpec,
 				ofString("block", "minecraft:stone", "Block id, or #tag id."),

@@ -530,10 +530,10 @@
   "monk.config.flight.default_speed": "Velocidade de voo inicial",
   "monk.config.flight.default_speed.desc": "Velocidade definida quando o voo do monge é liberado ou volta (o normal é 0,05).",
   "monk.config.req.meditate": "Meditar",
-  "monk.advancements.requirement.meditate": "Medite: fique agachado sem se mexer por um minuto, sem armadura e de mãos vazias, sob o céu aberto.",
+  "monk.advancements.requirement.meditate": "Medite: fique agachado sem se mexer por dois minutos, sem armadura e de mãos vazias, sob o céu aberto.",
   "monk.type.requirement.meditate": "Meditar: fique agachado sem se mexer, sem armadura e de mãos vazias, sob o céu aberto.",
   "monk.param.meditate.time": "Tempo",
-  "monk.param.meditate.time.desc": "Ticks de meditação parada necessários (1200 = 1 minuto). Se mexer ou se machucar recomeça.",
+  "monk.param.meditate.time.desc": "Ticks de meditação parada necessários (2400 = 2 minutos). Se mexer ou se machucar recomeça.",
   "monk.param.meditate.open_sky": "Céu aberto",
   "monk.param.meditate.open_sky.desc": "Você precisa estar sob o céu aberto.",
   "monk.param.swift.jump_height": "Altura do pulo em 100%",
@@ -541,5 +541,10 @@
   "monk.param.swift.double_jump": "Pulo duplo em 100%",
   "monk.param.swift.double_jump.desc": "Altura extra do segundo pulo (aperte pular de novo no ar) em 100%. 0 = sem pulo duplo.",
   "monk.param.swift.max_double_jump": "Pulo duplo no máximo",
-  "monk.param.swift.max_double_jump.desc": "Altura extra do segundo pulo com o bônus de corrida máximo."
+  "monk.param.swift.max_double_jump.desc": "Altura extra do segundo pulo com o bônus de corrida máximo.",
+  "monk.advancements.ability.knockback_resistance": "Postura Enraizada",
+  "monk.advancements.ability.knockback_resistance.desc": "+%s de resistência a repulsão enquanto estiver sem armadura",
+  "monk.type.ability.knockback_resistance": "Resista à repulsão enquanto estiver sem armadura.",
+  "monk.param.knockback_resistance.knockback_resistance": "Resistência a repulsão",
+  "monk.param.knockback_resistance.knockback_resistance.desc": "Pontos de resistência a repulsão (armadura completa de netherite = 4, 10 = nenhuma repulsão)."
 }

@@ -12,8 +12,8 @@ public final class DefaultLevels {
 
 	public static LevelsFile create() {
 		LevelsFile f = new LevelsFile();
-		// Becoming a monk: a full minute of still meditation under the sky.
-		level(f, "meditate", req("meditate").p("time", 1200));
+		// Becoming a monk: two full minutes of still meditation under the sky.
+		level(f, "meditate", req("meditate").p("time", 2400));
 		level(f, "tree", req("break_wood").p("number", 32),
 				ab("mining").p("harvest_level", 0).p("speed_increase", 0.5).list("harvest_tools", "", "shovel", "axe"),
 				ab("strength").p("damage", 1.0),
@@ -91,7 +91,10 @@ public final class DefaultLevels {
 				ab("catch_arrows").p("back_dodge", true).p("back_catch_chance", 0.2),
 				ab("hunger").p("hunger_chance", 0.9),
 				ab("swift").p("increase", 1.2),
-				ab("strength").p("damage", 10.0));
+				ab("strength").p("damage", 10.0),
+				ab("armor").p("armor", 20.0),
+				ab("armor_toughness").p("armor_toughness", 14.0),
+				ab("knockback_resistance").p("knockback_resistance", 5.0));
 		return f;
 	}
 
