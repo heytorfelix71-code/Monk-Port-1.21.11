@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 4;
+	public static final int CURRENT_VERSION = 5;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -97,6 +97,15 @@ public final class LevelsFile {
 				addTo("monk:icon/feather", "hunger", "hunger_chance", 0.75);
 				addTo("monk:icon/ascend", "hunger", "hunger_chance", 0.9);
 			}
+		}
+		if (config_version < 5 && levels.size() > 1 && !hasType("natural_diet")) {
+			LevelEntry first = levels.get(1); // reward of the first mission
+			if (first.add == null) {
+				first.add = new ArrayList<>();
+			}
+			JsonObject diet = new JsonObject();
+			diet.addProperty("type", "natural_diet");
+			first.add.add(diet);
 		}
 		config_version = CURRENT_VERSION;
 		return true;

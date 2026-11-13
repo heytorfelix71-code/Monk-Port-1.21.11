@@ -15,7 +15,8 @@ public final class DefaultLevels {
 		level(f, "meditate", req("break_wood").p("number", 1));
 		level(f, "tree", req("break_wood").p("number", 10),
 				ab("mining").p("harvest_level", 0).p("speed_increase", 0.0).list("harvest_tools", "", "shovel", "axe"),
-				ab("strength").p("damage", 1.0));
+				ab("strength").p("damage", 1.0),
+				ab("natural_diet"));
 		level(f, "sunrise", req("mediate_sunrise"),
 				ab("hunger").p("hunger_chance", 0.5),
 				ab("armor").p("armor", 1.0));

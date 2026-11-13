@@ -21,7 +21,33 @@ public final class PassiveAbilities {
 	/** Client-side "how much of the running bonus do I want" (Ctrl + mouse wheel). 1 on the server. */
 	private static DoubleSupplier runScale = () -> 1.0;
 
+	public static final float VANILLA_JUMP_HEIGHT = 1.25F;
+
 	private PassiveAbilities() {
+	}
+
+	/** Jump velocity that reaches the given height (vanilla physics: gravity 0.08, drag 0.98). */
+	public static float jumpPowerFor(float height) {
+		float lo = 0.42F;
+		float hi = 4.0F;
+		for (int i = 0; i < 30; i++) {
+			float mid = (lo + hi) / 2;
+			if (simulateJump(mid) < height) {
+				lo = mid;
+			} else {
+				hi = mid;
+			}
+		}
+		return hi;
+	}
+
+	private static double simulateJump(double v) {
+		double y = 0;
+		while (v > 0) {
+			y += v;
+			v = (v - 0.08) * 0.98;
+		}
+		return y;
 	}
 
 	public static void installRunScale(DoubleSupplier supplier) {
@@ -37,11 +63,31 @@ public final class PassiveAbilities {
 		private final float sprintMultiplier;
 		private final boolean unarmoredOnly;
 
+		private final float maxJumpHeight;
+
 		public Swift(Params params) {
 			super("swift", params);
 			this.increase = params.getFloat("increase");
 			this.sprintMultiplier = params.getFloat("sprint_multiplier");
 			this.unarmoredOnly = params.getBool("only_unarmored");
+			this.maxJumpHeight = params.getFloat("max_jump_height");
+		}
+
+		/**
+		 * Jump height (blocks) for a running-bonus scale: grows with the square of the scale, so 100%
+		 * gives a small boost and the top of the scale reaches max_jump_height.
+		 */
+		public float jumpHeight(double scale, double topScale) {
+			if (maxJumpHeight <= VANILLA_JUMP_HEIGHT || topScale <= 0 || scale <= 0) {
+				return VANILLA_JUMP_HEIGHT;
+			}
+			double t = Math.min(1.0, scale / topScale);
+			return (float) (VANILLA_JUMP_HEIGHT + (maxJumpHeight - VANILLA_JUMP_HEIGHT) * t * t);
+		}
+
+		/** Client: the chosen running scale (Ctrl + wheel). */
+		public static double clientScale() {
+			return runScale.getAsDouble();
 		}
 
 		public boolean unarmoredOnly() {

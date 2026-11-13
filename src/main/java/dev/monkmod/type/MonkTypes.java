@@ -18,6 +18,7 @@ import dev.monkmod.ability.EffectAbilities;
 import dev.monkmod.ability.MiningAbility;
 import dev.monkmod.ability.MonkAbility;
 import dev.monkmod.ability.CombatAbilities;
+import dev.monkmod.ability.DietAbility;
 import dev.monkmod.ability.MovementAbilities;
 import dev.monkmod.ability.PassiveAbilities;
 import dev.monkmod.ability.ProtectionAbility;
@@ -84,7 +85,13 @@ public final class MonkTypes {
 				PassiveAbilities.Swift::new,
 				ofFloat("increase", 0.4, 0, 10, "Speed bonus (0.4 = +40%)."),
 				ofFloat("sprint_multiplier", 2, 0, 10, "Bonus multiplier while sprinting."),
-				ofBool("only_unarmored", true, "Only works while wearing no armor."));
+				ofBool("only_unarmored", true, "Only works while wearing no armor."),
+				ofFloat("max_jump_height", 12, 1.25, 64, "Jump height (blocks) at the highest running bonus. The jump grows together with the bonus chosen with Ctrl + mouse wheel (1.25 = off)."));
+		ability("natural_diet", "Plant food (bread, fruit, vegetables, soups...) satisfies much more. Meat and fish don't.",
+				DietAbility::new,
+				ofFloat("nutrition_multiplier", 1.5, 1, 10, "Hunger points restored by natural food (1.5 = +50%)."),
+				ofFloat("saturation_multiplier", 2, 1, 20, "Saturation from natural food (2 = twice as long until you get hungry)."),
+				ofList("foods", DietAbility.DEFAULT_FOODS, "Item ids that count as natural food."));
 		ability("jump", "Jump higher and take fall damage later.",
 				p -> new AttributeAbility("jump", p, Condition.ALWAYS,
 						List.of(new Mod(Attributes.JUMP_STRENGTH, "jump", Operation.ADD_MULTIPLIED_BASE, (pl, s) -> p.getFloat("jump") - 1.0),

@@ -255,4 +255,57 @@ public final class MonkHooks {
 		SimpleAbility ability = MonkAccess.abilities(player).get("kiss_creeper", SimpleAbility.class);
 		return ability != null && ability.params().getBool("passive");
 	}
+
+	/** Natural diet ability of a server player, or null. */
+	public static dev.monkmod.ability.DietAbility diet(ServerPlayer player) {
+		MonkPlayerState state = MonkPlayers.getIfPresent(player);
+		return state == null ? null : state.abilities().get("natural_diet", dev.monkmod.ability.DietAbility.class);
+	}
+
+	/** Swiftness active right now (unarmored if required, no heavy armor), or null. */
+	private static PassiveAbilities.Swift activeSwift(Player player) {
+		AbilitySet set = MonkAccess.abilities(player);
+		PassiveAbilities.Swift swift = set.get("swift", PassiveAbilities.Swift.class);
+		if (swift == null || (swift.unarmoredOnly() && !MonkAccess.unarmored(player)) || heavyPieces(player) > 0) {
+			return null;
+		}
+		return swift;
+	}
+
+	private static float cachedHeight = -1;
+	private static float cachedPower;
+
+	/** Higher jumps that follow the running bonus chosen with Ctrl + wheel (client side: jumps are client movement). */
+	public static float modifyJumpPower(LivingEntity entity, float vanilla) {
+		if (!(entity instanceof Player player) || !player.level().isClientSide()) {
+			return vanilla;
+		}
+		PassiveAbilities.Swift swift = activeSwift(player);
+		if (swift == null) {
+			return vanilla;
+		}
+		float height = swift.jumpHeight(PassiveAbilities.Swift.clientScale(), MonkConfigManager.config().controls.maxRunScale);
+		if (height <= PassiveAbilities.VANILLA_JUMP_HEIGHT + 0.01F) {
+			return vanilla;
+		}
+		if (height != cachedHeight) {
+			cachedPower = PassiveAbilities.jumpPowerFor(height);
+			cachedHeight = height;
+		}
+		return Math.max(vanilla, cachedPower);
+	}
+
+	/** Falls up to the highest jump the player can currently do cause no damage. */
+	public static double modifyFallDistance(LivingEntity entity, double distance) {
+		if (!(entity instanceof ServerPlayer player) || distance <= 3.0) {
+			return distance;
+		}
+		PassiveAbilities.Swift swift = activeSwift(player);
+		if (swift == null) {
+			return distance;
+		}
+		float cap = dev.monkmod.network.MonkNetwork.runScaleMax(dev.monkmod.data.MonkAttachments.data(player).level(), MonkConfigManager.table());
+		float safe = swift.jumpHeight(cap, MonkConfigManager.config().controls.maxRunScale);
+		return safe <= PassiveAbilities.VANILLA_JUMP_HEIGHT + 0.01F ? distance : Math.max(0.0, distance - safe);
+	}
 }

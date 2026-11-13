@@ -9,6 +9,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodData;
+import net.minecraft.world.food.FoodProperties;
+import org.spongepowered.asm.mixin.Shadow;
 
 import dev.monkmod.logic.MonkHooks;
 
@@ -29,5 +31,22 @@ public abstract class FoodDataMixin {
 	@ModifyVariable(method = "addExhaustion", at = @At("HEAD"), argsOnly = true)
 	private float monk$fasting(float exhaustion) {
 		return monk$player == null ? exhaustion : MonkHooks.modifyExhaustion(monk$player, exhaustion);
+	}
+
+	@Shadow
+	private void add(int nutrition, float saturation) {
+	}
+
+	/** Natural diet: plant food (the item being eaten right now) gives more hunger and saturation. */
+	@Inject(method = "eat(Lnet/minecraft/world/food/FoodProperties;)V", at = @At("HEAD"), cancellable = true)
+	private void monk$diet(FoodProperties food, CallbackInfo ci) {
+		if (monk$player == null) {
+			return;
+		}
+		dev.monkmod.ability.DietAbility diet = MonkHooks.diet(monk$player);
+		if (diet != null && diet.isNatural(monk$player.getUseItem())) {
+			add(diet.nutrition(food.nutrition()), diet.saturation(food.saturation()));
+			ci.cancel();
+		}
 	}
 }

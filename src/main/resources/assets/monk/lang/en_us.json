@@ -48,7 +48,7 @@
   "monk.advancements.ability.strength": "Strength",
   "monk.advancements.ability.strength.desc": "Your bare hands do %s extra damage",
   "monk.advancements.ability.swift": "Swiftness",
-  "monk.advancements.ability.swift.desc": "You run %s faster (Ctrl + mouse wheel adjusts it)",
+  "monk.advancements.ability.swift.desc": "You run %s faster and jump higher (Ctrl + mouse wheel adjusts both)",
   "monk.advancements.ability.tame_animals": "Animal Friend",
   "monk.advancements.ability.tame_animals.desc": "Pet animals with an empty hand to calm them down or to make them fall in love.",
   "monk.advancements.ability.water_breathing_partial": "Deep Breaths",
@@ -506,5 +506,16 @@
   "monk.param.hunger.movement_reduction": "Sprint / swim reduction",
   "monk.param.hunger.movement_reduction.desc": "Extra reduction while sprinting or swimming (0.6 = 60% less on top of the normal reduction). Running faster with Swiftness never costs more hunger than normal running.",
   "monk.param.water_walking.max_fall": "Dive height",
-  "monk.param.water_walking.max_fall.desc": "Falls higher than this (in blocks) dive into the water instead of landing on it. You then sink until you press jump."
+  "monk.param.water_walking.max_fall.desc": "Falls higher than this (in blocks) dive into the water instead of landing on it. You then sink until you press jump.",
+  "monk.advancements.ability.natural_diet": "Natural Diet",
+  "monk.advancements.ability.natural_diet.desc": "Bread, fruit, vegetables and soups fill you %s more and keep you full for longer",
+  "monk.type.ability.natural_diet": "Plant food (bread, fruit, vegetables, soups...) satisfies much more. Meat and fish don't.",
+  "monk.param.natural_diet.nutrition_multiplier": "Hunger restored",
+  "monk.param.natural_diet.nutrition_multiplier.desc": "Hunger points restored by natural food (1.5 = +50%).",
+  "monk.param.natural_diet.saturation_multiplier": "Saturation",
+  "monk.param.natural_diet.saturation_multiplier.desc": "Saturation from natural food (2 = you stay full twice as long).",
+  "monk.param.natural_diet.foods": "Natural foods",
+  "monk.param.natural_diet.foods.desc": "Item ids that count as natural food.",
+  "monk.param.swift.max_jump_height": "Highest jump",
+  "monk.param.swift.max_jump_height.desc": "Jump height in blocks at the highest running bonus. The jump grows together with the bonus you choose with Ctrl + mouse wheel (1.25 = normal jump, off). Your own super jumps never cause fall damage."
 }

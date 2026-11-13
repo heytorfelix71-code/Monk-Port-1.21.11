@@ -52,7 +52,7 @@
   "monk.advancements.ability.strength": "Força",
   "monk.advancements.ability.strength.desc": "Suas mãos nuas causam %s de dano extra",
   "monk.advancements.ability.swift": "Agilidade",
-  "monk.advancements.ability.swift.desc": "Você corre %s mais rápido (Ctrl + roda do mouse ajusta)",
+  "monk.advancements.ability.swift.desc": "Você corre %s mais rápido e pula mais alto (Ctrl + roda do mouse ajusta os dois)",
   "monk.advancements.ability.tame_animals": "Amigo dos Animais",
   "monk.advancements.ability.tame_animals.desc": "Acaricie animais com a mão vazia para acalmá-los ou fazê-los se apaixonar.",
   "monk.advancements.ability.water_breathing_partial": "Respiração Profunda",
@@ -506,5 +506,16 @@
   "monk.param.hunger.movement_reduction": "Redução ao correr / nadar",
   "monk.param.hunger.movement_reduction.desc": "Redução extra ao correr ou nadar (0,6 = 60% a menos além da redução normal). Correr mais rápido com a Agilidade nunca gasta mais fome que uma corrida normal.",
   "monk.param.water_walking.max_fall": "Altura do mergulho",
-  "monk.param.water_walking.max_fall.desc": "Quedas maiores que isso (em blocos) mergulham na água em vez de parar em cima dela. Aí você afunda até apertar o pulo."
+  "monk.param.water_walking.max_fall.desc": "Quedas maiores que isso (em blocos) mergulham na água em vez de parar em cima dela. Aí você afunda até apertar o pulo.",
+  "monk.advancements.ability.natural_diet": "Dieta Natural",
+  "monk.advancements.ability.natural_diet.desc": "Pães, frutas, legumes e sopas te satisfazem %s mais e te mantêm alimentado por mais tempo",
+  "monk.type.ability.natural_diet": "Comida natural (pães, frutas, legumes, sopas...) satisfaz bem mais. Carnes e peixes não.",
+  "monk.param.natural_diet.nutrition_multiplier": "Fome recuperada",
+  "monk.param.natural_diet.nutrition_multiplier.desc": "Pontos de fome recuperados pela comida natural (1,5 = +50%).",
+  "monk.param.natural_diet.saturation_multiplier": "Saturação",
+  "monk.param.natural_diet.saturation_multiplier.desc": "Saturação da comida natural (2 = você fica satisfeito o dobro do tempo).",
+  "monk.param.natural_diet.foods": "Comidas naturais",
+  "monk.param.natural_diet.foods.desc": "Ids dos itens que contam como comida natural.",
+  "monk.param.swift.max_jump_height": "Pulo mais alto",
+  "monk.param.swift.max_jump_height.desc": "Altura do pulo em blocos no bônus de corrida máximo. O pulo cresce junto com o bônus escolhido com Ctrl + roda do mouse (1,25 = pulo normal, desligado). Seus próprios super pulos nunca causam dano de queda."
 }

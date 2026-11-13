@@ -44,4 +44,20 @@ public abstract class LivingEntityMixin {
 			cir.setReturnValue(air);
 		}
 	}
+
+	/** Higher jumps together with the running bonus. */
+	@Inject(method = "getJumpPower()F", at = @At("RETURN"), cancellable = true)
+	private void monk$jump(CallbackInfoReturnable<Float> cir) {
+		float vanilla = cir.getReturnValueF();
+		float modified = MonkHooks.modifyJumpPower((LivingEntity) (Object) this, vanilla);
+		if (modified != vanilla) {
+			cir.setReturnValue(modified);
+		}
+	}
+
+	/** No fall damage from your own super jumps. */
+	@ModifyVariable(method = "calculateFallDamage", at = @At("HEAD"), argsOnly = true)
+	private double monk$safeJump(double distance) {
+		return MonkHooks.modifyFallDistance((LivingEntity) (Object) this, distance);
+	}
 }
