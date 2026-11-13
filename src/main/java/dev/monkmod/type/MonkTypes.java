@@ -160,7 +160,13 @@ public final class MonkTypes {
 				ofInt("range", 20, 1, 128, "Stare distance in blocks."),
 				ofInt("duration", 200, 1, 72000, "Wither effect duration in ticks."),
 				ofFloat("wither_boss_damage", 5, 0, 1000, "Damage dealt to the Wither boss per stare check."),
-				ofBool("hostile_mobs", true, "Also withers every hostile mob (creepers, spiders...), not only the undead."));
+				ofBool("hostile_mobs", true, "Also withers every hostile mob (creepers, spiders...), not only the undead."),
+				ofInt("paralyze_ticks", 60, 0, 1200, "Ticks the stared mob is paralyzed (60 = 3 seconds, 0 = off). Bosses are never paralyzed."));
+		ability("counter_attack", "Chance to parry a melee hit and strike back.", CombatAbilities.CounterAttack::new,
+				ofFloat("chance", 0.05, 0, 1, "Chance to counter a melee hit (0.05 = 5%)."),
+				ofFloat("damage_multiplier", 1, 0, 10, "Counter damage = your bare-hand damage x this."),
+				ofBool("parry", true, "A countered hit does no damage to you."),
+				ofBool("require_empty_hand", true, "Only with an empty main hand."));
 		ability("blink", "Teleport where you look with the Blink key.", p -> new SimpleAbility("blink", p));
 		ability("catch_arrows", "Catch projectiles flying at you from the front; they go to your inventory.", p -> new SimpleAbility("catch_arrows", p),
 				ofFloat("max_angle_dot", 0.2, -1, 1, "How far to the side projectiles can be caught (higher = wider)."),

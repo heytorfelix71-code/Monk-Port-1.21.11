@@ -17,7 +17,8 @@ public final class DefaultLevels {
 		level(f, "tree", req("break_wood").p("number", 32),
 				ab("mining").p("harvest_level", 0).p("speed_increase", 0.5).list("harvest_tools", "", "shovel", "axe"),
 				ab("strength").p("damage", 1.0),
-				ab("natural_diet"));
+				ab("natural_diet"),
+				ab("counter_attack").p("chance", 0.05));
 		level(f, "sunrise", req("mediate_sunrise").p("time", 400),
 				ab("hunger").p("hunger_chance", 0.4),
 				ab("armor").p("armor", 1.0));
@@ -29,7 +30,8 @@ public final class DefaultLevels {
 				ab("mining").p("harvest_level", 1).p("speed_increase", 1.5));
 		level(f, "love", req("pet").p("number", 30),
 				ab("tame_animals"),
-				ab("armor").p("armor", 3.0));
+				ab("armor").p("armor", 3.0),
+				ab("counter_attack").p("chance", 0.1));
 		level(f, "feather", req("sprint").p("distance", 1000.0),
 				ab("swift").p("increase", 0.2),
 				ab("jump").p("jump", 1.1),
@@ -44,7 +46,8 @@ public final class DefaultLevels {
 				ab("swift").p("increase", 0.45),
 				ab("step_up"));
 		level(f, "iron_golem", req("break_block").p("block", "minecraft:iron_block").p("number", 8),
-				ab("mining").p("harvest_level", 2).p("speed_increase", 3.0));
+				ab("mining").p("harvest_level", 2).p("speed_increase", 3.0),
+				ab("counter_attack").p("chance", 0.15));
 		level(f, "water", req("meditate_water_moon").p("stare_time", 400),
 				ab("water_walking"),
 				ab("water_breathing_partial").p("oxygen_bonus", 4.0).p("swim_boost", 0.04));
@@ -63,7 +66,8 @@ public final class DefaultLevels {
 		level(f, "creeper", req("kiss_creeper"),
 				ab("kiss_creeper"),
 				ab("explosion_resistance").p("multiplier", 0.5),
-				ab("hunger").p("hunger_chance", 0.75));
+				ab("hunger").p("hunger_chance", 0.75),
+				ab("counter_attack").p("chance", 0.25));
 		level(f, "evil_eye", req("wither_stare").p("stare_time", 400),
 				ab("withering_stare"),
 				ab("water_breathing_full").p("swim_boost", 0.06));
@@ -77,7 +81,8 @@ public final class DefaultLevels {
 				ab("mining").p("harvest_level", 5).p("speed_increase", 8.0),
 				ab("strength").p("damage", 5.0),
 				ab("blindness"),
-				ab("night_vision"));
+				ab("night_vision"),
+				ab("counter_attack").p("chance", 0.3));
 		LevelsFile.LevelEntry blind = level(f, "blind_eye", req("kill_blind").p("kills", 10),
 				ab("strength").p("damage", 8.0),
 				ab("swift").p("increase", 1.0),
@@ -100,7 +105,8 @@ public final class DefaultLevels {
 				ab("strength").p("damage", 20.0),
 				ab("armor").p("armor", 20.0),
 				ab("armor_toughness").p("armor_toughness", 14.0),
-				ab("knockback_resistance").p("knockback_resistance", 5.0));
+				ab("knockback_resistance").p("knockback_resistance", 5.0),
+				ab("counter_attack").p("chance", 0.4));
 		return f;
 	}
 

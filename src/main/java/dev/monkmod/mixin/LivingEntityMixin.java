@@ -4,6 +4,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.server.level.ServerLevel;
@@ -59,5 +60,13 @@ public abstract class LivingEntityMixin {
 	@ModifyVariable(method = "calculateFallDamage", at = @At("HEAD"), argsOnly = true)
 	private double monk$safeJump(double distance) {
 		return MonkHooks.modifyFallDistance((LivingEntity) (Object) this, distance);
+	}
+
+	/** Same as MobMixin, for mobs whose AI step comes from LivingEntity. */
+	@Inject(method = "serverAiStep", at = @At("HEAD"), cancellable = true, require = 0)
+	private void monk$paralyzed(CallbackInfo ci) {
+		if ((Object) this instanceof dev.monkmod.logic.Paralyzable p && p.monk$isParalyzed()) {
+			ci.cancel();
+		}
 	}
 }

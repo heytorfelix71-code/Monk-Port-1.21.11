@@ -62,7 +62,7 @@
   "monk.advancements.ability.water_walking": "Andar Sobre as Águas",
   "monk.advancements.ability.water_walking.desc": "Agora você pode andar sobre a água. Agache para afundar.",
   "monk.advancements.ability.withering_stare": "Olhar Fulminante",
-  "monk.advancements.ability.withering_stare.desc": "Seu olhar julgador faz mortos-vivos e monstros hostis definharem (K liga/desliga)",
+  "monk.advancements.ability.withering_stare.desc": "Seu olhar julgador faz mortos-vivos e monstros hostis definharem e os paralisa por alguns segundos (K liga/desliga)",
   "monk.advancements.requirement.arrow_dodge": "Desvie das flechas de um esqueleto %s vezes seguidas sem ser atingido",
   "monk.advancements.requirement.bedrock_sleep": "Durma sobre uma \"Cama de Pedra\" (rocha-mãe). Olhe antes de dormir.",
   "monk.advancements.requirement.break_block": "Quebre %s blocos de \"%s\" com as mãos nuas.",
@@ -554,5 +554,18 @@
   "monk.param.catch_arrows.catch_chance": "Chance de pegar",
   "monk.param.catch_arrows.catch_chance.desc": "Chance de pegar um projétil vindo pela frente (0,25 = 25%). Aumenta com os níveis.",
   "monk.param.time_stop.freeze_players": "Congelar outros jogadores",
-  "monk.param.time_stop.freeze_players.desc": "Os outros jogadores também congelam: não podem se mexer, atacar, usar nem quebrar nada."
+  "monk.param.time_stop.freeze_players.desc": "Os outros jogadores também congelam: não podem se mexer, atacar, usar nem quebrar nada.",
+  "monk.advancements.ability.counter_attack": "Contra-ataque",
+  "monk.advancements.ability.counter_attack.desc": "%s de chance de aparar um golpe corpo a corpo e revidar com as mãos",
+  "monk.type.ability.counter_attack": "Chance de aparar um golpe corpo a corpo e revidar.",
+  "monk.param.counter_attack.chance": "Chance",
+  "monk.param.counter_attack.chance.desc": "Chance de contra-atacar um golpe corpo a corpo (0,05 = 5%).",
+  "monk.param.counter_attack.damage_multiplier": "Dano do revide",
+  "monk.param.counter_attack.damage_multiplier.desc": "Dano do revide = seu dano com as mãos x este valor.",
+  "monk.param.counter_attack.parry": "Aparar",
+  "monk.param.counter_attack.parry.desc": "Um golpe contra-atacado não te causa dano.",
+  "monk.param.counter_attack.require_empty_hand": "Precisa da mão vazia",
+  "monk.param.counter_attack.require_empty_hand.desc": "Só funciona com a mão principal vazia.",
+  "monk.param.withering_stare.paralyze_ticks": "Paralisia",
+  "monk.param.withering_stare.paralyze_ticks.desc": "Ticks em que o monstro encarado fica paralisado (60 = 3 segundos, 0 = desligado). Chefes nunca são paralisados."
 }

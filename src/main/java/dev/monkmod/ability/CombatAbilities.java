@@ -216,4 +216,44 @@ public final class CombatAbilities {
 			return new Object[]{number(duration / 20.0)};
 		}
 	}
+
+	/** Parry a melee hit and strike back, with a chance that grows with the levels. */
+	public static final class CounterAttack extends MonkAbility {
+		private final float chance;
+		private final float damage;
+		private final boolean parry;
+		private final boolean emptyHand;
+
+		public CounterAttack(Params params) {
+			super("counter_attack", params);
+			this.chance = params.getFloat("chance");
+			this.damage = params.getFloat("damage_multiplier");
+			this.parry = params.getBool("parry");
+			this.emptyHand = params.getBool("require_empty_hand");
+		}
+
+		/** Called when a player is about to take damage; true = the hit is parried (cancelled). */
+		public boolean tryCounter(ServerPlayer player, MonkPlayerState state, DamageSource source) {
+			if (!(source.getDirectEntity() instanceof net.minecraft.world.entity.LivingEntity attacker) || source.getEntity() != attacker
+					|| attacker == player || !attacker.isAlive() || player.distanceToSqr(attacker) > 25.0
+					|| (emptyHand && !state.unarmed()) || player.getRandom().nextFloat() >= chance) {
+				return false;
+			}
+			net.minecraft.server.level.ServerLevel level = player.level();
+			float amount = (float) player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * damage;
+			if (amount > 0) {
+				attacker.hurtServer(level, player.damageSources().playerAttack(player), amount);
+				attacker.knockback(0.6, player.getX() - attacker.getX(), player.getZ() - attacker.getZ());
+			}
+			level.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT, attacker.getX(), attacker.getY(0.5), attacker.getZ(), 10, 0.3, 0.3, 0.3, 0.2);
+			level.playSound(null, player.getX(), player.getY(), player.getZ(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG,
+					net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.2F);
+			return parry;
+		}
+
+		@Override
+		protected Object[] descriptionArgs() {
+			return new Object[]{percent(chance)};
+		}
+	}
 }

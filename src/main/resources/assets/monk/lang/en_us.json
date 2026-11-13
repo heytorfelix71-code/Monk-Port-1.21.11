@@ -56,7 +56,7 @@
   "monk.advancements.ability.water_walking": "Water Walking",
   "monk.advancements.ability.water_walking.desc": "You can now walk on water. Sneak to sink.",
   "monk.advancements.ability.withering_stare": "Withering Stare",
-  "monk.advancements.ability.withering_stare.desc": "Your judging stare withers undead and hostile mobs (K turns it on/off)",
+  "monk.advancements.ability.withering_stare.desc": "Your judging stare withers undead and hostile mobs and paralyzes them for a few seconds (K turns it on/off)",
   "monk.advancements.requirement.arrow_dodge": "Dodge a skeleton's arrows %s times in a row without getting hit",
   "monk.advancements.requirement.bedrock_sleep": "Sleep upon a \"Bed of Rock\". Remember to look before you sleep.",
   "monk.advancements.requirement.break_block": "Break %s \"%s\" blocks with your bare hands.",
@@ -554,5 +554,18 @@
   "monk.param.catch_arrows.catch_chance": "Catch chance",
   "monk.param.catch_arrows.catch_chance.desc": "Chance to catch a projectile coming from the front (0.25 = 25%). Grows with the levels.",
   "monk.param.time_stop.freeze_players": "Freeze other players",
-  "monk.param.time_stop.freeze_players.desc": "Other players are frozen too: they can't move, attack, use or break anything."
+  "monk.param.time_stop.freeze_players.desc": "Other players are frozen too: they can't move, attack, use or break anything.",
+  "monk.advancements.ability.counter_attack": "Counter Attack",
+  "monk.advancements.ability.counter_attack.desc": "%s chance to parry a melee hit and strike back with your bare hands",
+  "monk.type.ability.counter_attack": "Chance to parry a melee hit and strike back.",
+  "monk.param.counter_attack.chance": "Chance",
+  "monk.param.counter_attack.chance.desc": "Chance to counter a melee hit (0.05 = 5%).",
+  "monk.param.counter_attack.damage_multiplier": "Counter damage",
+  "monk.param.counter_attack.damage_multiplier.desc": "Damage of the counter = your bare-hand damage x this.",
+  "monk.param.counter_attack.parry": "Parry",
+  "monk.param.counter_attack.parry.desc": "A countered hit does no damage to you.",
+  "monk.param.counter_attack.require_empty_hand": "Needs an empty hand",
+  "monk.param.counter_attack.require_empty_hand.desc": "Only works with an empty main hand.",
+  "monk.param.withering_stare.paralyze_ticks": "Paralysis",
+  "monk.param.withering_stare.paralyze_ticks.desc": "Ticks the stared mob is paralyzed (60 = 3 seconds, 0 = off). Bosses are never paralyzed."
 }

@@ -202,6 +202,11 @@ public final class MonkEvents {
 		if (req != null && !req.allowDamage(player, data, state, source, amount)) {
 			return false;
 		}
+		dev.monkmod.ability.CombatAbilities.CounterAttack counter =
+				state.abilities().get("counter_attack", dev.monkmod.ability.CombatAbilities.CounterAttack.class);
+		if (counter != null && counter.tryCounter(player, state, source)) {
+			return false;
+		}
 		return true;
 	}
 

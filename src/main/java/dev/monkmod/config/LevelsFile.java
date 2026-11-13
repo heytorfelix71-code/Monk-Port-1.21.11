@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 8;
+	public static final int CURRENT_VERSION = 9;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -107,7 +107,7 @@ public final class LevelsFile {
 			diet.addProperty("type", "natural_diet");
 			first.add.add(diet);
 		}
-		if (config_version < 8 && looksLikeDefaults()) {
+		if (config_version < 9 && looksLikeDefaults()) {
 			// 2.5.0 / 2.6.0 rebalances: same 21 levels, so saved progress still fits.
 			rebalanceFromDefaults();
 		}

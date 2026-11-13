@@ -18,6 +18,7 @@ public final class WitheringStare extends MonkAbility {
 	private final int duration;
 	private final float witherDamage;
 	private final boolean hostile;
+	private final int paralyze;
 
 	public WitheringStare(Params params) {
 		super("withering_stare", params);
@@ -25,6 +26,7 @@ public final class WitheringStare extends MonkAbility {
 		this.duration = params.getInt("duration");
 		this.witherDamage = params.getFloat("wither_boss_damage");
 		this.hostile = params.getBool("hostile_mobs");
+		this.paralyze = params.getInt("paralyze_ticks");
 	}
 
 	@Override
@@ -46,6 +48,12 @@ public final class WitheringStare extends MonkAbility {
 			return;
 		}
 		target.addEffect(new MobEffectInstance(MobEffects.WITHER, duration), player);
+		if (paralyze > 0 && target instanceof dev.monkmod.logic.Paralyzable p && target.getType() != EntityType.WITHER
+				&& target.getType() != EntityType.ENDER_DRAGON && !p.monk$isParalyzed()) {
+			p.monk$paralyze(player.level().getGameTime() + paralyze);
+			((net.minecraft.server.level.ServerLevel) player.level()).sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,
+					target.getX(), target.getEyeY(), target.getZ(), 12, 0.3, 0.3, 0.3, 0.01);
+		}
 		if (target.getType() == EntityType.WITHER && witherDamage > 0) {
 			target.hurtServer((net.minecraft.server.level.ServerLevel) player.level(), player.damageSources().wither(), witherDamage * interval / 4.0F);
 		}
