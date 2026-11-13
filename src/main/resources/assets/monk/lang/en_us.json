@@ -10,7 +10,7 @@
   "monk.advancements.ability.blink": "Blink",
   "monk.advancements.ability.blink.desc": "You can now 'blink' across long distances. Hold the Blink key to aim and release it to teleport (change the key in Controls).",
   "monk.advancements.ability.catch_arrows": "Catch Arrows",
-  "monk.advancements.ability.catch_arrows.desc": "Catch arrows and anything thrown at you from the front with an empty hand: it goes to your inventory. Mastered, you also dodge what comes from behind.",
+  "monk.advancements.ability.catch_arrows.desc": "Sometimes you catch arrows and anything thrown at you from the front: it goes to your inventory. The chance grows with your training.",
   "monk.advancements.ability.explosion_resistance": "Creeper Affinity",
   "monk.advancements.ability.explosion_resistance.desc": "Explosion damage reduced by %s",
   "monk.advancements.ability.feather_fall": "Cat Feet",
@@ -454,7 +454,7 @@
   "monk.time_stop.cooldown": "Time stop ready in %ss",
   "monk.time_stop.locked": "You haven't unlocked the time stop yet.",
   "monk.advancements.ability.time_stop": "Stillness",
-  "monk.advancements.ability.time_stop.desc": "Press the Stop Time key (J) to freeze the world for %s seconds: only you keep moving. Press again to end it early.",
+  "monk.advancements.ability.time_stop.desc": "Press the Stop Time key (J) to freeze the world for %s seconds: mobs, creatures and other players stop; only you keep moving. Press again to end it early.",
   "monk.advancements.ability.iron_body": "Iron Body",
   "monk.advancements.ability.iron_body.desc": "You take %s less damage of every kind while wearing no armor",
   "monk.advancements.ability.regeneration": "Inner Peace",
@@ -547,5 +547,12 @@
   "monk.type.ability.knockback_resistance": "Resist knockback while wearing no armor.",
   "monk.param.knockback_resistance.knockback_resistance": "Knockback resistance",
   "monk.param.knockback_resistance.knockback_resistance.desc": "Knockback resistance points (full netherite armor = 4, 10 = no knockback at all).",
-  "monk.controls.fly_speed_max": "Flight speed: %s (max %s)"
+  "monk.controls.fly_speed_max": "Flight speed: %s (max %s)",
+  "monk.advancements.improved": "%s improved",
+  "monk.advancements.ability.iron_body.netherite": "Netherite Skin",
+  "monk.advancements.ability.iron_body.netherite.desc": "You take %s less damage of every kind while wearing no armor",
+  "monk.param.catch_arrows.catch_chance": "Catch chance",
+  "monk.param.catch_arrows.catch_chance.desc": "Chance to catch a projectile coming from the front (0.25 = 25%). Grows with the levels.",
+  "monk.param.time_stop.freeze_players": "Freeze other players",
+  "monk.param.time_stop.freeze_players.desc": "Other players are frozen too: they can't move, attack, use or break anything."
 }

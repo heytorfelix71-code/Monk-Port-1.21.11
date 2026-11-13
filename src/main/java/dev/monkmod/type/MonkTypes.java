@@ -164,6 +164,7 @@ public final class MonkTypes {
 		ability("blink", "Teleport where you look with the Blink key.", p -> new SimpleAbility("blink", p));
 		ability("catch_arrows", "Catch projectiles flying at you from the front; they go to your inventory.", p -> new SimpleAbility("catch_arrows", p),
 				ofFloat("max_angle_dot", 0.2, -1, 1, "How far to the side projectiles can be caught (higher = wider)."),
+				ofFloat("catch_chance", 0.25, 0, 1, "Chance to catch a projectile coming from the front (0.25 = 25%). It grows with the levels."),
 				ofBool("catch_all", true, "Catch everything thrown (tridents, snowballs, eggs, ender pearls, potions, fireworks, fire charges), not only arrows."),
 				ofBool("to_inventory", true, "Caught projectiles go to your inventory."),
 				ofBool("require_empty_hand", true, "You need an empty main hand to catch."),
@@ -181,7 +182,8 @@ public final class MonkTypes {
 		ability("time_stop", "Stop time with its key (J): only players keep moving.", CombatAbilities.TimeStop::new,
 				ofInt("duration", 600, 20, 72000, "How long time stays stopped, in ticks (600 = 30 seconds)."),
 				ofInt("cooldown", 1200, 0, 720000, "Ticks before it can be used again (1200 = 60 seconds)."),
-				ofBool("flight", true, "You can fly while time is stopped."));
+				ofBool("flight", true, "You can fly while time is stopped."),
+				ofBool("freeze_players", true, "Other players are frozen too (they can't move, attack, use or break anything)."));
 		ability("night_vision", "Toggle night vision with its key (V by default).", PassiveAbilities.NightVision::new);
 		ability("tame_animals", "Pet animals to calm them or make them fall in love.", p -> new SimpleAbility("tame_animals", p));
 		ability("water_walking", "Walk on water (sneak to sink).", p -> new SimpleAbility("water_walking", p),

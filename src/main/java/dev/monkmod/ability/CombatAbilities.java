@@ -34,6 +34,17 @@ public final class CombatAbilities {
 		public float factor(ServerPlayer player, MonkPlayerState state, DamageSource source) {
 			return state.unarmored() ? multiplier : 1.0F;
 		}
+
+		/** Takes half the damage or less: "Netherite Skin" instead of "Iron Body". */
+		@Override
+		public String translationKey() {
+			return multiplier <= 0.55F ? super.translationKey() + ".netherite" : super.translationKey();
+		}
+
+		@Override
+		protected Object[] descriptionArgs() {
+			return new Object[]{percent(1.0 - multiplier)};
+		}
 	}
 
 	/** Heals slowly once the player has been out of combat for a while. No potion effect, no hunger cost. */
@@ -77,22 +88,33 @@ public final class CombatAbilities {
 	 */
 	public static final class TimeStop extends MonkAbility {
 		private static UUID owner;
+		/** Positions other players are held at while time is stopped. */
+		private static final java.util.Map<UUID, net.minecraft.world.phys.Vec3> frozen = new java.util.HashMap<>();
+		private static boolean freezePlayers;
 		private static int endsAt;
 		private static boolean grantedFlight;
 
 		private final int duration;
 		private final int cooldown;
 		private final boolean flight;
+		private final boolean freezePlayers;
 
 		public TimeStop(Params params) {
 			super("time_stop", params);
 			this.duration = params.getInt("duration");
 			this.cooldown = params.getInt("cooldown");
 			this.flight = params.getBool("flight");
+			this.freezePlayers = params.getBool("freeze_players");
 		}
 
 		public static boolean active() {
 			return owner != null;
+		}
+
+		/** True for every player caught in someone else's stopped time. */
+		public static boolean isFrozen(net.minecraft.world.entity.player.Player player) {
+			return owner != null && freezePlayers && !owner.equals(player.getUUID()) && !player.isSpectator()
+					&& !player.isCreative();
 		}
 
 		/** Key press: start, or end early when it is already yours. */
@@ -121,6 +143,8 @@ public final class CombatAbilities {
 			}
 			ticks.setFrozen(true);
 			owner = player.getUUID();
+			freezePlayers = ability.freezePlayers;
+			frozen.clear();
 			endsAt = now + ability.duration;
 			grantedFlight = false;
 			if (ability.flight && !player.getAbilities().mayfly) {
@@ -143,6 +167,18 @@ public final class CombatAbilities {
 				end(server);
 				return;
 			}
+			if (freezePlayers) {
+				for (ServerPlayer other : server.getPlayerList().getPlayers()) {
+					if (!isFrozen(other)) {
+						continue;
+					}
+					net.minecraft.world.phys.Vec3 hold = frozen.computeIfAbsent(other.getUUID(), id -> other.position());
+					other.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+					if (other.position().distanceToSqr(hold) > 0.0025) {
+						other.teleportTo(hold.x, hold.y, hold.z);
+					}
+				}
+			}
 			int left = endsAt - now;
 			if (left % 20 == 0) {
 				player.displayClientMessage(Component.translatable("monk.time_stop.left", left / 20).withStyle(ChatFormatting.AQUA), true);
@@ -155,6 +191,7 @@ public final class CombatAbilities {
 			}
 			ServerPlayer player = server.getPlayerList().getPlayer(owner);
 			owner = null;
+			frozen.clear();
 			if (server.tickRateManager().isFrozen()) {
 				server.tickRateManager().setFrozen(false);
 			}

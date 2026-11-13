@@ -49,11 +49,25 @@ public final class MonkEvents {
 	private MonkEvents() {
 	}
 
+	private static boolean frozen(Player player) {
+		return !player.level().isClientSide() && dev.monkmod.ability.CombatAbilities.TimeStop.isFrozen(player);
+	}
+
 	private static MonkRequirement next(ServerPlayer player, MonkData data) {
 		return MonkConfigManager.table().nextRequirement(data.level());
 	}
 
 	public static void register() {
+		// Stopped time: everyone except the monk who stopped it is frozen and can't act.
+		net.fabricmc.fabric.api.event.player.AttackEntityCallback.EVENT.register((player, level, hand, entity, hit) ->
+				frozen(player) ? InteractionResult.FAIL : InteractionResult.PASS);
+		net.fabricmc.fabric.api.event.player.AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) ->
+				frozen(player) ? InteractionResult.FAIL : InteractionResult.PASS);
+		net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((player, level, hand) ->
+				frozen(player) ? InteractionResult.FAIL : InteractionResult.PASS);
+		UseBlockCallback.EVENT.register((player, level, hand, hit) -> frozen(player) ? InteractionResult.FAIL : InteractionResult.PASS);
+		UseEntityCallback.EVENT.register((player, level, hand, entity, hit) -> frozen(player) ? InteractionResult.FAIL : InteractionResult.PASS);
+		PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) -> !frozen(player));
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 				MonkLogic.tickPlayer(player);

@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 7;
+	public static final int CURRENT_VERSION = 8;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -107,34 +107,9 @@ public final class LevelsFile {
 			diet.addProperty("type", "natural_diet");
 			first.add.add(diet);
 		}
-		if (config_version < 6 && looksLikeDefaults()) {
-			// 2.5.0 rebalance (harder path, steadier progression): same 21 levels, so saved progress still fits.
-			LevelsFile fresh = DefaultLevels.create();
-			for (int i = 0; i < levels.size() && i < fresh.levels.size(); i++) {
-				LevelEntry old = levels.get(i);
-				LevelEntry neu = fresh.levels.get(i);
-				neu.name = old.name;
-				if (old.add != null) {
-					for (JsonObject a : old.add) {
-						if (!a.has("name") && !a.has("description")) {
-							continue;
-						}
-						for (JsonObject b : neu.add) {
-							if (b.get("type").equals(a.get("type")) && !b.has("name") && !b.has("description")) {
-								if (a.has("name")) {
-									b.add("name", a.get("name"));
-								}
-								if (a.has("description")) {
-									b.add("description", a.get("description"));
-								}
-								break;
-							}
-						}
-					}
-				}
-			}
-			levels = fresh.levels;
-			rebalanced = true;
+		if (config_version < 8 && looksLikeDefaults()) {
+			// 2.5.0 / 2.6.0 rebalances: same 21 levels, so saved progress still fits.
+			rebalanceFromDefaults();
 		}
 		if (config_version < 7 && !rebalanced && looksLikeDefaults()) {
 			JsonObject first = levels.get(0).requirement;
@@ -150,6 +125,36 @@ public final class LevelsFile {
 		}
 		config_version = CURRENT_VERSION;
 		return true;
+	}
+
+	private void rebalanceFromDefaults() {
+		LevelsFile fresh = DefaultLevels.create();
+		for (int i = 0; i < levels.size() && i < fresh.levels.size(); i++) {
+			LevelEntry old = levels.get(i);
+			LevelEntry neu = fresh.levels.get(i);
+			neu.name = old.name;
+			if (old.add == null) {
+				continue;
+			}
+			for (JsonObject a : old.add) {
+				if (!a.has("name") && !a.has("description")) {
+					continue;
+				}
+				for (JsonObject b : neu.add) {
+					if (b.get("type").equals(a.get("type")) && !b.has("name") && !b.has("description")) {
+						if (a.has("name")) {
+							b.add("name", a.get("name"));
+						}
+						if (a.has("description")) {
+							b.add("description", a.get("description"));
+						}
+						break;
+					}
+				}
+			}
+		}
+		levels = fresh.levels;
+		rebalanced = true;
 	}
 
 	/** Set when migrate() replaced the levels with the new balance (the old file is backed up). */

@@ -83,7 +83,7 @@ public final class MonkConfigManager {
 				try {
 					java.nio.file.Path old = dir().resolve("levels.json");
 					if (java.nio.file.Files.exists(old)) {
-						java.nio.file.Files.copy(old, dir().resolve("levels.before-2.5.json"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						java.nio.file.Files.copy(old, dir().resolve("levels.backup.json"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 					}
 				} catch (Exception e) {
 					MonkMod.LOGGER.warn("Could not back up levels.json: {}", e.getMessage());

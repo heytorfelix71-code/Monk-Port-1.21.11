@@ -62,7 +62,7 @@ public final class MonkProjectiles {
 		}
 		boolean front = flight.lengthSqr() < 1.0E-6 || flight.normalize().dot(look) <= ability.params().getFloat("max_angle_dot");
 		if (front) {
-			if (!handsOk) {
+			if (!handsOk || player.getRandom().nextFloat() >= ability.params().getFloat("catch_chance")) {
 				return false;
 			}
 			grab(player, projectile, ability);

@@ -73,6 +73,11 @@ public final class MonkHooks {
 		if (!(context instanceof EntityCollisionContext ec) || !(ec.getEntity() instanceof Player player)) {
 			return null;
 		}
+		// Player movement is decided by the client. A floor on the server too made it pull divers back up
+		// onto the surface; the server accepts the client's position without it.
+		if (!player.level().isClientSide()) {
+			return null;
+		}
 		if (!isSurfaceWater(state, level, pos)) {
 			return null;
 		}

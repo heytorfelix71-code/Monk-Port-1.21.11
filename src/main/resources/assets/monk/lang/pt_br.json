@@ -12,7 +12,7 @@
   "monk.advancements.ability.blink": "Piscar",
   "monk.advancements.ability.blink.desc": "Agora você pode se teleportar a longas distâncias. Segure a tecla de Piscar para mirar e solte para teleportar (mude a tecla em Controles).",
   "monk.advancements.ability.catch_arrows": "Pegar Flechas",
-  "monk.advancements.ability.catch_arrows.desc": "Pegue flechas e tudo que for lançado em você pela frente com a mão vazia: vai para o seu inventário. Dominada, você também desvia do que vem por trás.",
+  "monk.advancements.ability.catch_arrows.desc": "Às vezes você pega flechas e tudo que for lançado em você pela frente: vai direto para o seu inventário. A chance aumenta com o treino.",
   "monk.advancements.ability.explosion_resistance": "Afinidade com Creepers",
   "monk.advancements.ability.explosion_resistance.desc": "Dano de explosão reduzido em %s",
   "monk.advancements.ability.feather_fall": "Pés de Gato",
@@ -454,7 +454,7 @@
   "monk.time_stop.cooldown": "Parar o tempo: pronto em %ss",
   "monk.time_stop.locked": "Você ainda não desbloqueou parar o tempo.",
   "monk.advancements.ability.time_stop": "Quietude",
-  "monk.advancements.ability.time_stop.desc": "Aperte a tecla Parar o Tempo (J) para congelar o mundo por %s segundos: só você continua se movendo. Aperte de novo para encerrar antes.",
+  "monk.advancements.ability.time_stop.desc": "Aperte a tecla Parar o Tempo (J) para congelar o mundo por %s segundos: monstros, criaturas e outros jogadores param; só você continua se movendo. Aperte de novo para encerrar antes.",
   "monk.advancements.ability.iron_body": "Corpo de Ferro",
   "monk.advancements.ability.iron_body.desc": "Você recebe %s a menos de qualquer tipo de dano enquanto estiver sem armadura",
   "monk.advancements.ability.regeneration": "Paz Interior",
@@ -547,5 +547,12 @@
   "monk.type.ability.knockback_resistance": "Resista à repulsão enquanto estiver sem armadura.",
   "monk.param.knockback_resistance.knockback_resistance": "Resistência a repulsão",
   "monk.param.knockback_resistance.knockback_resistance.desc": "Pontos de resistência a repulsão (armadura completa de netherite = 4, 10 = nenhuma repulsão).",
-  "monk.controls.fly_speed_max": "Velocidade de voo: %s (máx. %s)"
+  "monk.controls.fly_speed_max": "Velocidade de voo: %s (máx. %s)",
+  "monk.advancements.improved": "%s melhorou",
+  "monk.advancements.ability.iron_body.netherite": "Pele de Netherite",
+  "monk.advancements.ability.iron_body.netherite.desc": "Você recebe %s a menos de qualquer tipo de dano enquanto estiver sem armadura",
+  "monk.param.catch_arrows.catch_chance": "Chance de pegar",
+  "monk.param.catch_arrows.catch_chance.desc": "Chance de pegar um projétil vindo pela frente (0,25 = 25%). Aumenta com os níveis.",
+  "monk.param.time_stop.freeze_players": "Congelar outros jogadores",
+  "monk.param.time_stop.freeze_players.desc": "Os outros jogadores também congelam: não podem se mexer, atacar, usar nem quebrar nada."
 }

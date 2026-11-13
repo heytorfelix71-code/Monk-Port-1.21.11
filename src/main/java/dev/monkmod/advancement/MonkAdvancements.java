@@ -60,7 +60,11 @@ public final class MonkAdvancements {
 						if (i > 0) {
 							rewards.append("\n");
 						}
-						rewards.append(added.get(i).describe());
+						MonkAbility ability = added.get(i);
+						boolean improved = level > 0 && table.abilitiesAt(level - 1).has(ability.key());
+						rewards.append(improved
+								? Component.translatable("monk.advancements.improved", ability.name().withStyle(net.minecraft.ChatFormatting.AQUA))
+								: ability.describe());
 					}
 					put(map, MonkMod.id("level_reward_" + level), Advancement.Builder.advancement()
 							.parent(parent)

@@ -23,7 +23,8 @@ public final class DefaultLevels {
 				ab("armor").p("armor", 1.0));
 		level(f, "squid", req("drown").p("swim_time", 400),
 				ab("water_breathing_partial").p("oxygen_bonus", 2.0).p("swim_boost", 0.02),
-				ab("armor").p("armor", 2.0));
+				ab("armor").p("armor", 2.0),
+				ab("regeneration").p("delay", 3600).p("interval", 100).p("amount", 1.0));
 		level(f, "silverfish", req("break_block").p("block", "minecraft:stone").p("number", 64),
 				ab("mining").p("harvest_level", 1).p("speed_increase", 1.5));
 		level(f, "love", req("pet").p("number", 30),
@@ -38,8 +39,8 @@ public final class DefaultLevels {
 				ab("strength").p("damage", 3.0),
 				ab("armor").p("armor", 5.0),
 				ab("swift").p("increase", 0.3));
-		level(f, "skeleton", req("arrow_dodge").p("dodges", 10),
-				ab("catch_arrows"),
+		level(f, "skeleton", req("arrow_dodge").p("dodges", 8),
+				ab("catch_arrows").p("catch_chance", 0.25),
 				ab("swift").p("increase", 0.45),
 				ab("step_up"));
 		level(f, "iron_golem", req("break_block").p("block", "minecraft:iron_block").p("number", 8),
@@ -48,7 +49,9 @@ public final class DefaultLevels {
 				ab("water_walking"),
 				ab("water_breathing_partial").p("oxygen_bonus", 4.0).p("swim_boost", 0.04));
 		level(f, "enderman", req("meditate_endermen").p("time", 1200),
-				ab("blink"));
+				ab("blink"),
+				ab("regeneration").p("delay", 2400).p("interval", 60).p("amount", 1.0),
+				ab("catch_arrows").p("catch_chance", 0.4));
 		level(f, "blaze", req("walk_fire").p("distance", 30.0),
 				ab("fire_resistance").p("multiplier", 0.5),
 				ab("lava_protection"),
@@ -66,6 +69,7 @@ public final class DefaultLevels {
 				ab("water_breathing_full").p("swim_boost", 0.06));
 		level(f, "ocelot", req("fall").p("distance", 50.0),
 				ab("feather_fall").p("multiplier", 0.2),
+				ab("catch_arrows").p("catch_chance", 0.55),
 				ab("armor").p("armor", 13.0),
 				ab("armor_toughness").p("armor_toughness", 6.0),
 				ab("swift").p("increase", 0.8));
@@ -76,7 +80,8 @@ public final class DefaultLevels {
 				ab("night_vision"));
 		LevelsFile.LevelEntry blind = level(f, "blind_eye", req("kill_blind").p("kills", 10),
 				ab("strength").p("damage", 8.0),
-				ab("swift").p("increase", 1.0));
+				ab("swift").p("increase", 1.0),
+				ab("catch_arrows").p("catch_chance", 0.7));
 		blind.remove.add("blindness");
 		level(f, "wither", req("kill_entity_type").p("kills", 1).p("entity_type", "minecraft:wither"),
 				ab("potion_immunity"),
@@ -87,11 +92,12 @@ public final class DefaultLevels {
 		level(f, "ascend", req("void_fall"),
 				ab("fly"),
 				ab("time_stop"),
-				ab("regeneration"),
-				ab("catch_arrows").p("back_dodge", true).p("back_catch_chance", 0.2),
-				ab("hunger").p("hunger_chance", 0.9),
+				ab("regeneration").p("delay", 1800).p("interval", 40).p("amount", 1.0),
+				ab("catch_arrows").p("catch_chance", 0.85).p("back_dodge", true).p("back_catch_chance", 0.2),
+				ab("iron_body").p("multiplier", 0.5),
+				ab("hunger").p("hunger_chance", 0.99),
 				ab("swift").p("increase", 1.2),
-				ab("strength").p("damage", 10.0),
+				ab("strength").p("damage", 20.0),
 				ab("armor").p("armor", 20.0),
 				ab("armor_toughness").p("armor_toughness", 14.0),
 				ab("knockback_resistance").p("knockback_resistance", 5.0));
