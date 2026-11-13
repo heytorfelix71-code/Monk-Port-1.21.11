@@ -26,6 +26,12 @@ public final class MonkAttachments {
 			builder -> builder.persistent(Codec.BOOL)
 	);
 
+	/** Set while a player has their monk night vision switched on (V). */
+	public static final AttachmentType<Boolean> NIGHT_VISION = AttachmentRegistry.create(
+			MonkMod.id("night_vision"),
+			builder -> builder.persistent(Codec.BOOL).copyOnDeath()
+	);
+
 	/** Set while a player has switched their withering stare off (toggle key, K by default). */
 	public static final AttachmentType<Boolean> STARE_OFF = AttachmentRegistry.create(
 			MonkMod.id("stare_off"),

@@ -263,7 +263,7 @@ public final class MonkHooks {
 	}
 
 	/** Swiftness active right now (unarmored if required, no heavy armor), or null. */
-	private static PassiveAbilities.Swift activeSwift(Player player) {
+	public static PassiveAbilities.Swift activeSwift(Player player) {
 		AbilitySet set = MonkAccess.abilities(player);
 		PassiveAbilities.Swift swift = set.get("swift", PassiveAbilities.Swift.class);
 		if (swift == null || (swift.unarmoredOnly() && !MonkAccess.unarmored(player)) || heavyPieces(player) > 0) {
@@ -276,6 +276,7 @@ public final class MonkHooks {
 	private static float cachedPower;
 
 	/** Higher jumps that follow the running bonus chosen with Ctrl + wheel (client side: jumps are client movement). */
+	// The double jump itself is done by DoubleJumpClient.
 	public static float modifyJumpPower(LivingEntity entity, float vanilla) {
 		if (!(entity instanceof Player player) || !player.level().isClientSide()) {
 			return vanilla;
@@ -305,7 +306,8 @@ public final class MonkHooks {
 			return distance;
 		}
 		float cap = dev.monkmod.network.MonkNetwork.runScaleMax(dev.monkmod.data.MonkAttachments.data(player).level(), MonkConfigManager.table());
-		float safe = swift.jumpHeight(cap, MonkConfigManager.config().controls.maxRunScale);
+		float top = MonkConfigManager.config().controls.maxRunScale;
+		float safe = swift.jumpHeight(cap, top) + swift.doubleJumpHeight(cap, top);
 		return safe <= PassiveAbilities.VANILLA_JUMP_HEIGHT + 0.01F ? distance : Math.max(0.0, distance - safe);
 	}
 }

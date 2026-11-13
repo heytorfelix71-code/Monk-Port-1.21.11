@@ -83,6 +83,7 @@ public final class MonkModClient implements ClientModInitializer {
 			MonkHud.tick(client);
 			BlinkClient.tick(client);
 			WaterWalkClient.tick(client);
+			DoubleJumpClient.tick(client);
 			SwimClient.tick(client);
 			MonkControls.tick(client);
 		});

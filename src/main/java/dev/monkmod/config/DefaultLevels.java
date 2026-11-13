@@ -12,75 +12,86 @@ public final class DefaultLevels {
 
 	public static LevelsFile create() {
 		LevelsFile f = new LevelsFile();
-		level(f, "meditate", req("break_wood").p("number", 1));
-		level(f, "tree", req("break_wood").p("number", 10),
-				ab("mining").p("harvest_level", 0).p("speed_increase", 0.0).list("harvest_tools", "", "shovel", "axe"),
+		// Becoming a monk: a full minute of still meditation under the sky.
+		level(f, "meditate", req("meditate").p("time", 1200));
+		level(f, "tree", req("break_wood").p("number", 32),
+				ab("mining").p("harvest_level", 0).p("speed_increase", 0.5).list("harvest_tools", "", "shovel", "axe"),
 				ab("strength").p("damage", 1.0),
 				ab("natural_diet"));
-		level(f, "sunrise", req("mediate_sunrise"),
-				ab("hunger").p("hunger_chance", 0.5),
+		level(f, "sunrise", req("mediate_sunrise").p("time", 400),
+				ab("hunger").p("hunger_chance", 0.4),
 				ab("armor").p("armor", 1.0));
-		level(f, "squid", req("drown"),
-				ab("water_breathing_partial"),
+		level(f, "squid", req("drown").p("swim_time", 400),
+				ab("water_breathing_partial").p("oxygen_bonus", 2.0).p("swim_boost", 0.02),
 				ab("armor").p("armor", 2.0));
-		level(f, "silverfish", req("break_block").p("block", "minecraft:stone").p("number", 5),
-				ab("mining").p("harvest_level", 1).p("speed_increase", 2.0));
-		level(f, "love", req("pet").p("number", 20),
+		level(f, "silverfish", req("break_block").p("block", "minecraft:stone").p("number", 64),
+				ab("mining").p("harvest_level", 1).p("speed_increase", 1.5));
+		level(f, "love", req("pet").p("number", 30),
 				ab("tame_animals"),
-				ab("armor").p("armor", 4.0));
-		level(f, "feather", req("sprint").p("distance", 200.0),
-				ab("swift").p("increase", 0.4),
-				ab("jump").p("jump", 1.2),
-				ab("hunger").p("hunger_chance", 0.75),
-				ab("strength").p("damage", 2.0));
-		level(f, "wolf", req("kill_undead").p("kills", 10),
-				ab("strength").p("damage", 4.0),
-				ab("armor").p("armor", 8.0));
-		level(f, "skeleton", req("arrow_dodge").p("dodges", 5),
+				ab("armor").p("armor", 3.0));
+		level(f, "feather", req("sprint").p("distance", 1000.0),
+				ab("swift").p("increase", 0.2),
+				ab("jump").p("jump", 1.1),
+				ab("strength").p("damage", 2.0),
+				ab("hunger").p("hunger_chance", 0.6));
+		level(f, "wolf", req("kill_undead").p("kills", 25),
+				ab("strength").p("damage", 3.0),
+				ab("armor").p("armor", 5.0),
+				ab("swift").p("increase", 0.3));
+		level(f, "skeleton", req("arrow_dodge").p("dodges", 10),
 				ab("catch_arrows"),
-				ab("swift").p("increase", 0.8),
+				ab("swift").p("increase", 0.45),
 				ab("step_up"));
-		level(f, "iron_golem", req("break_block").p("block", "minecraft:iron_block").p("number", 4),
-				ab("mining").p("harvest_level", 2).p("speed_increase", 5.0));
-		level(f, "water", req("meditate_water_moon").p("stare_time", 200),
-				ab("water_walking"));
-		level(f, "enderman", req("meditate_endermen"),
+		level(f, "iron_golem", req("break_block").p("block", "minecraft:iron_block").p("number", 8),
+				ab("mining").p("harvest_level", 2).p("speed_increase", 3.0));
+		level(f, "water", req("meditate_water_moon").p("stare_time", 400),
+				ab("water_walking"),
+				ab("water_breathing_partial").p("oxygen_bonus", 4.0).p("swim_boost", 0.04));
+		level(f, "enderman", req("meditate_endermen").p("time", 1200),
 				ab("blink"));
-		level(f, "blaze", req("walk_fire").p("distance", 10.0),
+		level(f, "blaze", req("walk_fire").p("distance", 30.0),
 				ab("fire_resistance").p("multiplier", 0.5),
-				ab("lava_protection"));
-		level(f, "ghast", req("break_block").p("block", "minecraft:obsidian").p("number", 1),
-				ab("mining").p("harvest_level", 3).p("speed_increase", 9.0),
-				ab("armor").p("armor", 14.0),
-				ab("armor_toughness").p("armor_toughness", 4.0));
+				ab("lava_protection"),
+				ab("swift").p("increase", 0.6));
+		level(f, "ghast", req("break_block").p("block", "minecraft:obsidian").p("number", 4),
+				ab("mining").p("harvest_level", 3).p("speed_increase", 5.0),
+				ab("armor").p("armor", 9.0),
+				ab("armor_toughness").p("armor_toughness", 3.0));
 		level(f, "creeper", req("kiss_creeper"),
 				ab("kiss_creeper"),
-				ab("explosion_resistance").p("multiplier", 0.5));
-		level(f, "evil_eye", req("wither_stare").p("stare_time", 200),
-				ab("withering_stare"));
-		level(f, "ocelot", req("fall").p("distance", 40.0),
+				ab("explosion_resistance").p("multiplier", 0.5),
+				ab("hunger").p("hunger_chance", 0.75));
+		level(f, "evil_eye", req("wither_stare").p("stare_time", 400),
+				ab("withering_stare"),
+				ab("water_breathing_full").p("swim_boost", 0.06));
+		level(f, "ocelot", req("fall").p("distance", 50.0),
 				ab("feather_fall").p("multiplier", 0.2),
-				ab("armor").p("armor", 18.0),
-				ab("armor_toughness").p("armor_toughness", 8.0));
+				ab("armor").p("armor", 13.0),
+				ab("armor_toughness").p("armor_toughness", 6.0),
+				ab("swift").p("increase", 0.8));
 		level(f, "bed", req("bedrock_sleep"),
-				ab("mining").p("harvest_level", 5).p("speed_increase", 12.0),
-				ab("strength").p("damage", 8.0),
+				ab("mining").p("harvest_level", 5).p("speed_increase", 8.0),
+				ab("strength").p("damage", 5.0),
 				ab("blindness"),
 				ab("night_vision"));
-		LevelsFile.LevelEntry blind = level(f, "blind_eye", req("kill_blind").p("kills", 5),
-				ab("strength").p("damage", 16.0));
+		LevelsFile.LevelEntry blind = level(f, "blind_eye", req("kill_blind").p("kills", 10),
+				ab("strength").p("damage", 8.0),
+				ab("swift").p("increase", 1.0));
 		blind.remove.add("blindness");
 		level(f, "wither", req("kill_entity_type").p("kills", 1).p("entity_type", "minecraft:wither"),
 				ab("potion_immunity"),
-				ab("armor").p("armor", 20.0),
-				ab("armor_toughness").p("armor_toughness", 12.0),
-				ab("iron_body").p("multiplier", 0.6));
+				ab("armor").p("armor", 18.0),
+				ab("armor_toughness").p("armor_toughness", 10.0),
+				ab("iron_body").p("multiplier", 0.7),
+				ab("water_breathing_full").p("swim_boost", 0.08));
 		level(f, "ascend", req("void_fall"),
 				ab("fly"),
 				ab("time_stop"),
-				ab("hunger").p("hunger_chance", 0.9),
 				ab("regeneration"),
-				ab("catch_arrows").p("back_dodge", true).p("back_catch_chance", 0.2));
+				ab("catch_arrows").p("back_dodge", true).p("back_catch_chance", 0.2),
+				ab("hunger").p("hunger_chance", 0.9),
+				ab("swift").p("increase", 1.2),
+				ab("strength").p("damage", 10.0));
 		return f;
 	}
 

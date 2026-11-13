@@ -68,7 +68,7 @@ public final class MonkConfigScreen {
 
 		return YetAnotherConfigLib.createBuilder()
 				.title(t("title"))
-				.category(general(cfg, defaults))
+				.categories(general(cfg, defaults))
 				.category(equipment(cfg, defaults))
 				.category(abilities(cfg))
 				.category(levels(levels, parent))
@@ -96,7 +96,7 @@ public final class MonkConfigScreen {
 
 	// ------------------------------------------------------------------ general
 
-	private static ConfigCategory general(MonkConfig cfg, MonkConfig def) {
+	private static List<ConfigCategory> general(MonkConfig cfg, MonkConfig def) {
 		MonkConfig.Hud h = cfg.hud;
 		MonkConfig.Hud hd = def.hud;
 		OptionGroup hud = OptionGroup.createBuilder().name(t("hud")).description(d("hud"))
@@ -140,7 +140,8 @@ public final class MonkConfigScreen {
 		MonkConfig.Flight fd = def.flight;
 		OptionGroup flight = OptionGroup.createBuilder().name(t("flight")).description(d("flight"))
 				.option(floatSlider("flight.min_speed", fd.minSpeed, 0.01F, 0.1F, 0.005F, () -> f.minSpeed, v -> f.minSpeed = v))
-				.option(floatSlider("flight.max_speed", fd.maxSpeed, 0.05F, 1F, 0.01F, () -> f.maxSpeed, v -> f.maxSpeed = v))
+				.option(floatSlider("flight.max_speed", fd.maxSpeed, 0.02F, 0.5F, 0.005F, () -> f.maxSpeed, v -> f.maxSpeed = v))
+				.option(floatSlider("flight.default_speed", fd.defaultSpeed, 0.01F, 0.2F, 0.005F, () -> f.defaultSpeed, v -> f.defaultSpeed = v))
 				.build();
 
 		MonkConfig.Controls c = cfg.controls;
@@ -153,7 +154,7 @@ public final class MonkConfigScreen {
 				.option(floatSlider("controls.blink_step", cd.blinkStep, 0.5F, 8F, 0.5F, () -> c.blinkStep, v -> c.blinkStep = v))
 				.option(floatSlider("controls.run_step", cd.runStep, 0.05F, 1F, 0.05F, () -> c.runStep, v -> c.runStep = v))
 				.option(floatSlider("controls.max_run_scale", cd.maxRunScale, 0.5F, 5F, 0.25F, () -> c.maxRunScale, v -> c.maxRunScale = v))
-				.option(floatSlider("controls.fly_step", cd.flyStep, 0.005F, 0.05F, 0.005F, () -> c.flyStep, v -> c.flyStep = v))
+				.option(floatSlider("controls.fly_step", cd.flyStep, 0.001F, 0.05F, 0.001F, () -> c.flyStep, v -> c.flyStep = v))
 				.option(bool("controls.show_changes", cd.showChanges, () -> c.showChanges, v -> c.showChanges = v))
 				.build();
 
@@ -163,6 +164,8 @@ public final class MonkConfigScreen {
 				.option(bool("gameplay.announce", gd.announceLevelUps, () -> g.announceLevelUps, v -> g.announceLevelUps = v))
 				.option(bool("gameplay.action_bar", gd.actionBarProgress, () -> g.actionBarProgress, v -> g.actionBarProgress = v))
 				.option(bool("gameplay.info_everyone", gd.infoCommandForEveryone, () -> g.infoCommandForEveryone, v -> g.infoCommandForEveryone = v))
+				.build();
+		OptionGroup heavyArmor = OptionGroup.createBuilder().name(t("heavy_armor")).description(d("heavy_armor"))
 				.option(floatSlider("gameplay.heavy_slowdown", gd.heavyArmorSlowdown, 0F, 0.25F, 0.05F, () -> g.heavyArmorSlowdown, v -> g.heavyArmorSlowdown = v))
 				.option(bool("gameplay.heavy_no_tools", gd.heavyArmorNoTools, () -> g.heavyArmorNoTools, v -> g.heavyArmorNoTools = v))
 				.option(Option.<String>createBuilder().name(t("gameplay.heavy_list")).description(d("gameplay.heavy_list"))
@@ -179,17 +182,24 @@ public final class MonkConfigScreen {
 
 		MonkConfig.Performance p = cfg.performance;
 		MonkConfig.Performance pd = def.performance;
-		OptionGroup performance = OptionGroup.createBuilder().name(t("performance")).description(d("performance")).collapsed(true)
+		OptionGroup performance = OptionGroup.createBuilder().name(t("performance")).description(d("performance"))
 				.option(intSlider("performance.stare", pd.stareInterval, 1, 40, 1, () -> p.stareInterval, v -> p.stareInterval = v))
 				.option(intSlider("performance.enderman", pd.endermanScanInterval, 1, 40, 1, () -> p.endermanScanInterval, v -> p.endermanScanInterval = v))
 				.option(intSlider("performance.equipment", pd.equipmentCheckInterval, 1, 40, 1, () -> p.equipmentCheckInterval, v -> p.equipmentCheckInterval = v))
 				.build();
 
-		return ConfigCategory.createBuilder().name(t("category.general"))
-				.group(hud).group(controls).group(blink).group(flight).group(gameplay).group(performance)
-				.option(ButtonOption.createBuilder().name(t("open_folder")).description(d("open_folder"))
-						.action((screen, opt) -> Util.getPlatform().openPath(MonkConfigManager.dir())).build())
-				.build();
+		return List.of(
+				ConfigCategory.createBuilder().name(t("category.general")).tooltip(t("category.general.desc"))
+						.group(gameplay).group(hud)
+						.option(ButtonOption.createBuilder().name(t("open_folder")).description(d("open_folder"))
+								.action((screen, opt) -> Util.getPlatform().openPath(MonkConfigManager.dir())).build())
+						.build(),
+				ConfigCategory.createBuilder().name(t("category.controls")).tooltip(t("category.controls.desc"))
+						.group(controls).build(),
+				ConfigCategory.createBuilder().name(t("category.powers")).tooltip(t("category.powers.desc"))
+						.group(blink).group(flight).group(heavyArmor).build(),
+				ConfigCategory.createBuilder().name(t("category.performance")).tooltip(t("category.performance.desc"))
+						.group(performance).build());
 	}
 
 	// ------------------------------------------------------------------ equipment

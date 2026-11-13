@@ -35,6 +35,45 @@ public final class MeditationRequirements {
 		return (d * 2.0 + e) / 3.0;
 	}
 
+	/**
+	 * The first step: sit still in meditation (sneaking, no armor, empty hands, under the open sky) for a
+	 * while. Moving, looking around a lot or getting hurt starts it over.
+	 */
+	public static final class Meditate extends MonkRequirement {
+		public Meditate(Params params) {
+			super("meditate", params, params.getInt("time"));
+		}
+
+		@Override
+		public boolean isTicking() {
+			return true;
+		}
+
+		@Override
+		public void tick(ServerPlayer player, MonkData data, MonkPlayerState state) {
+			boolean still = state.tracking
+					&& Math.abs(player.getX() - state.trackX) < 0.05 && Math.abs(player.getZ() - state.trackZ) < 0.05;
+			boolean posture = player.isShiftKeyDown() && player.onGround() && state.unarmored() && state.unarmed()
+					&& (!params.getBool("open_sky") || player.level().canSeeSky(player.blockPosition().above()));
+			state.tracking = true;
+			state.trackX = player.getX();
+			state.trackZ = player.getZ();
+			if (!posture || !still) {
+				if (data.progress() > 0) {
+					data.resetProgress();
+				}
+				return;
+			}
+			progress(player, data, 1);
+		}
+
+		@Override
+		public boolean allowDamage(ServerPlayer player, MonkData data, MonkPlayerState state, net.minecraft.world.damagesource.DamageSource source, float amount) {
+			data.resetProgress();
+			return true;
+		}
+	}
+
 	/** Swim until your lungs nearly burst. */
 	public static final class Drown extends MonkRequirement {
 		public Drown(Params params) {

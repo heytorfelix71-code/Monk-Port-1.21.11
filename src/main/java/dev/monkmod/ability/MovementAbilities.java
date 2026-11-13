@@ -32,14 +32,21 @@ public final class MovementAbilities {
 			}
 			Abilities abilities = player.getAbilities();
 			boolean allowed = state.unarmored();
+			dev.monkmod.config.MonkConfig.Flight cfg = dev.monkmod.config.MonkConfigManager.config().flight;
 			if (allowed && !abilities.mayfly) {
 				abilities.mayfly = true;
 				state.flyGranted = true;
+				abilities.setFlyingSpeed(cfg.defaultSpeed);
 				player.onUpdateAbilities();
 			} else if (!allowed && abilities.mayfly && state.flyGranted) {
 				abilities.mayfly = false;
 				abilities.flying = false;
 				state.flyGranted = false;
+				player.onUpdateAbilities();
+			}
+			float speed = abilities.getFlyingSpeed();
+			if ((speed > cfg.maxSpeed + 1.0E-4F || speed < cfg.minSpeed - 1.0E-4F)) {
+				abilities.setFlyingSpeed(Math.max(cfg.minSpeed, Math.min(cfg.maxSpeed, speed)));
 				player.onUpdateAbilities();
 			}
 		}

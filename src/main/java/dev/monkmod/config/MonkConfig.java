@@ -8,6 +8,8 @@ import java.util.List;
  * Field names are the JSON keys, so keep them stable.
  */
 public final class MonkConfig {
+	/** Settings format; older files are updated on load (see sanitize). */
+	public int configVersion = 0;
 	public Hud hud = new Hud();
 	public Blink blink = new Blink();
 	public Equipment equipment = new Equipment();
@@ -54,8 +56,10 @@ public final class MonkConfig {
 
 	public static final class Flight {
 		/** Vanilla flying speed is 0.05. */
-		public float minSpeed = 0.02F;
-		public float maxSpeed = 0.30F;
+		public float minSpeed = 0.01F;
+		public float maxSpeed = 0.10F;
+		/** Speed set when monk flight is unlocked or comes back (after armor, death...). */
+		public float defaultSpeed = 0.035F;
 	}
 
 	/** Client-side controls (scroll wheel modifiers and step sizes). */
@@ -70,7 +74,7 @@ public final class MonkConfig {
 		/** Step of the running bonus scale (1.0 = the full bonus of your level). */
 		public float runStep = 0.1F;
 		public float maxRunScale = 2.0F;
-		public float flyStep = 0.01F;
+		public float flyStep = 0.005F;
 		/** Show the new value in the action bar when it changes. */
 		public boolean showChanges = true;
 	}
@@ -120,6 +124,16 @@ public final class MonkConfig {
 		if (gameplay == null) gameplay = new Gameplay();
 		if (performance == null) performance = new Performance();
 		if (flight == null) flight = new Flight();
+		if (configVersion < 2) {
+			// 2.5.0: monk flight was far too fast.
+			flight.minSpeed = Math.min(flight.minSpeed, 0.01F);
+			flight.maxSpeed = Math.min(flight.maxSpeed, 0.10F);
+			if (controls != null) {
+				controls.flyStep = Math.min(controls.flyStep, 0.005F);
+			}
+			configVersion = 2;
+		}
+		flight.defaultSpeed = Math.max(flight.minSpeed, Math.min(flight.maxSpeed, flight.defaultSpeed));
 		if (controls == null) controls = new Controls();
 		if (gameplay.heavyArmor == null) gameplay.heavyArmor = new ArrayList<>();
 		gameplay.heavyArmorSlowdown = Math.max(0F, Math.min(0.25F, gameplay.heavyArmorSlowdown));

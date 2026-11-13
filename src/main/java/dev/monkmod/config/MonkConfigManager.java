@@ -79,6 +79,16 @@ public final class MonkConfigManager {
 		}
 		if (loaded.migrate()) {
 			MonkMod.LOGGER.info("Updated config/monk/levels.json to version {}", LevelsFile.CURRENT_VERSION);
+			if (loaded.rebalanced) {
+				try {
+					java.nio.file.Path old = dir().resolve("levels.json");
+					if (java.nio.file.Files.exists(old)) {
+						java.nio.file.Files.copy(old, dir().resolve("levels.before-2.5.json"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					}
+				} catch (Exception e) {
+					MonkMod.LOGGER.warn("Could not back up levels.json: {}", e.getMessage());
+				}
+			}
 		}
 		levels = loaded;
 		write("levels.json", levels);

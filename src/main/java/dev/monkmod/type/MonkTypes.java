@@ -86,7 +86,10 @@ public final class MonkTypes {
 				ofFloat("increase", 0.4, 0, 10, "Speed bonus (0.4 = +40%)."),
 				ofFloat("sprint_multiplier", 2, 0, 10, "Bonus multiplier while sprinting."),
 				ofBool("only_unarmored", true, "Only works while wearing no armor."),
-				ofFloat("max_jump_height", 12, 1.25, 64, "Jump height (blocks) at the highest running bonus. The jump grows together with the bonus chosen with Ctrl + mouse wheel (1.25 = off)."));
+				ofFloat("jump_height", 4, 1.25, 64, "Jump height in blocks with the running bonus at 100%."),
+				ofFloat("max_jump_height", 7, 1.25, 64, "Jump height in blocks with the highest running bonus (200% at the last level)."),
+				ofFloat("double_jump", 2, 0, 64, "Extra height of the double jump (press jump again in the air) at 100%. 0 = no double jump."),
+				ofFloat("max_double_jump", 5, 0, 64, "Extra height of the double jump with the highest running bonus."));
 		ability("natural_diet", "Plant food (bread, fruit, vegetables, soups...) satisfies much more. Meat and fish don't.",
 				DietAbility::new,
 				ofFloat("nutrition_multiplier", 1.5, 1, 10, "Hunger points restored by natural food (1.5 = +50%)."),
@@ -183,6 +186,9 @@ public final class MonkTypes {
 		ability("glass_touch", "Break glass bare-handed without shattering it.", p -> new SimpleAbility("glass_touch", p));
 
 		// ---------------------------------------------------------------- requirements
+		requirement("meditate", "Meditate: sneak without moving, unarmored and empty-handed, under the open sky.", MeditationRequirements.Meditate::new,
+				ofInt("time", 1200, 1, BIG, "Ticks of still meditation needed (1200 = 1 minute)."),
+				ofBool("open_sky", true, "Must be under the open sky."));
 		requirement("break_block", "Break N blocks (or a #tag) with an empty hand.", BlockRequirements.BreakBlock::fromSpec,
 				ofString("block", "minecraft:stone", "Block id, or #tag id."),
 				ofInt("number", 5, 1, BIG, "How many."));

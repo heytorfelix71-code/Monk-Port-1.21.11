@@ -63,26 +63,42 @@ public final class PassiveAbilities {
 		private final float sprintMultiplier;
 		private final boolean unarmoredOnly;
 
+		private final float jumpHeight;
 		private final float maxJumpHeight;
+		private final float doubleJump;
+		private final float maxDoubleJump;
 
 		public Swift(Params params) {
 			super("swift", params);
 			this.increase = params.getFloat("increase");
 			this.sprintMultiplier = params.getFloat("sprint_multiplier");
 			this.unarmoredOnly = params.getBool("only_unarmored");
+			this.jumpHeight = params.getFloat("jump_height");
 			this.maxJumpHeight = params.getFloat("max_jump_height");
+			this.doubleJump = params.getFloat("double_jump");
+			this.maxDoubleJump = params.getFloat("max_double_jump");
 		}
 
-		/**
-		 * Jump height (blocks) for a running-bonus scale: grows with the square of the scale, so 100%
-		 * gives a small boost and the top of the scale reaches max_jump_height.
-		 */
-		public float jumpHeight(double scale, double topScale) {
-			if (maxJumpHeight <= VANILLA_JUMP_HEIGHT || topScale <= 0 || scale <= 0) {
-				return VANILLA_JUMP_HEIGHT;
+		/** Linear from {@code zero} (scale 0) to {@code atOne} (100%) and on to {@code atTop} (highest scale). */
+		private static float curve(double scale, double topScale, float zero, float atOne, float atTop) {
+			if (scale <= 0) {
+				return zero;
 			}
-			double t = Math.min(1.0, scale / topScale);
-			return (float) (VANILLA_JUMP_HEIGHT + (maxJumpHeight - VANILLA_JUMP_HEIGHT) * t * t);
+			if (scale <= 1.0 || topScale <= 1.0) {
+				return (float) (zero + (atOne - zero) * Math.min(1.0, scale));
+			}
+			double t = Math.min(1.0, (scale - 1.0) / (topScale - 1.0));
+			return (float) (atOne + (atTop - atOne) * t);
+		}
+
+		/** Height (blocks) of a normal jump at this running scale. */
+		public float jumpHeight(double scale, double topScale) {
+			return Math.max(VANILLA_JUMP_HEIGHT, curve(scale, topScale, VANILLA_JUMP_HEIGHT, jumpHeight, maxJumpHeight));
+		}
+
+		/** Extra height (blocks) of the double jump at this running scale (0 = no double jump). */
+		public float doubleJumpHeight(double scale, double topScale) {
+			return Math.max(0.0F, curve(scale, topScale, 0.0F, doubleJump, maxDoubleJump));
 		}
 
 		/** Client: the chosen running scale (Ctrl + wheel). */
@@ -158,17 +174,43 @@ public final class PassiveAbilities {
 			return instance != null && instance.isInfiniteDuration() && instance.isAmbient() && !instance.isVisible() && !instance.showIcon();
 		}
 
+		private static MobEffectInstance create() {
+			return new MobEffectInstance(MobEffects.NIGHT_VISION, MobEffectInstance.INFINITE_DURATION, 0, true, false, false);
+		}
+
+		/** The on/off choice is saved on the player, so /effect clear, milk or death don't switch it off. */
 		public static void toggle(ServerPlayer player) {
-			MobEffectInstance current = player.getEffect(MobEffects.NIGHT_VISION);
-			if (isOurs(current)) {
-				player.removeEffect(MobEffects.NIGHT_VISION);
-			} else if (current == null) {
-				player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, MobEffectInstance.INFINITE_DURATION, 0, true, false, false));
+			boolean on = !player.hasAttached(dev.monkmod.data.MonkAttachments.NIGHT_VISION);
+			if (on) {
+				player.setAttached(dev.monkmod.data.MonkAttachments.NIGHT_VISION, true);
+				MobEffectInstance current = player.getEffect(MobEffects.NIGHT_VISION);
+				if (current == null || !current.isInfiniteDuration()) {
+					player.forceAddEffect(create(), null);
+				}
+			} else {
+				player.removeAttached(dev.monkmod.data.MonkAttachments.NIGHT_VISION);
+				if (isOurs(player.getEffect(MobEffects.NIGHT_VISION))) {
+					player.removeEffect(MobEffects.NIGHT_VISION);
+				}
+			}
+		}
+
+		@Override
+		public boolean isTicking() {
+			return true;
+		}
+
+		@Override
+		public void tick(ServerPlayer player, MonkPlayerState state) {
+			if (player.hasAttached(dev.monkmod.data.MonkAttachments.NIGHT_VISION) && player.isAlive()
+					&& !player.hasEffect(MobEffects.NIGHT_VISION)) {
+				player.forceAddEffect(create(), null);
 			}
 		}
 
 		@Override
 		public void onRemoved(ServerPlayer player, MonkPlayerState state) {
+			player.removeAttached(dev.monkmod.data.MonkAttachments.NIGHT_VISION);
 			if (isOurs(player.getEffect(MobEffects.NIGHT_VISION))) {
 				player.removeEffect(MobEffects.NIGHT_VISION);
 			}
