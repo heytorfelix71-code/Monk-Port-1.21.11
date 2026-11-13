@@ -218,7 +218,9 @@ public final class MonkControls {
 		value = Math.max(0.0F, Math.min(cap, value));
 		saved.runScale = value;
 		markDirty();
-		show(player, Component.translatable("monk.controls.run_speed_max", Math.round(value * 100.0F) + "%", Math.round(cap * 100.0F) + "%"));
+		// Shown as a share of the full potential: 100% = everything the last level gives.
+		float full = Math.max(0.01F, c.maxRunScale);
+		show(player, Component.translatable("monk.controls.run_speed_max", Math.round(value / full * 100.0F) + "%", Math.round(cap / full * 100.0F) + "%"));
 	}
 
 	private static void adjustFly(LocalPlayer player, int dir) {
@@ -230,7 +232,9 @@ public final class MonkControls {
 		value = Math.max(ClientMonkState.flyMin(), Math.min(ClientMonkState.flyMax(), value));
 		player.getAbilities().setFlyingSpeed(value); // instant feedback; the server confirms
 		ClientPlayNetworking.send(new FlySpeedPayload(value));
-		show(player, Component.translatable("monk.controls.fly_speed", Math.round(value / VANILLA_FLY * 100.0F) + "%"));
+		// 100% = normal creative flight; the highest allowed speed (0.10 by default) is 200%.
+		show(player, Component.translatable("monk.controls.fly_speed_max", Math.round(value / VANILLA_FLY * 100.0F) + "%",
+				Math.round(ClientMonkState.flyMax() / VANILLA_FLY * 100.0F) + "%"));
 	}
 
 	private static void show(LocalPlayer player, Component message) {
