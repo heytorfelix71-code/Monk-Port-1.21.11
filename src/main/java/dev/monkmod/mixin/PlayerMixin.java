@@ -21,11 +21,11 @@ public abstract class PlayerMixin {
 		}
 	}
 
-	/** Bare-handed mining speed. Runs on both sides so client prediction matches the server. */
+	/** Monk mining speed (any item in hand). Runs on both sides so client prediction matches the server. */
 	@Inject(method = "getDestroySpeed", at = @At("RETURN"), cancellable = true)
 	private void monk$speed(BlockState state, CallbackInfoReturnable<Float> cir) {
 		float vanilla = cir.getReturnValueF();
-		float modified = MonkHooks.modifyDestroySpeed((Player) (Object) this, vanilla);
+		float modified = MonkHooks.modifyDestroySpeed((Player) (Object) this, state, vanilla);
 		if (modified != vanilla) {
 			cir.setReturnValue(modified);
 		}

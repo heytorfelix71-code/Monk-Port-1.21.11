@@ -8,6 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
@@ -23,6 +24,7 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.monster.Creeper;
 
 import dev.monkmod.ability.EffectAbilities;
+import dev.monkmod.config.MonkConfigManager;
 import dev.monkmod.ability.MiningAbility;
 import dev.monkmod.ability.PassiveAbilities;
 import dev.monkmod.ability.SimpleAbility;
@@ -95,20 +97,61 @@ public final class MonkHooks {
 		return amount;
 	}
 
+	/** Monk harvesting: works with empty hands and also while holding an item, block or the wrong tool. */
 	public static boolean canHarvestBareHanded(Player player, BlockState state) {
-		if (!player.getMainHandItem().isEmpty()) {
+		if (heavyToolBlocked(player)) {
 			return false;
 		}
 		MiningAbility mining = MonkAccess.abilities(player).get("mining", MiningAbility.class);
 		return mining != null && mining.canHarvest(state);
 	}
 
-	public static float modifyDestroySpeed(Player player, float speed) {
-		if (!player.getMainHandItem().isEmpty()) {
-			return speed;
+	/**
+	 * Monk mining speed, whatever is in the hand: the ability speed is used whenever it is faster than
+	 * the held item (a pickaxe only helps when it is quicker than your hands).
+	 */
+	public static float modifyDestroySpeed(Player player, BlockState state, float speed) {
+		if (heavyToolBlocked(player)) {
+			return 0.0F;
 		}
 		MiningAbility mining = MonkAccess.abilities(player).get("mining", MiningAbility.class);
-		return mining == null ? speed : mining.modifySpeed(speed);
+		if (mining == null) {
+			return speed;
+		}
+		ItemStack held = player.getMainHandItem();
+		float toolSpeed = held.isEmpty() ? 1.0F : Math.max(1.0F, held.getDestroySpeed(state));
+		// Remove the tool's own multiplier, keep the penalties (underwater, in the air, mining fatigue).
+		float hands = Math.min(1.0F, speed / toolSpeed);
+		return Math.max(speed, mining.modifySpeed(hands));
+	}
+
+	/** Heavy armor pieces worn (configurable list). */
+	public static int heavyPieces(Player player) {
+		java.util.List<String> heavy = MonkConfigManager.config().gameplay.heavyArmor;
+		if (heavy.isEmpty()) {
+			return 0;
+		}
+		int count = 0;
+		for (net.minecraft.world.entity.EquipmentSlot slot : HEAVY_SLOTS) {
+			ItemStack stack = player.getItemBySlot(slot);
+			if (!stack.isEmpty() && heavy.contains(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString())) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	private static final net.minecraft.world.entity.EquipmentSlot[] HEAVY_SLOTS = {
+			net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+			net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
+
+	/** A monk in heavy armor can't break blocks with a pickaxe or an axe. */
+	private static boolean heavyToolBlocked(Player player) {
+		if (!MonkConfigManager.config().gameplay.heavyArmorNoTools || MonkAccess.abilities(player).isEmpty()) {
+			return false;
+		}
+		ItemStack held = player.getMainHandItem();
+		return (held.is(net.minecraft.tags.ItemTags.PICKAXES) || held.is(net.minecraft.tags.ItemTags.AXES)) && heavyPieces(player) > 0;
 	}
 
 	public static float modifyExhaustion(Player player, float exhaustion) {
@@ -122,7 +165,18 @@ public final class MonkHooks {
 
 	/** Swiftness: multiplies ground speed (no attribute, so the FOV stays the same). */
 	public static float modifySpeed(Player player, float speed) {
-		PassiveAbilities.Swift swift = MonkAccess.abilities(player).get("swift", PassiveAbilities.Swift.class);
+		AbilitySet set = MonkAccess.abilities(player);
+		if (set.isEmpty()) {
+			return speed;
+		}
+		float slow = MonkConfigManager.config().gameplay.heavyArmorSlowdown;
+		if (slow > 0) {
+			int heavy = heavyPieces(player);
+			if (heavy > 0) {
+				return speed * Math.max(0.25F, 1.0F - slow * heavy); // heavy armor: no monk speed, and slower
+			}
+		}
+		PassiveAbilities.Swift swift = set.get("swift", PassiveAbilities.Swift.class);
 		if (swift == null || (swift.unarmoredOnly() && !MonkAccess.unarmored(player))) {
 			return speed;
 		}

@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 3;
+	public static final int CURRENT_VERSION = 4;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -88,6 +88,14 @@ public final class LevelsFile {
 				up.addProperty("back_dodge", true);
 				up.addProperty("back_catch_chance", 0.2);
 				top.add.add(up);
+			}
+		}
+		if (config_version < 4 && !levels.isEmpty()) {
+			long hungerEntries = levels.stream().filter(e -> e.add != null)
+					.flatMap(e -> e.add.stream()).filter(a -> a.has("type") && "hunger".equals(a.get("type").getAsString())).count();
+			if (hungerEntries <= 1) {
+				addTo("monk:icon/feather", "hunger", "hunger_chance", 0.75);
+				addTo("monk:icon/ascend", "hunger", "hunger_chance", 0.9);
 			}
 		}
 		config_version = CURRENT_VERSION;

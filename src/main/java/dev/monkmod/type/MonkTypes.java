@@ -108,11 +108,15 @@ public final class MonkTypes {
 				ofFloat("oxygen_bonus", 3, 0, 1024, "Oxygen bonus (like Respiration levels)."),
 				ofBool("infinite", false, "Never run out of air at all."),
 				ofFloat("swim_speed", 0.33, 0, 1, "Extra swimming speed (0.33 = like Depth Strider I, 1 = Depth Strider III)."),
-				ofBool("hide_bubbles", false, "Hide the air bubbles above the hotbar."));
+				ofBool("hide_bubbles", false, "Hide the air bubbles above the hotbar."),
+				ofFloat("swim_boost", 0.06, 0, 0.1, "Extra swimming speed added every tick (0.06 = about twice as fast)."),
+				ofBool("hold_depth", true, "You don't sink: press sneak to go down, press jump once to stay at that depth again."));
 		ability("water_breathing_full", "Never drown; swim faster.",
 				p -> new PassiveAbilities.WaterBreathing("water_breathing_full", p, true),
 				ofFloat("swim_speed", 0.66, 0, 1, "Extra swimming speed (0.33 = like Depth Strider I, 1 = Depth Strider III)."),
-				ofBool("hide_bubbles", true, "Hide the air bubbles above the hotbar."));
+				ofBool("hide_bubbles", true, "Hide the air bubbles above the hotbar."),
+				ofFloat("swim_boost", 0.08, 0, 0.1, "Extra swimming speed added every tick (0.06 = about twice as fast)."),
+				ofBool("hold_depth", true, "You don't sink: press sneak to go down, press jump once to stay at that depth again."));
 		ability("fire_resistance", "Less fire damage.",
 				p -> new ProtectionAbility("fire_resistance", p, s -> s.is(DamageTypeTags.IS_FIRE), p.getFloat("multiplier")),
 				ofFloat("multiplier", 0.5, 0, 1, "Fraction of fire damage still taken."));
@@ -126,7 +130,7 @@ public final class MonkTypes {
 				ofBool("infinite", false, "Always immune to fire and lava."));
 		ability("hunger", "Hunger drains slower.", MovementAbilities.Hunger::new,
 				ofFloat("hunger_chance", 0.5, 0, 1, "How much slower (0.5 = 50% slower)."));
-		ability("mining", "Mine with bare hands.", MiningAbility::new,
+		ability("mining", "Mine with your hands (also while holding an item or the wrong tool).", MiningAbility::new,
 				ofInt("harvest_level", 0, 0, 5, "0 wood, 1 stone, 2 iron, 3 diamond, 4 netherite, 5 anything."),
 				ofFloat("speed_increase", 0, 0, 1000, "Bare-hand speed bonus (2 = 3x as fast)."),
 				ofList("harvest_tools", MiningAbility.defaultTools(), "Tool kinds your hands replace: pickaxe, shovel, axe, hoe (\"\" = none needed)."));

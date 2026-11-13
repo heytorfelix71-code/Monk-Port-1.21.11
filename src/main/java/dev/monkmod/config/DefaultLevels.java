@@ -30,6 +30,7 @@ public final class DefaultLevels {
 		level(f, "feather", req("sprint").p("distance", 200.0),
 				ab("swift").p("increase", 0.4),
 				ab("jump").p("jump", 1.2),
+				ab("hunger").p("hunger_chance", 0.75),
 				ab("strength").p("damage", 2.0));
 		level(f, "wolf", req("kill_undead").p("kills", 10),
 				ab("strength").p("damage", 4.0),
@@ -76,6 +77,7 @@ public final class DefaultLevels {
 		level(f, "ascend", req("void_fall"),
 				ab("fly"),
 				ab("time_stop"),
+				ab("hunger").p("hunger_chance", 0.9),
 				ab("regeneration"),
 				ab("catch_arrows").p("back_dodge", true).p("back_catch_chance", 0.2));
 		return f;

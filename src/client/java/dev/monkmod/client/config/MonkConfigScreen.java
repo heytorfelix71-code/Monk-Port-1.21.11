@@ -163,6 +163,18 @@ public final class MonkConfigScreen {
 				.option(bool("gameplay.announce", gd.announceLevelUps, () -> g.announceLevelUps, v -> g.announceLevelUps = v))
 				.option(bool("gameplay.action_bar", gd.actionBarProgress, () -> g.actionBarProgress, v -> g.actionBarProgress = v))
 				.option(bool("gameplay.info_everyone", gd.infoCommandForEveryone, () -> g.infoCommandForEveryone, v -> g.infoCommandForEveryone = v))
+				.option(floatSlider("gameplay.heavy_slowdown", gd.heavyArmorSlowdown, 0F, 0.25F, 0.05F, () -> g.heavyArmorSlowdown, v -> g.heavyArmorSlowdown = v))
+				.option(bool("gameplay.heavy_no_tools", gd.heavyArmorNoTools, () -> g.heavyArmorNoTools, v -> g.heavyArmorNoTools = v))
+				.option(Option.<String>createBuilder().name(t("gameplay.heavy_list")).description(d("gameplay.heavy_list"))
+						.binding(String.join(", ", gd.heavyArmor), () -> String.join(", ", g.heavyArmor), v -> {
+							g.heavyArmor.clear();
+							for (String part : v.split(",")) {
+								if (!part.isBlank()) {
+									g.heavyArmor.add(part.trim());
+								}
+							}
+						})
+						.controller(StringControllerBuilder::create).build())
 				.build();
 
 		MonkConfig.Performance p = cfg.performance;

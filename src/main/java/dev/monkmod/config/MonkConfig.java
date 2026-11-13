@@ -93,6 +93,15 @@ public final class MonkConfig {
 		public boolean actionBarProgress = false;
 		/** Allow /monk info for non-operators. */
 		public boolean infoCommandForEveryone = true;
+		/** Monks wearing heavy armor are slowed down: lost speed per heavy piece (0.15 = 15%). */
+		public float heavyArmorSlowdown = 0.15F;
+		/** Monks wearing heavy armor can't break blocks with pickaxes or axes. */
+		public boolean heavyArmorNoTools = true;
+		/** Armor pieces that count as heavy. */
+		public List<String> heavyArmor = new ArrayList<>(List.of(
+				"minecraft:iron_helmet", "minecraft:iron_chestplate", "minecraft:iron_leggings", "minecraft:iron_boots",
+				"minecraft:diamond_helmet", "minecraft:diamond_chestplate", "minecraft:diamond_leggings", "minecraft:diamond_boots",
+				"minecraft:netherite_helmet", "minecraft:netherite_chestplate", "minecraft:netherite_leggings", "minecraft:netherite_boots"));
 	}
 
 	public static final class Performance {
@@ -112,6 +121,8 @@ public final class MonkConfig {
 		if (performance == null) performance = new Performance();
 		if (flight == null) flight = new Flight();
 		if (controls == null) controls = new Controls();
+		if (gameplay.heavyArmor == null) gameplay.heavyArmor = new ArrayList<>();
+		gameplay.heavyArmorSlowdown = Math.max(0F, Math.min(0.25F, gameplay.heavyArmorSlowdown));
 		blink.minRange = Math.max(0.5F, Math.min(blink.range, blink.minRange));
 		blink.groundSearchDepth = clamp(blink.groundSearchDepth, 0, 64);
 		flight.minSpeed = Math.max(0.001F, Math.min(1F, flight.minSpeed));
