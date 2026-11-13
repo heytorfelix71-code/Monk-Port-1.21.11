@@ -45,8 +45,8 @@ public abstract class CreeperMixin {
 				self.setTarget(null);
 				self.getNavigation().stop();
 			}
-			if (calmed || !self.isIgnited()) {
-				setSwellDir(-1);
+			if (!self.isIgnited()) {
+				setSwellDir(-1); // lit with flint and steel on purpose: let it go off
 			}
 		}
 	}
@@ -54,7 +54,7 @@ public abstract class CreeperMixin {
 	@Inject(method = "explodeCreeper", at = @At("HEAD"), cancellable = true)
 	private void monk$noBoom(CallbackInfo ci) {
 		Creeper self = (Creeper) (Object) this;
-		if (MonkAttachments.isCalmed(self)) {
+		if (MonkAttachments.isCalmed(self) && !self.isIgnited()) {
 			swell = 0;
 			setSwellDir(-1);
 			ci.cancel();
