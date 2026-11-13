@@ -90,21 +90,21 @@ public final class CombatAbilities {
 		private static UUID owner;
 		/** Positions other players are held at while time is stopped. */
 		private static final java.util.Map<UUID, net.minecraft.world.phys.Vec3> frozen = new java.util.HashMap<>();
-		private static boolean freezePlayers;
+		private static boolean freezeOthers;
 		private static int endsAt;
 		private static boolean grantedFlight;
 
 		private final int duration;
 		private final int cooldown;
 		private final boolean flight;
-		private final boolean freezePlayers;
+		private final boolean freezePlayersParam;
 
 		public TimeStop(Params params) {
 			super("time_stop", params);
 			this.duration = params.getInt("duration");
 			this.cooldown = params.getInt("cooldown");
 			this.flight = params.getBool("flight");
-			this.freezePlayers = params.getBool("freeze_players");
+			this.freezePlayersParam = params.getBool("freeze_players");
 		}
 
 		public static boolean active() {
@@ -113,7 +113,7 @@ public final class CombatAbilities {
 
 		/** True for every player caught in someone else's stopped time. */
 		public static boolean isFrozen(net.minecraft.world.entity.player.Player player) {
-			return owner != null && freezePlayers && !owner.equals(player.getUUID()) && !player.isSpectator()
+			return owner != null && freezeOthers && !owner.equals(player.getUUID()) && !player.isSpectator()
 					&& !player.isCreative();
 		}
 
@@ -143,7 +143,7 @@ public final class CombatAbilities {
 			}
 			ticks.setFrozen(true);
 			owner = player.getUUID();
-			freezePlayers = ability.freezePlayers;
+			freezeOthers = ability.freezePlayersParam;
 			frozen.clear();
 			endsAt = now + ability.duration;
 			grantedFlight = false;
@@ -167,7 +167,7 @@ public final class CombatAbilities {
 				end(server);
 				return;
 			}
-			if (freezePlayers) {
+			if (freezeOthers) {
 				for (ServerPlayer other : server.getPlayerList().getPlayers()) {
 					if (!isFrozen(other)) {
 						continue;
