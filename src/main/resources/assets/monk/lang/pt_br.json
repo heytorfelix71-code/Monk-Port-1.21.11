@@ -446,7 +446,7 @@
   "monk.param.water_walking.height": "Altura sobre a água",
   "monk.param.water_walking.height.desc": "Altura dos pés dentro do bloco de água. 0,89 = pés bem na superfície (recomendado). 1 = um pixel acima. Abaixo de 0,89 os pés encostam na água e o jogo te trata como nadando (mais lento, respingos).",
   "monk.param.water_walking.lift": "Subir de volta à superfície",
-  "monk.param.water_walking.lift.desc": "Se você entrar na água rasa (vindo da margem, caindo de um pulo), volta para a superfície. Mergulhar com a cabeça debaixo d'água continua funcionando.",
+  "monk.param.water_walking.lift.desc": "Entrar pela margem ou cair de pouca altura te coloca de volta na superfície. Nadando você não é puxado para cima: pule para fora da água e a superfície te segura.",
   "key.monk.time_stop": "Parar o Tempo",
   "monk.time_stop.start": "Tempo parado (%ss)",
   "monk.time_stop.left": "Tempo parado: %ss",
@@ -504,5 +504,7 @@
   "monk.param.water_breathing_full.hold_depth.desc": "Você fica na mesma profundidade: agache para descer, aperte pular uma vez para parar de descer.",
   "monk.controls.run_speed_max": "Bônus de corrida: %s (máx. %s)",
   "monk.param.hunger.movement_reduction": "Redução ao correr / nadar",
-  "monk.param.hunger.movement_reduction.desc": "Redução extra ao correr ou nadar (0,6 = 60% a menos além da redução normal). Correr mais rápido com a Agilidade nunca gasta mais fome que uma corrida normal."
+  "monk.param.hunger.movement_reduction.desc": "Redução extra ao correr ou nadar (0,6 = 60% a menos além da redução normal). Correr mais rápido com a Agilidade nunca gasta mais fome que uma corrida normal.",
+  "monk.param.water_walking.max_fall": "Altura do mergulho",
+  "monk.param.water_walking.max_fall.desc": "Quedas maiores que isso (em blocos) mergulham na água em vez de parar em cima dela. Aí você afunda até apertar o pulo."
 }

@@ -446,7 +446,7 @@
   "monk.param.water_walking.height": "Height above the water",
   "monk.param.water_walking.height.desc": "Height of your feet inside the water block. 0.89 = feet right on the surface (recommended). 1 = a pixel above. Below 0.89 your feet touch the water and the game treats you as swimming (slower, splashes).",
   "monk.param.water_walking.lift": "Lift back to the surface",
-  "monk.param.water_walking.lift.desc": "If you end up in shallow water (walking in from the shore, landing from a jump), you are put back on the surface. Diving with your head underwater still works.",
+  "monk.param.water_walking.lift.desc": "Walking in from the shore or dropping in from a low height puts you back on the surface. While swimming you are not pulled up: jump out of the water and the surface catches you.",
   "key.monk.time_stop": "Stop Time",
   "monk.time_stop.start": "Time stopped (%ss)",
   "monk.time_stop.left": "Time stopped: %ss",
@@ -504,5 +504,7 @@
   "monk.param.water_breathing_full.hold_depth.desc": "You stay at your depth: sneak to go down, press jump once to stop going down.",
   "monk.controls.run_speed_max": "Running bonus: %s (max %s)",
   "monk.param.hunger.movement_reduction": "Sprint / swim reduction",
-  "monk.param.hunger.movement_reduction.desc": "Extra reduction while sprinting or swimming (0.6 = 60% less on top of the normal reduction). Running faster with Swiftness never costs more hunger than normal running."
+  "monk.param.hunger.movement_reduction.desc": "Extra reduction while sprinting or swimming (0.6 = 60% less on top of the normal reduction). Running faster with Swiftness never costs more hunger than normal running.",
+  "monk.param.water_walking.max_fall": "Dive height",
+  "monk.param.water_walking.max_fall.desc": "Falls higher than this (in blocks) dive into the water instead of landing on it. You then sink until you press jump."
 }

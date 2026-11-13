@@ -19,6 +19,11 @@ final class SwimClient {
 	private SwimClient() {
 	}
 
+	/** After a high dive: keep going down until jump is pressed. */
+	static void startSinking() {
+		sinking = true;
+	}
+
 	private static PassiveAbilities.WaterBreathing ability() {
 		AbilitySet set = ClientMonkState.abilities();
 		PassiveAbilities.WaterBreathing full = set.get("water_breathing_full", PassiveAbilities.WaterBreathing.class);

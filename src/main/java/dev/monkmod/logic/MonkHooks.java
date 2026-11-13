@@ -50,11 +50,14 @@ public final class MonkHooks {
 
 	/** The water walking ability if the player can use it right now (unarmored, not sneaking or flying), else null. */
 	public static SimpleAbility waterWalker(Player player) {
-		if (player.isShiftKeyDown() || player.getAbilities().flying || player.isSpectator() || player.fallDistance > 3.0) {
+		if (player.isShiftKeyDown() || player.getAbilities().flying || player.isSpectator()) {
 			return null;
 		}
 		SimpleAbility ability = MonkAccess.abilities(player).get("water_walking", SimpleAbility.class);
-		return ability != null && MonkAccess.unarmored(player) ? ability : null;
+		if (ability == null || player.fallDistance > ability.params().getFloat("max_fall") || !MonkAccess.unarmored(player)) {
+			return null; // a high fall dives into the water
+		}
+		return ability;
 	}
 
 	/** Top water block (no water above it): the one that becomes a floor. */
