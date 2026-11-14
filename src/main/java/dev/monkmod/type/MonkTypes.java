@@ -124,12 +124,16 @@ public final class MonkTypes {
 				ofBool("infinite", false, "Never run out of air at all."),
 				ofFloat("swim_speed", 0.33, 0, 1, "Extra swimming speed (0.33 = like Depth Strider I, 1 = Depth Strider III)."),
 				ofFloat("swim_boost", 0.06, 0, 0.1, "Extra swimming speed added every tick (0.06 = about twice as fast)."),
-				ofBool("hold_depth", true, "You don't sink: press sneak to go down, press jump once to stay at that depth again."));
+				ofBool("hold_depth", true, "You don't sink: hold sneak to go down, let go to stay at that depth."),
+				ofFloat("swim_up", 0.03, 0, 0.2, "Extra speed while swimming upwards (hold jump)."),
+				ofFloat("column_resist", 0.5, 0, 1, "How much you resist the downward pull of magma-block bubble columns (1 = fully; hold sneak to be pulled anyway)."));
 		ability("water_breathing_full", "Never drown; swim faster.",
 				p -> new PassiveAbilities.WaterBreathing("water_breathing_full", p, true),
 				ofFloat("swim_speed", 0.66, 0, 1, "Extra swimming speed (0.33 = like Depth Strider I, 1 = Depth Strider III)."),
 				ofFloat("swim_boost", 0.08, 0, 0.1, "Extra swimming speed added every tick (0.06 = about twice as fast)."),
-				ofBool("hold_depth", true, "You don't sink: press sneak to go down, press jump once to stay at that depth again."));
+				ofBool("hold_depth", true, "You don't sink: hold sneak to go down, let go to stay at that depth."),
+				ofFloat("swim_up", 0.05, 0, 0.2, "Extra speed while swimming upwards (hold jump)."),
+				ofFloat("column_resist", 1.0, 0, 1, "How much you resist the downward pull of magma-block bubble columns (1 = fully; hold sneak to be pulled anyway)."));
 		ability("fire_resistance", "Less fire damage.",
 				p -> new ProtectionAbility("fire_resistance", p, s -> s.is(DamageTypeTags.IS_FIRE), p.getFloat("multiplier")),
 				ofFloat("multiplier", 0.5, 0, 1, "Fraction of fire damage still taken."));

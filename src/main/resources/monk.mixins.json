@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "CreeperMixin",
+    "EntityMixin",
     "FoodDataMixin",
     "LiquidBlockMixin",
     "LivingEntityMixin",

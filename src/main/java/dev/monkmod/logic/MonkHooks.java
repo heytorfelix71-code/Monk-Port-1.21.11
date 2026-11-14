@@ -348,4 +348,20 @@ public final class MonkHooks {
 		}
 		return false;
 	}
+
+	/** 0..1: how much of a magma bubble column's downward pull this monk resists (0 while sneaking on purpose). */
+	public static float columnResist(Player player) {
+		if (player.isShiftKeyDown()) {
+			return 0.0F;
+		}
+		AbilitySet set = MonkAccess.abilities(player);
+		float best = 0.0F;
+		for (String key : new String[]{"water_breathing_full", "water_breathing_partial"}) {
+			PassiveAbilities.WaterBreathing w = set.get(key, PassiveAbilities.WaterBreathing.class);
+			if (w != null) {
+				best = Math.max(best, w.params().getFloat("column_resist"));
+			}
+		}
+		return Math.min(1.0F, best);
+	}
 }

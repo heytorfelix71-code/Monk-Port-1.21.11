@@ -495,9 +495,9 @@
   "monk.param.water_breathing_full.swim_boost": "Swim boost",
   "monk.param.water_breathing_full.swim_boost.desc": "Extra swimming speed added every tick (0.06 = about twice as fast, 0 = off).",
   "monk.param.water_breathing_partial.hold_depth": "Don't sink",
-  "monk.param.water_breathing_partial.hold_depth.desc": "You stay at your depth: sneak to go down, press jump once to stop going down.",
+  "monk.param.water_breathing_partial.hold_depth.desc": "You stay at your depth. Hold sneak to go down and let go to stay where you are; currents carry you while you sneak.",
   "monk.param.water_breathing_full.hold_depth": "Don't sink",
-  "monk.param.water_breathing_full.hold_depth.desc": "You stay at your depth: sneak to go down, press jump once to stop going down.",
+  "monk.param.water_breathing_full.hold_depth.desc": "You stay at your depth. Hold sneak to go down and let go to stay where you are; currents carry you while you sneak.",
   "monk.controls.run_speed_max": "Speed and jump: %s (max %s)",
   "monk.param.hunger.movement_reduction": "Sprint / swim reduction",
   "monk.param.hunger.movement_reduction.desc": "Extra reduction while sprinting or swimming (0.6 = 60% less on top of the normal reduction). Running faster with Swiftness never costs more hunger than normal running.",
@@ -598,5 +598,13 @@
   "monk.config.water.ignore_currents.desc": "River and water currents don't drag you while you hold your depth (sneak to let them).",
   "monk.advancements.maxed": "%s: maximum",
   "monk.type.name.mining": "Bare-hand mining",
-  "monk.type.name.iron_body": "Iron Body / Netherite Skin"
+  "monk.type.name.iron_body": "Iron Body / Netherite Skin",
+  "monk.param.water_breathing_partial.swim_up": "Swim up speed",
+  "monk.param.water_breathing_partial.swim_up.desc": "Extra speed when swimming upwards while holding jump (0 = vanilla).",
+  "monk.param.water_breathing_partial.column_resist": "Magma column resistance",
+  "monk.param.water_breathing_partial.column_resist.desc": "How much you resist the downward pull of bubble columns over magma blocks (1 = completely, 0 = vanilla). Hold sneak to be pulled down anyway.",
+  "monk.param.water_breathing_full.swim_up": "Swim up speed",
+  "monk.param.water_breathing_full.swim_up.desc": "Extra speed when swimming upwards while holding jump (0 = vanilla).",
+  "monk.param.water_breathing_full.column_resist": "Magma column resistance",
+  "monk.param.water_breathing_full.column_resist.desc": "How much you resist the downward pull of bubble columns over magma blocks (1 = completely, 0 = vanilla). Hold sneak to be pulled down anyway."
 }

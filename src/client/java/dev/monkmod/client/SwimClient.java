@@ -53,6 +53,12 @@ final class SwimClient {
 			motion = new Vec3(motion.x * k, player.isSwimming() ? motion.y * k : motion.y, motion.z * k);
 		}
 
+		// Faster ascent while holding jump.
+		float up = ability.params().getFloat("swim_up");
+		if (up > 0 && jump && !player.isShiftKeyDown() && !player.isSwimming()) {
+			motion = new Vec3(motion.x, Math.min(0.6, motion.y + up), motion.z);
+		}
+
 		if (ability.params().getBool("hold_depth")) {
 			if (player.isShiftKeyDown()) {
 				sinking = true;
