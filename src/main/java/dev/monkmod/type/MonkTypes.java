@@ -123,13 +123,11 @@ public final class MonkTypes {
 				ofFloat("oxygen_bonus", 3, 0, 1024, "Oxygen bonus (like Respiration levels)."),
 				ofBool("infinite", false, "Never run out of air at all."),
 				ofFloat("swim_speed", 0.33, 0, 1, "Extra swimming speed (0.33 = like Depth Strider I, 1 = Depth Strider III)."),
-				ofBool("hide_bubbles", false, "Hide the air bubbles above the hotbar."),
 				ofFloat("swim_boost", 0.06, 0, 0.1, "Extra swimming speed added every tick (0.06 = about twice as fast)."),
 				ofBool("hold_depth", true, "You don't sink: press sneak to go down, press jump once to stay at that depth again."));
 		ability("water_breathing_full", "Never drown; swim faster.",
 				p -> new PassiveAbilities.WaterBreathing("water_breathing_full", p, true),
 				ofFloat("swim_speed", 0.66, 0, 1, "Extra swimming speed (0.33 = like Depth Strider I, 1 = Depth Strider III)."),
-				ofBool("hide_bubbles", true, "Hide the air bubbles above the hotbar."),
 				ofFloat("swim_boost", 0.08, 0, 0.1, "Extra swimming speed added every tick (0.06 = about twice as fast)."),
 				ofBool("hold_depth", true, "You don't sink: press sneak to go down, press jump once to stay at that depth again."));
 		ability("fire_resistance", "Less fire damage.",

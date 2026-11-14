@@ -16,6 +16,7 @@ public final class MonkConfig {
 	public Gameplay gameplay = new Gameplay();
 	public Performance performance = new Performance();
 	public Flight flight = new Flight();
+	public Water water = new Water();
 	public Controls controls = new Controls();
 
 	public enum HudStyle { RING, BAR, TEXT }
@@ -52,6 +53,36 @@ public final class MonkConfig {
 		public float minRange = 2.0F;
 		/** When aiming at nothing, how far below the aim point the ground is searched (blocks). */
 		public int groundSearchDepth = 6;
+		/** Aiming at a wall (or hill) that is too high to land on: land on its top if it is within range. */
+		public boolean climbWalls = true;
+		/** Highest wall the blink climbs, in blocks above the point you aimed at. */
+		public int climbHeight = 32;
+		/** What the aim preview shows while the blink key is held. */
+		public PreviewMode previewMode = PreviewMode.FULL;
+		public int previewColor = 0xCC00FA;
+		/** Particles per tick of the preview (1 = very light, 10 = dense). */
+		public int previewDensity = 4;
+	}
+
+	public enum PreviewMode {
+		/** No particles at all. */
+		OFF,
+		/** A small dot where you will land. */
+		DOT,
+		/** A dotted line from you to the landing spot. */
+		LINE,
+		/** A column of particles at the landing spot (the original look). */
+		FULL
+	}
+
+	/** Water related settings of the water breathing abilities. */
+	public static final class Water {
+		/** Hide the air bubbles above the hotbar while you have infinite air. */
+		public boolean hideAirBubbles = false;
+		/** Monks with water breathing mine at full speed underwater, even floating. */
+		public boolean underwaterMining = true;
+		/** River currents (vanilla flowing water or mods like Streams) don't push monks who hold their depth. */
+		public boolean ignoreCurrents = true;
 	}
 
 	public static final class Flight {
@@ -124,6 +155,15 @@ public final class MonkConfig {
 		if (gameplay == null) gameplay = new Gameplay();
 		if (performance == null) performance = new Performance();
 		if (flight == null) flight = new Flight();
+		if (water == null) water = new Water();
+		if (blink.previewMode == null) blink.previewMode = PreviewMode.FULL;
+		if (!blink.previewParticles) {
+			blink.previewMode = PreviewMode.OFF;
+			blink.previewParticles = true;
+		}
+		blink.climbHeight = clamp(blink.climbHeight, 0, 255);
+		blink.previewDensity = clamp(blink.previewDensity, 1, 10);
+		blink.previewColor &= 0xFFFFFF;
 		if (configVersion < 2) {
 			// 2.5.0: monk flight was far too fast.
 			flight.minSpeed = Math.min(flight.minSpeed, 0.01F);
@@ -150,7 +190,7 @@ public final class MonkConfig {
 		hud.size = clamp(hud.size, 8, 128);
 		hud.opacity = Math.max(0.05F, Math.min(1F, hud.opacity));
 		hud.visibleTicks = clamp(hud.visibleTicks, 0, 1200);
-		blink.range = Math.max(1F, Math.min(128F, blink.range));
+		blink.range = Math.max(1F, Math.min(255F, blink.range));
 		blink.cooldownTicks = clamp(blink.cooldownTicks, 0, 1200);
 		blink.fallDamage = Math.max(0F, blink.fallDamage);
 		if (equipment.whitelist == null) equipment.whitelist = new ArrayList<>();

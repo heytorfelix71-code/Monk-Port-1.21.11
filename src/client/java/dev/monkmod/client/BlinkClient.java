@@ -21,8 +21,6 @@ import dev.monkmod.network.BlinkPayload;
 
 /** Hold the Blink key to aim (particles show where you will land), release to teleport. */
 final class BlinkClient {
-	private static final DustParticleOptions AIM = new DustParticleOptions(0xCC00FA, 1.0F);
-	private static final DustParticleOptions AIM_DIM = new DustParticleOptions(0x66007D, 0.8F);
 	private static final DustParticleOptions BLOCKED = new DustParticleOptions(0x800000, 1.0F);
 
 	private static boolean wasDown;
@@ -46,7 +44,7 @@ final class BlinkClient {
 		}
 		boolean down = MonkModClient.blinkKey.isDown();
 		if (down) {
-			if (MonkConfigManager.config().blink.previewParticles) {
+			if (MonkConfigManager.config().blink.previewMode != dev.monkmod.config.MonkConfig.PreviewMode.OFF) {
 				preview(player, level);
 			}
 		} else if (wasDown && cooldown == 0) {
@@ -60,6 +58,7 @@ final class BlinkClient {
 	}
 
 	private static void preview(LocalPlayer player, ClientLevel level) {
+		dev.monkmod.config.MonkConfig.Blink cfg = MonkConfigManager.config().blink;
 		Vec3 target = findTarget(player, level);
 		RandomSource random = level.getRandom();
 		if (target == null) {
@@ -67,20 +66,84 @@ final class BlinkClient {
 			level.addParticle(BLOCKED, point.x, point.y, point.z, 0, 0, 0);
 			return;
 		}
+		int color = cfg.previewColor & 0xFFFFFF;
+		int density = Math.max(1, cfg.previewDensity);
 		float chance = 1.0F - cooldown / 20.0F;
-		for (int j = 0; j < 4; j++) {
-			for (int i = 0; i <= 2; i++) {
+		DustParticleOptions main = new DustParticleOptions(color, 1.0F);
+		switch (cfg.previewMode) {
+			case DOT -> {
 				if (random.nextFloat() < chance) {
-					level.addParticle(AIM, target.x + random.nextGaussian() * 0.2, target.y + i + random.nextGaussian() * 0.2,
-							target.z + random.nextGaussian() * 0.2, 0, 0, 0);
+					level.addParticle(new DustParticleOptions(color, 0.6F), target.x, target.y + 0.1, target.z, 0, 0, 0);
+				}
+			}
+			case LINE -> {
+				Vec3 from = player.getEyePosition().add(0, -0.4, 0);
+				Vec3 to = target.add(0, 0.1, 0);
+				double length = from.distanceTo(to);
+				int steps = Math.max(2, (int) (length * density / 2.0));
+				DustParticleOptions small = new DustParticleOptions(color, 0.5F);
+				for (int i = 1; i <= steps; i++) {
+					if (random.nextFloat() < chance) {
+						Vec3 p = from.lerp(to, i / (double) steps);
+						level.addParticle(small, p.x, p.y, p.z, 0, 0, 0);
+					}
+				}
+			}
+			default -> {
+				DustParticleOptions dim = new DustParticleOptions(darker(color), 0.8F);
+				for (int j = 0; j < density; j++) {
+					for (int i = 0; i <= 2; i++) {
+						if (random.nextFloat() < chance) {
+							level.addParticle(main, target.x + random.nextGaussian() * 0.2, target.y + i + random.nextGaussian() * 0.2,
+									target.z + random.nextGaussian() * 0.2, 0, 0, 0);
+						}
+					}
+				}
+				for (int i = 0; i < density + 2; i++) {
+					if (random.nextFloat() < chance) {
+						level.addParticle(dim, target.x, target.y + random.nextFloat() * 2.0, target.z, 0, 0, 0);
+					}
 				}
 			}
 		}
-		for (int i = 0; i < 6; i++) {
-			if (random.nextFloat() < chance) {
-				level.addParticle(AIM_DIM, target.x, target.y + random.nextFloat() * 2.0, target.z, 0, 0, 0);
-			}
+	}
+
+	private static int darker(int rgb) {
+		return ((rgb >> 17 & 0x7F) << 16) | ((rgb >> 9 & 0x7F) << 8) | (rgb >> 1 & 0x7F);
+	}
+
+	/**
+	 * Aiming at a wall or hill from below: land on its top when that spot is inside the blink range
+	 * (Blink > "climb walls"). Only without mid-air targets.
+	 */
+	private static Vec3 climb(LocalPlayer player, ClientLevel level) {
+		dev.monkmod.config.MonkConfig.Blink cfg = MonkConfigManager.config().blink;
+		if (!cfg.climbWalls || cfg.climbHeight <= 0) {
+			return null;
 		}
+		Vec3 eye = player.getEyePosition();
+		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
+		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+		if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection().getAxis() == Direction.Axis.Y
+				|| hit.getLocation().y < player.getY() + 1.0) {
+			return null;
+		}
+		BlockPos column = hit.getBlockPos();
+		for (int dy = 1; dy <= cfg.climbHeight; dy++) {
+			BlockPos above = column.above(dy);
+			if (!level.getBlockState(above).getCollisionShape(level, above).isEmpty()) {
+				continue;
+			}
+			BlockPos below = above.below();
+			VoxelShape floor = level.getBlockState(below).getCollisionShape(level, below);
+			double y = below.getY() + (floor.isEmpty() ? 0.0 : floor.max(Direction.Axis.Y));
+			Vec3 spot = fits(player, level, new Vec3(column.getX() + 0.5, y, column.getZ() + 0.5));
+			if (spot == null || eye.distanceTo(spot) > ClientMonkState.blinkRange() + 0.5) {
+				return null; // the top is too far: no free ride
+			}
+			return spot;
+		}
+		return null;
 	}
 
 	private static Vec3 aimPoint(LocalPlayer player, ClientLevel level) {
@@ -95,6 +158,12 @@ final class BlinkClient {
 	 * block (or water) under it; when aiming at nothing, the ground below the aim point is searched.
 	 */
 	static Vec3 findTarget(LocalPlayer player, ClientLevel level) {
+		if (!ClientMonkState.blinkAllowAir()) {
+			Vec3 top = climb(player, level);
+			if (top != null) {
+				return top;
+			}
+		}
 		Vec3 r = rawTarget(player, level);
 		if (r == null || ClientMonkState.blinkAllowAir()) {
 			return r;

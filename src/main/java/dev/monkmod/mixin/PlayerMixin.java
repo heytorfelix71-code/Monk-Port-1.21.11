@@ -40,4 +40,13 @@ public abstract class PlayerMixin {
 			cir.setReturnValue(modified);
 		}
 	}
+
+	/** Water currents don't drag a monk who holds their depth. */
+	@Inject(method = "isPushedByFluid", at = @At("HEAD"), cancellable = true)
+	private void monk$noCurrents(CallbackInfoReturnable<Boolean> cir) {
+		Player self = (Player) (Object) this;
+		if (self.isInWater() && MonkHooks.ignoresCurrents(self)) {
+			cir.setReturnValue(false);
+		}
+	}
 }

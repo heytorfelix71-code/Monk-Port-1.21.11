@@ -135,7 +135,7 @@ public final class PassiveAbilities {
 		public WaterBreathing(String key, Params params, boolean alwaysInfinite) {
 			super(key, params, Condition.ALWAYS, mods(params, alwaysInfinite), a -> new Object[0]);
 			this.infinite = alwaysInfinite || params.getBool("infinite");
-			this.hideBubbles = params.getBool("hide_bubbles");
+			this.hideBubbles = true;
 		}
 
 		private static List<Mod> mods(Params params, boolean full) {

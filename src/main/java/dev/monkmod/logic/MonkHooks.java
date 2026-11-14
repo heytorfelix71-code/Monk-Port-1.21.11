@@ -130,6 +130,19 @@ public final class MonkHooks {
 		float toolSpeed = held.isEmpty() ? 1.0F : Math.max(1.0F, held.getDestroySpeed(state));
 		// Remove the tool's own multiplier, keep the penalties (underwater, in the air, mining fatigue).
 		float hands = Math.min(1.0F, speed / toolSpeed);
+		if (player.isInWater() && MonkConfigManager.config().water.underwaterMining && hasWaterBreathing(player)) {
+			// Vanilla: 5x slower with the head underwater (no Aqua Affinity) and 5x slower again when floating.
+			if (player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)) {
+				double submerged = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.SUBMERGED_MINING_SPEED);
+				if (submerged > 0.0 && submerged < 1.0) {
+					hands /= (float) submerged;
+				}
+			}
+			if (!player.onGround()) {
+				hands *= 5.0F;
+			}
+			hands = Math.min(1.0F, hands);
+		}
 		return Math.max(speed, mining.modifySpeed(hands));
 	}
 
@@ -314,5 +327,25 @@ public final class MonkHooks {
 		float top = MonkConfigManager.config().controls.maxRunScale;
 		float safe = swift.jumpHeight(cap, top) + swift.doubleJumpHeight(cap, top);
 		return safe <= PassiveAbilities.VANILLA_JUMP_HEIGHT + 0.01F ? distance : Math.max(0.0, distance - safe);
+	}
+
+	public static boolean hasWaterBreathing(Player player) {
+		AbilitySet set = MonkAccess.abilities(player);
+		return set.has("water_breathing_partial") || set.has("water_breathing_full");
+	}
+
+	/** River currents don't push a monk who holds their depth in the water (vanilla flow and Streams-style mods). */
+	public static boolean ignoresCurrents(Player player) {
+		if (!MonkConfigManager.config().water.ignoreCurrents || player.isShiftKeyDown()) {
+			return false;
+		}
+		AbilitySet set = MonkAccess.abilities(player);
+		for (String key : new String[]{"water_breathing_full", "water_breathing_partial"}) {
+			PassiveAbilities.WaterBreathing w = set.get(key, PassiveAbilities.WaterBreathing.class);
+			if (w != null && w.params().getBool("hold_depth")) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

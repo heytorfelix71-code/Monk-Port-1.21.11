@@ -69,9 +69,10 @@ public final class MonkConfigScreen {
 		return YetAnotherConfigLib.createBuilder()
 				.title(t("title"))
 				.categories(general(cfg, defaults))
-				.category(equipment(cfg, defaults))
-				.category(abilities(cfg))
+				.category(abilities(cfg, defaults, levels))
 				.category(levels(levels, parent))
+				.category(equipment(cfg, defaults))
+				.category(performance(cfg, defaults))
 				.save(() -> save(cfg, levels))
 				.build()
 				.generateScreen(parent);
@@ -123,27 +124,6 @@ public final class MonkConfigScreen {
 				.option(color("hud.color_loss", hd.colorLoss, () -> h.colorLoss, v -> h.colorLoss = v))
 				.build();
 
-		MonkConfig.Blink b = cfg.blink;
-		MonkConfig.Blink bd = def.blink;
-		OptionGroup blink = OptionGroup.createBuilder().name(t("blink")).description(d("blink"))
-				.option(floatSlider("blink.range", bd.range, 1F, 64F, 0.5F, () -> b.range, v -> b.range = v))
-				.option(intSlider("blink.cooldown", bd.cooldownTicks, 0, 400, 5, () -> b.cooldownTicks, v -> b.cooldownTicks = v))
-				.option(floatSlider("blink.fall_damage", bd.fallDamage, 0F, 20F, 0.5F, () -> b.fallDamage, v -> b.fallDamage = v))
-				.option(bool("blink.preview", bd.previewParticles, () -> b.previewParticles, v -> b.previewParticles = v))
-				.option(bool("blink.require_unarmored", bd.requireUnarmored, () -> b.requireUnarmored, v -> b.requireUnarmored = v))
-				.option(bool("blink.allow_air", bd.allowAirTarget, () -> b.allowAirTarget, v -> b.allowAirTarget = v))
-				.option(floatSlider("blink.min_range", bd.minRange, 0.5F, 16F, 0.5F, () -> b.minRange, v -> b.minRange = v))
-				.option(intSlider("blink.ground_depth", bd.groundSearchDepth, 0, 64, 1, () -> b.groundSearchDepth, v -> b.groundSearchDepth = v))
-				.build();
-
-		MonkConfig.Flight f = cfg.flight;
-		MonkConfig.Flight fd = def.flight;
-		OptionGroup flight = OptionGroup.createBuilder().name(t("flight")).description(d("flight"))
-				.option(floatSlider("flight.min_speed", fd.minSpeed, 0.01F, 0.1F, 0.005F, () -> f.minSpeed, v -> f.minSpeed = v))
-				.option(floatSlider("flight.max_speed", fd.maxSpeed, 0.02F, 0.5F, 0.005F, () -> f.maxSpeed, v -> f.maxSpeed = v))
-				.option(floatSlider("flight.default_speed", fd.defaultSpeed, 0.01F, 0.2F, 0.005F, () -> f.defaultSpeed, v -> f.defaultSpeed = v))
-				.build();
-
 		MonkConfig.Controls c = cfg.controls;
 		MonkConfig.Controls cd = def.controls;
 		OptionGroup controls = OptionGroup.createBuilder().name(t("controls")).description(d("controls"))
@@ -165,6 +145,22 @@ public final class MonkConfigScreen {
 				.option(bool("gameplay.action_bar", gd.actionBarProgress, () -> g.actionBarProgress, v -> g.actionBarProgress = v))
 				.option(bool("gameplay.info_everyone", gd.infoCommandForEveryone, () -> g.infoCommandForEveryone, v -> g.infoCommandForEveryone = v))
 				.build();
+		return List.of(
+				ConfigCategory.createBuilder().name(t("category.general")).tooltip(t("category.general.desc"))
+						.group(gameplay).group(hud)
+						.option(ButtonOption.createBuilder().name(t("open_folder")).description(d("open_folder"))
+								.action((screen, opt) -> Util.getPlatform().openPath(MonkConfigManager.dir())).build())
+						.build(),
+				ConfigCategory.createBuilder().name(t("category.controls")).tooltip(t("category.controls.desc"))
+						.group(controls).build());
+	}
+
+	// ------------------------------------------------------------------ equipment
+
+	private static ConfigCategory equipment(MonkConfig cfg, MonkConfig def) {
+		MonkConfig.Equipment e = cfg.equipment;
+		MonkConfig.Gameplay g = cfg.gameplay;
+		MonkConfig.Gameplay gd = def.gameplay;
 		OptionGroup heavyArmor = OptionGroup.createBuilder().name(t("heavy_armor")).description(d("heavy_armor"))
 				.option(floatSlider("gameplay.heavy_slowdown", gd.heavyArmorSlowdown, 0F, 0.25F, 0.05F, () -> g.heavyArmorSlowdown, v -> g.heavyArmorSlowdown = v))
 				.option(bool("gameplay.heavy_no_tools", gd.heavyArmorNoTools, () -> g.heavyArmorNoTools, v -> g.heavyArmorNoTools = v))
@@ -179,34 +175,8 @@ public final class MonkConfigScreen {
 						})
 						.controller(StringControllerBuilder::create).build())
 				.build();
-
-		MonkConfig.Performance p = cfg.performance;
-		MonkConfig.Performance pd = def.performance;
-		OptionGroup performance = OptionGroup.createBuilder().name(t("performance")).description(d("performance"))
-				.option(intSlider("performance.stare", pd.stareInterval, 1, 40, 1, () -> p.stareInterval, v -> p.stareInterval = v))
-				.option(intSlider("performance.enderman", pd.endermanScanInterval, 1, 40, 1, () -> p.endermanScanInterval, v -> p.endermanScanInterval = v))
-				.option(intSlider("performance.equipment", pd.equipmentCheckInterval, 1, 40, 1, () -> p.equipmentCheckInterval, v -> p.equipmentCheckInterval = v))
-				.build();
-
-		return List.of(
-				ConfigCategory.createBuilder().name(t("category.general")).tooltip(t("category.general.desc"))
-						.group(gameplay).group(hud)
-						.option(ButtonOption.createBuilder().name(t("open_folder")).description(d("open_folder"))
-								.action((screen, opt) -> Util.getPlatform().openPath(MonkConfigManager.dir())).build())
-						.build(),
-				ConfigCategory.createBuilder().name(t("category.controls")).tooltip(t("category.controls.desc"))
-						.group(controls).build(),
-				ConfigCategory.createBuilder().name(t("category.powers")).tooltip(t("category.powers.desc"))
-						.group(blink).group(flight).group(heavyArmor).build(),
-				ConfigCategory.createBuilder().name(t("category.performance")).tooltip(t("category.performance.desc"))
-						.group(performance).build());
-	}
-
-	// ------------------------------------------------------------------ equipment
-
-	private static ConfigCategory equipment(MonkConfig cfg, MonkConfig def) {
-		MonkConfig.Equipment e = cfg.equipment;
-		return ConfigCategory.createBuilder().name(t("category.equipment"))
+		return ConfigCategory.createBuilder().name(t("category.equipment")).tooltip(t("category.equipment.desc"))
+				.group(heavyArmor)
 				.option(LabelOption.create(t("equipment.info")))
 				.option(bool("equipment.strict", def.equipment.strictArmor, () -> e.strictArmor, v -> e.strictArmor = v))
 				.group(ListOption.<String>createBuilder().name(t("equipment.whitelist")).description(d("equipment.whitelist"))
@@ -218,32 +188,143 @@ public final class MonkConfigScreen {
 				.build();
 	}
 
-	// ------------------------------------------------------------------ ability switches
+	// ------------------------------------------------------------------ performance
 
-	private static ConfigCategory abilities(MonkConfig cfg) {
-		ConfigCategory.Builder category = ConfigCategory.createBuilder().name(t("category.abilities"))
+	private static ConfigCategory performance(MonkConfig cfg, MonkConfig def) {
+		MonkConfig.Performance p = cfg.performance;
+		MonkConfig.Performance pd = def.performance;
+		MonkConfig.Blink b = cfg.blink;
+		MonkConfig.Blink bd = def.blink;
+		OptionGroup checks = OptionGroup.createBuilder().name(t("performance")).description(d("performance"))
+				.option(intSlider("performance.stare", pd.stareInterval, 1, 40, 1, () -> p.stareInterval, v -> p.stareInterval = v))
+				.option(intSlider("performance.enderman", pd.endermanScanInterval, 1, 40, 1, () -> p.endermanScanInterval, v -> p.endermanScanInterval = v))
+				.option(intSlider("performance.equipment", pd.equipmentCheckInterval, 1, 40, 1, () -> p.equipmentCheckInterval, v -> p.equipmentCheckInterval = v))
+				.build();
+		OptionGroup preview = OptionGroup.createBuilder().name(t("blink_preview")).description(d("blink_preview"))
+				.option(Option.<MonkConfig.PreviewMode>createBuilder().name(t("blink.preview_mode")).description(d("blink.preview_mode"))
+						.binding(bd.previewMode, () -> b.previewMode, v -> b.previewMode = v)
+						.controller(o -> EnumControllerBuilder.create(o).enumClass(MonkConfig.PreviewMode.class)
+								.formatValue(v -> t("blink.preview_mode." + v.name().toLowerCase())))
+						.build())
+				.option(color("blink.preview_color", bd.previewColor, () -> b.previewColor, v -> b.previewColor = v))
+				.option(intSlider("blink.preview_density", bd.previewDensity, 1, 10, 1, () -> b.previewDensity, v -> b.previewDensity = v))
+				.build();
+		return ConfigCategory.createBuilder().name(t("category.performance")).tooltip(t("category.performance.desc"))
+				.group(checks).group(preview).build();
+	}
+
+	// ------------------------------------------------------------------ abilities (everything about each power)
+
+	/** Name of an ability type, as players see it. */
+	private static MutableComponent typeName(String key) {
+		return Component.translatableWithFallback("monk.type.name." + key,
+				Component.translatable("monk.advancements.ability." + (key.equals("mining") ? "mining.0" : key)).getString());
+	}
+
+	/** Translation key of the default name of one ability entry (some names change with their values). */
+	private static String defaultNameKey(String type, JsonObject json) {
+		if (type.equals("mining")) {
+			int level = json.has("harvest_level") ? json.get("harvest_level").getAsInt() : 0;
+			return "monk.advancements.ability.mining." + Math.max(0, Math.min(5, level));
+		}
+		if (type.equals("iron_body") && json.has("multiplier") && json.get("multiplier").getAsFloat() <= 0.55F) {
+			return "monk.advancements.ability.iron_body.netherite";
+		}
+		return "monk.advancements.ability." + type;
+	}
+
+	/** Level heading: "Level 5 – Love" style, with the custom title when there is one. */
+	private static Component levelTitle(LevelsFile levels, int i) {
+		LevelsFile.LevelEntry entry = levels.levels.get(i);
+		String req = entry.requirement != null && entry.requirement.has("type") ? entry.requirement.get("type").getAsString() : "?";
+		return t("levels.level", i, Component.translatable("monk.config.req." + req));
+	}
+
+	private static ConfigCategory abilities(MonkConfig cfg, MonkConfig def, LevelsFile levels) {
+		ConfigCategory.Builder category = ConfigCategory.createBuilder().name(t("category.abilities")).tooltip(t("category.abilities.desc"))
 				.option(LabelOption.create(t("abilities.info")));
 		for (MonkType<?> type : MonkTypes.ABILITIES.values()) {
 			String key = type.key();
-			category.option(Option.<Boolean>createBuilder()
-					.name(Component.translatable("monk.advancements.ability." + (key.equals("mining") ? "mining.0" : key)).append(" (" + key + ")"))
-					.description(OptionDescription.of(summary("ability", type)))
+			OptionGroup.Builder group = OptionGroup.createBuilder().name(typeName(key))
+					.description(OptionDescription.of(summary("ability", type))).collapsed(true);
+			group.option(Option.<Boolean>createBuilder().name(t("abilities.enabled")).description(d("abilities.enabled"))
 					.binding(true, () -> !cfg.gameplay.disabledAbilities.contains(key), v -> {
 						cfg.gameplay.disabledAbilities.remove(key);
 						if (!v) {
 							cfg.gameplay.disabledAbilities.add(key);
 						}
 					})
-					.controller(TickBoxControllerBuilder::create)
-					.build());
+					.controller(TickBoxControllerBuilder::create).build());
+			globalOptions(key, cfg, def).forEach(group::option);
+
+			boolean any = false;
+			for (int i = 0; i < levels.levels.size(); i++) {
+				LevelsFile.LevelEntry entry = levels.levels.get(i);
+				if (entry.add == null) {
+					continue;
+				}
+				for (JsonObject ability : entry.add) {
+					if (!ability.has("type") || !key.equals(ability.get("type").getAsString())) {
+						continue;
+					}
+					any = true;
+					group.option(LabelOption.create(Component.empty().append(levelTitle(levels, i)).withStyle(ChatFormatting.GOLD)));
+					group.option(text(ability, "name", "levels.custom_name", Component.translatable(defaultNameKey(key, ability))));
+					group.option(text(ability, "description", "levels.custom_desc", null));
+					for (ParamSpec spec : type.params().values()) {
+						group.option(param(ability, key, spec, "  "));
+					}
+				}
+			}
+			if (!any) {
+				group.option(LabelOption.create(t("abilities.not_in_levels").withStyle(ChatFormatting.GRAY)));
+			}
+			category.group(group.build());
 		}
 		return category.build();
 	}
 
-	// ------------------------------------------------------------------ levels
+	/** Settings that belong to one power as a whole (not to a level). */
+	private static List<Option<?>> globalOptions(String key, MonkConfig cfg, MonkConfig def) {
+		List<Option<?>> list = new ArrayList<>();
+		switch (key) {
+			case "blink" -> {
+				MonkConfig.Blink b = cfg.blink;
+				MonkConfig.Blink bd = def.blink;
+				list.add(floatSlider("blink.range", bd.range, 1F, 255F, 0.5F, () -> b.range, v -> b.range = v));
+				list.add(floatSlider("blink.min_range", bd.minRange, 0.5F, 16F, 0.5F, () -> b.minRange, v -> b.minRange = v));
+				list.add(intSlider("blink.cooldown", bd.cooldownTicks, 0, 400, 5, () -> b.cooldownTicks, v -> b.cooldownTicks = v));
+				list.add(floatSlider("blink.fall_damage", bd.fallDamage, 0F, 20F, 0.5F, () -> b.fallDamage, v -> b.fallDamage = v));
+				list.add(bool("blink.require_unarmored", bd.requireUnarmored, () -> b.requireUnarmored, v -> b.requireUnarmored = v));
+				list.add(bool("blink.allow_air", bd.allowAirTarget, () -> b.allowAirTarget, v -> b.allowAirTarget = v));
+				list.add(bool("blink.climb", bd.climbWalls, () -> b.climbWalls, v -> b.climbWalls = v));
+				list.add(intSlider("blink.climb_height", bd.climbHeight, 0, 255, 1, () -> b.climbHeight, v -> b.climbHeight = v));
+				list.add(intSlider("blink.ground_depth", bd.groundSearchDepth, 0, 64, 1, () -> b.groundSearchDepth, v -> b.groundSearchDepth = v));
+			}
+			case "fly" -> {
+				MonkConfig.Flight f = cfg.flight;
+				MonkConfig.Flight fd = def.flight;
+				list.add(floatSlider("flight.min_speed", fd.minSpeed, 0.01F, 0.1F, 0.005F, () -> f.minSpeed, v -> f.minSpeed = v));
+				list.add(floatSlider("flight.max_speed", fd.maxSpeed, 0.02F, 0.5F, 0.005F, () -> f.maxSpeed, v -> f.maxSpeed = v));
+				list.add(floatSlider("flight.default_speed", fd.defaultSpeed, 0.01F, 0.2F, 0.005F, () -> f.defaultSpeed, v -> f.defaultSpeed = v));
+			}
+			case "water_breathing_partial" -> {
+				MonkConfig.Water w = cfg.water;
+				MonkConfig.Water wd = def.water;
+				list.add(bool("water.hide_bubbles", wd.hideAirBubbles, () -> w.hideAirBubbles, v -> w.hideAirBubbles = v));
+				list.add(bool("water.underwater_mining", wd.underwaterMining, () -> w.underwaterMining, v -> w.underwaterMining = v));
+				list.add(bool("water.ignore_currents", wd.ignoreCurrents, () -> w.ignoreCurrents, v -> w.ignoreCurrents = v));
+			}
+			default -> {
+			}
+		}
+		return list;
+	}
+
+	// ------------------------------------------------------------------ levels (the path: challenges and rewards)
 
 	private static ConfigCategory levels(LevelsFile levels, Screen parent) {
-		ConfigCategory.Builder category = ConfigCategory.createBuilder().name(t("category.levels"))
+		ConfigCategory.Builder category = ConfigCategory.createBuilder().name(t("category.levels")).tooltip(t("category.levels.desc"))
 				.option(LabelOption.create(t("levels.info", levels.levels.size())))
 				.option(ButtonOption.createBuilder().name(t("levels.reset")).description(d("levels.reset"))
 						.action((screen, opt) -> {
@@ -255,10 +336,11 @@ public final class MonkConfigScreen {
 			LevelsFile.LevelEntry entry = levels.levels.get(i);
 			String reqType = entry.requirement != null && entry.requirement.has("type") ? entry.requirement.get("type").getAsString() : "?";
 			OptionGroup.Builder group = OptionGroup.createBuilder()
-					.name(t("levels.level", i, Component.translatable("monk.config.req." + reqType)))
+					.name(levelTitle(levels, i))
 					.description(OptionDescription.of(t("levels.level.desc")))
 					.collapsed(true);
-			group.option(Option.<String>createBuilder().name(t("levels.name")).description(d("levels.name"))
+			Component defaultTitle = i == 0 ? Component.translatable("monk.advancements.level.start") : Component.translatable("monk.advancements.level", i);
+			group.option(Option.<String>createBuilder().name(t("levels.name_default", defaultTitle)).description(d("levels.name"))
 					.binding("", () -> entry.name == null ? "" : entry.name, v -> entry.name = v)
 					.controller(StringControllerBuilder::create).build());
 			group.option(Option.<String>createBuilder().name(t("levels.icon")).description(d("levels.icon"))
@@ -266,20 +348,22 @@ public final class MonkConfigScreen {
 					.controller(StringControllerBuilder::create).build());
 
 			MonkType<?> req = MonkTypes.REQUIREMENTS.get(reqType);
-			group.option(LabelOption.create(t("levels.requirement", Component.translatable("monk.config.req." + reqType))));
+			group.option(LabelOption.create(t("levels.requirement", Component.translatable("monk.config.req." + reqType)).withStyle(ChatFormatting.GOLD)));
 			if (req != null) {
 				for (ParamSpec spec : req.params().values()) {
 					group.option(param(entry.requirement, reqType, spec, "  "));
 				}
 			}
 
-			if (entry.add != null) {
+			if (entry.add != null && !entry.add.isEmpty()) {
+				group.option(LabelOption.create(t("levels.rewards").withStyle(ChatFormatting.GOLD)));
 				for (JsonObject ability : entry.add) {
 					String abType = ability.has("type") ? ability.get("type").getAsString() : "?";
 					MonkType<?> type = MonkTypes.ABILITIES.get(abType);
 					group.option(Option.<Boolean>createBuilder()
-							.name(t("levels.ability", Component.translatable("monk.advancements.ability." + (abType.equals("mining") ? "mining.0" : abType)), abType))
-							.description(OptionDescription.of(type == null ? t("levels.unknown_ability") : summary("ability", type)))
+							.name(Component.literal("  ").append(Component.translatable(defaultNameKey(abType, ability))))
+							.description(OptionDescription.of(type == null ? t("levels.unknown_ability")
+									: Component.empty().append(summary("ability", type)).append("\n\n").append(t("levels.edit_in_abilities"))))
 							.binding(true, () -> !ability.has("enabled") || ability.get("enabled").getAsBoolean(), v -> {
 								if (v) {
 									ability.remove("enabled");
@@ -288,13 +372,6 @@ public final class MonkConfigScreen {
 								}
 							})
 							.controller(TickBoxControllerBuilder::create).build());
-					group.option(text(ability, "name", "levels.custom_name"));
-					group.option(text(ability, "description", "levels.custom_desc"));
-					if (type != null) {
-						for (ParamSpec spec : type.params().values()) {
-							group.option(param(ability, abType, spec, "    "));
-						}
-					}
 				}
 			}
 			if (entry.remove != null && !entry.remove.isEmpty()) {
@@ -311,8 +388,12 @@ public final class MonkConfigScreen {
 	}
 
 	/** Optional free text ("name" / "description") stored in an ability entry; empty = default text. */
-	private static Option<String> text(JsonObject json, String field, String key) {
-		return Option.<String>createBuilder().name(Component.literal("    ").append(t(key))).description(d(key))
+	private static Option<String> text(JsonObject json, String field, String key, Component defaultValue) {
+		MutableComponent label = Component.literal("  ").append(t(key));
+		if (defaultValue != null) {
+			label.append(Component.literal(" — ").withStyle(ChatFormatting.DARK_GRAY)).append(t("levels.default_is", defaultValue).withStyle(ChatFormatting.GRAY));
+		}
+		return Option.<String>createBuilder().name(label).description(d(key))
 				.binding("", () -> json.has(field) && json.get(field).isJsonPrimitive() ? json.get(field).getAsString() : "", v -> {
 					if (v == null || v.isBlank()) {
 						json.remove(field);
@@ -327,8 +408,7 @@ public final class MonkConfigScreen {
 	private static Option<?> param(JsonObject json, String owner, ParamSpec spec, String indent) {
 		Params view = new Params(json, Map.of(spec.name(), spec));
 		String base = "monk.param." + owner + "." + spec.name();
-		Component name = Component.literal(indent).append(Component.translatableWithFallback(base, spec.name()))
-				.append(Component.literal(" (" + spec.name() + ")").withStyle(ChatFormatting.DARK_GRAY));
+		Component name = Component.literal(indent).append(Component.translatableWithFallback(base, spec.name()));
 		OptionDescription desc = OptionDescription.of(Component.translatableWithFallback(base + ".desc", spec.comment()));
 		String key = spec.name();
 		return switch (spec.type()) {

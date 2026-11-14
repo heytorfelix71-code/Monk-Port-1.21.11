@@ -44,14 +44,11 @@ public final class MonkModClient implements ClientModInitializer {
 		return KeyBindingHelper.registerKeyBinding(new KeyMapping(name, InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
 	}
 
+	/** "Hide air bubbles" (Abilities > water breathing) only while your air is infinite. */
 	private static boolean hideAirBubbles() {
-		dev.monkmod.level.AbilitySet set = ClientMonkState.abilities();
-		PassiveAbilities.WaterBreathing full = set.get("water_breathing_full", PassiveAbilities.WaterBreathing.class);
-		if (full != null && full.hideBubbles()) {
-			return true;
-		}
-		PassiveAbilities.WaterBreathing partial = set.get("water_breathing_partial", PassiveAbilities.WaterBreathing.class);
-		return partial != null && partial.hideBubbles();
+		net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
+		return player != null && dev.monkmod.config.MonkConfigManager.config().water.hideAirBubbles
+				&& dev.monkmod.logic.MonkHooks.infiniteAir(player);
 	}
 
 	@Override
