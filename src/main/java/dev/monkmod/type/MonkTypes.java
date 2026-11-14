@@ -182,7 +182,8 @@ public final class MonkTypes {
 				p -> new SimpleAbility("kiss_creeper", p),
 				ofBool("passive", false, "Creepers also never chase or explode at you, even without asking."));
 		ability("iron_body", "Take less damage of every kind while wearing no armor.", CombatAbilities.IronBody::new,
-				ofFloat("multiplier", 0.6, 0, 1, "Fraction of damage still taken (0.6 = 40% less)."));
+				ofFloat("multiplier", 0.6, 0, 1, "Fraction of damage still taken (0.6 = 40% less)."),
+				ofFloat("armor_toughness", 0, 0, 1024, "Armor toughness added while wearing no armor."));
 		ability("regeneration", "Heal slowly after some time without fighting.", CombatAbilities.Regeneration::new,
 				ofInt("delay", 1800, 0, 72000, "Ticks without dealing or taking damage before healing starts (1800 = 90 seconds)."),
 				ofInt("interval", 40, 1, 72000, "Ticks between heals."),

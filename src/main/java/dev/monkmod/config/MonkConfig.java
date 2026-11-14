@@ -62,6 +62,10 @@ public final class MonkConfig {
 		public int previewColor = 0xCC00FA;
 		/** Particles per tick of the preview (1 = very light, 10 = dense). */
 		public int previewDensity = 4;
+		/** Play the teleport sound. */
+		public boolean sound = true;
+		/** Teleport sound volume in percent. */
+		public int soundVolume = 100;
 	}
 
 	public enum PreviewMode {
@@ -122,6 +126,8 @@ public final class MonkConfig {
 
 	public static final class Gameplay {
 		public boolean announceLevelUps = true;
+		/** The "Blindness" level gives no blindness at all. */
+		public boolean noBlindness = false;
 		/** Ability types switched off everywhere, whatever levels.json says. */
 		public List<String> disabledAbilities = new ArrayList<>();
 		/** Progress messages in the action bar when progress changes. */

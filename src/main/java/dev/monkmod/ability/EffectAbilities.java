@@ -36,6 +36,12 @@ public final class EffectAbilities {
 		@Override
 		public void tick(ServerPlayer player, MonkPlayerState state) {
 			MobEffectInstance current = player.getEffect(MobEffects.BLINDNESS);
+			if (dev.monkmod.config.MonkConfigManager.config().gameplay.noBlindness) {
+				if (current != null && !current.isVisible() && current.getDuration() <= 100) {
+					player.removeEffect(MobEffects.BLINDNESS); // ours: hidden particles, short
+				}
+				return;
+			}
 			if (current == null || (!current.isInfiniteDuration() && current.getDuration() < 40)) {
 				player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 0, false, false, true));
 			}

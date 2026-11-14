@@ -208,6 +208,8 @@ public final class MonkConfigScreen {
 						.build())
 				.option(color("blink.preview_color", bd.previewColor, () -> b.previewColor, v -> b.previewColor = v))
 				.option(intSlider("blink.preview_density", bd.previewDensity, 1, 10, 1, () -> b.previewDensity, v -> b.previewDensity = v))
+				.option(bool("blink.sound", bd.sound, () -> b.sound, v -> b.sound = v))
+				.option(intSlider("blink.sound_volume", bd.soundVolume, 0, 100, 5, () -> b.soundVolume, v -> b.soundVolume = v))
 				.build();
 		return ConfigCategory.createBuilder().name(t("category.performance")).tooltip(t("category.performance.desc"))
 				.group(checks).group(preview).build();
@@ -227,9 +229,6 @@ public final class MonkConfigScreen {
 			int level = json.has("harvest_level") ? json.get("harvest_level").getAsInt() : 0;
 			return "monk.advancements.ability.mining." + Math.max(0, Math.min(5, level));
 		}
-		if (type.equals("iron_body") && json.has("multiplier") && json.get("multiplier").getAsFloat() <= 0.55F) {
-			return "monk.advancements.ability.iron_body.netherite";
-		}
 		return "monk.advancements.ability." + type;
 	}
 
@@ -245,6 +244,9 @@ public final class MonkConfigScreen {
 				.option(LabelOption.create(t("abilities.info")));
 		for (MonkType<?> type : MonkTypes.ABILITIES.values()) {
 			String key = type.key();
+			if (key.equals("armor_toughness") && !usedInLevels(levels, key)) {
+				continue; // Iron Skin is part of Iron Body now
+			}
 			OptionGroup.Builder group = OptionGroup.createBuilder().name(typeName(key))
 					.description(OptionDescription.of(summary("ability", type))).collapsed(true);
 			group.option(Option.<Boolean>createBuilder().name(t("abilities.enabled")).description(d("abilities.enabled"))
@@ -284,6 +286,15 @@ public final class MonkConfigScreen {
 		return category.build();
 	}
 
+	private static boolean usedInLevels(LevelsFile levels, String key) {
+		for (LevelsFile.LevelEntry e : levels.levels) {
+			if (e.add != null && e.add.stream().anyMatch(a -> a.has("type") && key.equals(a.get("type").getAsString()))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** Settings that belong to one power as a whole (not to a level). */
 	private static List<Option<?>> globalOptions(String key, MonkConfig cfg, MonkConfig def) {
 		List<Option<?>> list = new ArrayList<>();
@@ -300,6 +311,10 @@ public final class MonkConfigScreen {
 				list.add(bool("blink.climb", bd.climbWalls, () -> b.climbWalls, v -> b.climbWalls = v));
 				list.add(intSlider("blink.climb_height", bd.climbHeight, 0, 255, 1, () -> b.climbHeight, v -> b.climbHeight = v));
 				list.add(intSlider("blink.ground_depth", bd.groundSearchDepth, 0, 64, 1, () -> b.groundSearchDepth, v -> b.groundSearchDepth = v));
+			}
+			case "blindness" -> {
+				MonkConfig.Gameplay g = cfg.gameplay;
+				list.add(bool("blindness.none", def.gameplay.noBlindness, () -> g.noBlindness, v -> g.noBlindness = v));
 			}
 			case "fly" -> {
 				MonkConfig.Flight f = cfg.flight;

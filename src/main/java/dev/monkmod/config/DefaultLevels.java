@@ -23,7 +23,7 @@ public final class DefaultLevels {
 				ab("hunger").p("hunger_chance", 0.4),
 				ab("armor").p("armor", 1.0));
 		level(f, "squid", req("drown").p("swim_time", 400),
-				ab("water_breathing_partial").p("oxygen_bonus", 2.0).p("swim_boost", 0.02).p("swim_up", 0.01).p("column_resist", 0.25),
+				ab("water_breathing_partial").p("oxygen_bonus", 2.0).p("swim_speed", 0.2).p("swim_boost", 0.02).p("swim_up", 0.01).p("column_resist", 0.25),
 				ab("armor").p("armor", 2.0),
 				ab("regeneration").p("delay", 3600).p("interval", 100).p("amount", 1.0));
 		level(f, "silverfish", req("break_block").p("block", "minecraft:stone").p("number", 64),
@@ -50,7 +50,7 @@ public final class DefaultLevels {
 				ab("counter_attack").p("chance", 0.15));
 		level(f, "water", req("meditate_water_moon").p("stare_time", 400),
 				ab("water_walking"),
-				ab("water_breathing_partial").p("oxygen_bonus", 4.0).p("swim_boost", 0.04).p("swim_up", 0.02).p("column_resist", 0.5));
+				ab("water_breathing_partial").p("oxygen_bonus", 4.0).p("swim_speed", 0.35).p("swim_boost", 0.04).p("swim_up", 0.02).p("column_resist", 0.5));
 		level(f, "enderman", req("meditate_endermen").p("time", 1200),
 				ab("blink"),
 				ab("regeneration").p("delay", 2400).p("interval", 60).p("amount", 1.0),
@@ -62,7 +62,7 @@ public final class DefaultLevels {
 		level(f, "ghast", req("break_block").p("block", "minecraft:obsidian").p("number", 4),
 				ab("mining").p("harvest_level", 3).p("speed_increase", 5.0),
 				ab("armor").p("armor", 9.0),
-				ab("armor_toughness").p("armor_toughness", 3.0));
+				ab("iron_body").p("multiplier", 0.9).p("armor_toughness", 3.0));
 		level(f, "creeper", req("kiss_creeper"),
 				ab("kiss_creeper"),
 				ab("explosion_resistance").p("multiplier", 0.5),
@@ -70,12 +70,12 @@ public final class DefaultLevels {
 				ab("counter_attack").p("chance", 0.25));
 		level(f, "evil_eye", req("wither_stare").p("stare_time", 400),
 				ab("withering_stare"),
-				ab("water_breathing_full").p("swim_boost", 0.06).p("swim_up", 0.035).p("column_resist", 0.75));
+				ab("water_breathing_full").p("swim_speed", 0.5).p("swim_boost", 0.06).p("swim_up", 0.035).p("column_resist", 0.75));
 		level(f, "ocelot", req("fall").p("distance", 50.0),
 				ab("feather_fall").p("multiplier", 0.2),
 				ab("catch_arrows").p("catch_chance", 0.55),
 				ab("armor").p("armor", 13.0),
-				ab("armor_toughness").p("armor_toughness", 6.0),
+				ab("iron_body").p("multiplier", 0.8).p("armor_toughness", 6.0),
 				ab("swift").p("increase", 0.8));
 		level(f, "bed", req("bedrock_sleep"),
 				ab("mining").p("harvest_level", 5).p("speed_increase", 8.0),
@@ -91,20 +91,18 @@ public final class DefaultLevels {
 		level(f, "wither", req("kill_entity_type").p("kills", 1).p("entity_type", "minecraft:wither"),
 				ab("potion_immunity"),
 				ab("armor").p("armor", 18.0),
-				ab("armor_toughness").p("armor_toughness", 10.0),
-				ab("iron_body").p("multiplier", 0.7),
-				ab("water_breathing_full").p("swim_boost", 0.08).p("swim_up", 0.05).p("column_resist", 1.0));
+				ab("iron_body").p("multiplier", 0.7).p("armor_toughness", 10.0),
+				ab("water_breathing_full").p("swim_speed", 0.7).p("swim_boost", 0.08).p("swim_up", 0.05).p("column_resist", 1.0));
 		level(f, "ascend", req("void_fall"),
 				ab("fly"),
 				ab("time_stop"),
 				ab("regeneration").p("delay", 1800).p("interval", 40).p("amount", 1.0),
 				ab("catch_arrows").p("catch_chance", 0.85).p("back_dodge", true).p("back_catch_chance", 0.2),
-				ab("iron_body").p("multiplier", 0.5),
+				ab("iron_body").p("multiplier", 0.5).p("armor_toughness", 14.0),
 				ab("hunger").p("hunger_chance", 0.99),
 				ab("swift").p("increase", 1.2),
 				ab("strength").p("damage", 20.0),
 				ab("armor").p("armor", 20.0),
-				ab("armor_toughness").p("armor_toughness", 14.0),
 				ab("knockback_resistance").p("knockback_resistance", 5.0),
 				ab("counter_attack").p("chance", 0.4));
 		return f;

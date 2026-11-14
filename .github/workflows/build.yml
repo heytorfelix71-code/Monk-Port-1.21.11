@@ -32,12 +32,6 @@ jobs:
       - name: Build
         run: chmod +x gradlew && ./gradlew build --stacktrace --no-daemon
 
-      - name: Diag bubble column signatures
-        continue-on-error: true
-        run: |
-          J=$(find ~/.gradle -name '*.jar' -path '*minecraft*' | grep -i -E 'merged|mapped|named' | head -3); echo "$J"
-          for j in $J; do javap -p -cp "$j" net.minecraft.world.entity.Entity | grep -i -E 'BubbleColumn|resetFallDistance|isPushedByFluid'; done
-
       - uses: actions/upload-artifact@v4
         if: success()
         with:

@@ -106,13 +106,19 @@ public final class MonkNetwork {
 		if (player.isPassenger()) {
 			player.stopRiding();
 		}
-		level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+		// The blinking player hears it from their own client (with their volume setting); everyone else from here.
+		float volume = cfg.sound ? Math.max(0, Math.min(100, cfg.soundVolume)) / 100.0F : 0.0F;
+		if (volume > 0) {
+			level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, volume, 1.0F);
+		}
 		player.teleportTo(target.x, target.y, target.z);
 		player.resetFallDistance();
 		if (cfg.fallDamage > 0) {
 			player.hurtServer(level, player.damageSources().fall(), cfg.fallDamage);
 		}
-		level.playSound(null, target.x, target.y, target.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+		if (volume > 0) {
+			level.playSound(player, target.x, target.y, target.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, volume, 1.0F);
+		}
 		state.blinkReadyAt = now + cfg.cooldownTicks;
 	}
 

@@ -6,6 +6,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
@@ -24,6 +26,8 @@ final class BlinkClient {
 	private static final DustParticleOptions BLOCKED = new DustParticleOptions(0x800000, 1.0F);
 
 	private static boolean wasDown;
+	/** Sneak was pressed while aiming: this blink is cancelled until the key is released. */
+	private static boolean cancelled;
 	private static int cooldown;
 
 	private BlinkClient() {
@@ -43,6 +47,17 @@ final class BlinkClient {
 			return;
 		}
 		boolean down = MonkModClient.blinkKey.isDown();
+		if (!down) {
+			if (cancelled) {
+				cancelled = false;
+				wasDown = false;
+				return;
+			}
+		} else if (client.options.keyShift.isDown() || cancelled) {
+			cancelled = true; // sneak cancels the blink, even with the key still held
+			wasDown = true;
+			return;
+		}
 		if (down) {
 			if (MonkConfigManager.config().blink.previewMode != dev.monkmod.config.MonkConfig.PreviewMode.OFF) {
 				preview(player, level);
@@ -50,8 +65,15 @@ final class BlinkClient {
 		} else if (wasDown && cooldown == 0) {
 			Vec3 target = findTarget(player, level);
 			if (target != null && ClientPlayNetworking.canSend(BlinkPayload.TYPE)) {
+				Vec3 from = player.position();
 				ClientPlayNetworking.send(new BlinkPayload(target.x, target.y, target.z));
 				cooldown = ClientMonkState.blinkCooldown();
+				dev.monkmod.config.MonkConfig.Blink cfg = MonkConfigManager.config().blink;
+				float volume = cfg.sound ? Math.max(0, Math.min(100, cfg.soundVolume)) / 100.0F : 0.0F;
+				if (volume > 0) {
+					level.playLocalSound(from.x, from.y, from.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, volume, 1.0F, false);
+					level.playLocalSound(target.x, target.y, target.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, volume, 1.0F, false);
+				}
 			}
 		}
 		wasDown = down;
@@ -124,8 +146,7 @@ final class BlinkClient {
 		Vec3 eye = player.getEyePosition();
 		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
 		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-		if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection().getAxis() == Direction.Axis.Y
-				|| hit.getLocation().y < player.getY() + 1.0) {
+		if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection().getAxis() == Direction.Axis.Y) {
 			return null;
 		}
 		BlockPos column = hit.getBlockPos();
@@ -138,7 +159,10 @@ final class BlinkClient {
 			VoxelShape floor = level.getBlockState(below).getCollisionShape(level, below);
 			double y = below.getY() + (floor.isEmpty() ? 0.0 : floor.max(Direction.Axis.Y));
 			Vec3 spot = fits(player, level, new Vec3(column.getX() + 0.5, y, column.getZ() + 0.5));
-			if (spot == null || eye.distanceTo(spot) > ClientMonkState.blinkRange() + 0.5) {
+			if (spot == null) {
+				continue; // a gap too small to stand in (overhang): keep looking higher
+			}
+			if (eye.distanceTo(spot) > ClientMonkState.blinkRange() + 0.5) {
 				return null; // the top is too far: no free ride
 			}
 			return spot;

@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 10;
+	public static final int CURRENT_VERSION = 11;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -107,7 +107,7 @@ public final class LevelsFile {
 			diet.addProperty("type", "natural_diet");
 			first.add.add(diet);
 		}
-		if (config_version < 10 && looksLikeDefaults()) {
+		if (config_version < 11 && looksLikeDefaults()) {
 			// 2.5.0 / 2.6.0 rebalances: same 21 levels, so saved progress still fits.
 			rebalanceFromDefaults();
 		}
@@ -123,8 +123,44 @@ public final class LevelsFile {
 				addTo("monk:icon/ascend", "knockback_resistance", "knockback_resistance", 5.0);
 			}
 		}
+		if (config_version < 11 && !rebalanced) {
+			mergeIronSkin();
+		}
 		config_version = CURRENT_VERSION;
 		return true;
+	}
+
+	/** 2.8.2: "Iron Skin" (armor_toughness) became part of Iron Body. */
+	private void mergeIronSkin() {
+		for (LevelEntry e : levels) {
+			if (e.remove != null) {
+				e.remove.replaceAll(r -> "armor_toughness".equals(r) ? "iron_body" : r);
+			}
+			if (e.add == null) {
+				continue;
+			}
+			JsonObject skin = null;
+			JsonObject body = null;
+			for (JsonObject a : e.add) {
+				String type = a.has("type") ? a.get("type").getAsString() : "";
+				if (type.equals("armor_toughness")) {
+					skin = a;
+				} else if (type.equals("iron_body")) {
+					body = a;
+				}
+			}
+			if (skin == null) {
+				continue;
+			}
+			e.add.remove(skin);
+			if (body == null) {
+				body = new JsonObject();
+				body.addProperty("type", "iron_body");
+				body.addProperty("multiplier", 1.0);
+				e.add.add(body);
+			}
+			body.addProperty("armor_toughness", skin.has("armor_toughness") ? skin.get("armor_toughness").getAsDouble() : 1.0);
+		}
 	}
 
 	private void rebalanceFromDefaults() {

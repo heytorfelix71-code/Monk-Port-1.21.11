@@ -20,14 +20,39 @@ public final class CombatAbilities {
 	private CombatAbilities() {
 	}
 
-	/** Takes only a fraction of every kind of damage while wearing no armor (on top of the natural armor). */
+	/**
+	 * Iron Body: takes only a fraction of every kind of damage and gains armor toughness while wearing no
+	 * armor (the old "Iron Skin" and "Netherite Skin" are part of it now).
+	 */
 	public static final class IronBody extends ProtectionAbility {
 		private final float multiplier;
+		private final float toughness;
+		private final AttributeAbility toughnessMod;
 
 		public IronBody(Params params) {
 			super("iron_body", params, s -> !s.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !s.is(DamageTypeTags.BYPASSES_EFFECTS),
 					params.getFloat("multiplier"));
 			this.multiplier = params.getFloat("multiplier");
+			this.toughness = params.getFloat("armor_toughness");
+			this.toughnessMod = new AttributeAbility("iron_body", params, AttributeAbility.Condition.UNARMORED,
+					java.util.List.of(new AttributeAbility.Mod(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS, "toughness",
+							net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE, (pl, s) -> toughness)),
+					a -> new Object[0]);
+		}
+
+		@Override
+		public boolean isTicking() {
+			return true;
+		}
+
+		@Override
+		public void tick(ServerPlayer player, MonkPlayerState state) {
+			toughnessMod.tick(player, state);
+		}
+
+		@Override
+		public void onRemoved(ServerPlayer player, MonkPlayerState state) {
+			toughnessMod.onRemoved(player, state);
 		}
 
 		@Override
@@ -35,15 +60,9 @@ public final class CombatAbilities {
 			return state.unarmored() ? multiplier : 1.0F;
 		}
 
-		/** Takes half the damage or less: "Netherite Skin" instead of "Iron Body". */
-		@Override
-		public String translationKey() {
-			return multiplier <= 0.55F ? super.translationKey() + ".netherite" : super.translationKey();
-		}
-
 		@Override
 		protected Object[] descriptionArgs() {
-			return new Object[]{percent(1.0 - multiplier)};
+			return new Object[]{percent(1.0 - multiplier), number(toughness)};
 		}
 	}
 
