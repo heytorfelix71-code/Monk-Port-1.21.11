@@ -44,10 +44,12 @@ final class BlinkClient {
 		ClientLevel level = client.level;
 		if (player == null || level == null || client.screen != null || !ClientMonkState.abilities().has("blink")) {
 			wasDown = false;
+			BlinkShadow.clear();
 			return;
 		}
 		boolean down = MonkModClient.blinkKey.isDown();
 		if (!down) {
+			BlinkShadow.clear();
 			if (cancelled) {
 				cancelled = false;
 				wasDown = false;
@@ -56,12 +58,18 @@ final class BlinkClient {
 		} else if (client.options.keyShift.isDown() || cancelled) {
 			cancelled = true; // sneak cancels the blink, even with the key still held
 			wasDown = true;
+			BlinkShadow.clear();
 			return;
 		}
 		if (down) {
-			if (MonkConfigManager.config().blink.previewMode != dev.monkmod.config.MonkConfig.PreviewMode.OFF) {
-				preview(player, level);
+			dev.monkmod.config.MonkConfig.Blink cfg = MonkConfigManager.config().blink;
+			boolean particles = cfg.previewMode != dev.monkmod.config.MonkConfig.PreviewMode.OFF;
+			boolean shadow = cfg.shadowMode != dev.monkmod.config.MonkConfig.ShadowMode.OFF;
+			Vec3 target = particles || shadow ? findTarget(player, level) : null;
+			if (particles) {
+				preview(player, level, target);
 			}
+			BlinkShadow.update(player, shadow ? target : null, 1.0F - cooldown / 20.0F);
 		} else if (wasDown && cooldown == 0) {
 			Vec3 target = findTarget(player, level);
 			if (target != null && ClientPlayNetworking.canSend(BlinkPayload.TYPE)) {
@@ -79,9 +87,9 @@ final class BlinkClient {
 		wasDown = down;
 	}
 
-	private static void preview(LocalPlayer player, ClientLevel level) {
+	/** All preview particles are spawned on this client only: nobody else sees them. */
+	private static void preview(LocalPlayer player, ClientLevel level, Vec3 target) {
 		dev.monkmod.config.MonkConfig.Blink cfg = MonkConfigManager.config().blink;
-		Vec3 target = findTarget(player, level);
 		RandomSource random = level.getRandom();
 		if (target == null) {
 			Vec3 point = aimPoint(player, level);
@@ -99,14 +107,25 @@ final class BlinkClient {
 				}
 			}
 			case LINE -> {
-				Vec3 from = player.getEyePosition().add(0, -0.4, 0);
+				// A thrown-arc line from beside your right hand to the landing spot. It starts off to the side and
+				// bends upward, so it never crosses the crosshair, and skips the part right in front of your eyes.
+				Vec3 eye = player.getEyePosition();
+				Vec3 look = player.getViewVector(1.0F);
+				Vec3 right = new Vec3(-look.z, 0, look.x);
+				right = right.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : right.normalize();
+				Vec3 from = eye.add(0, -0.55, 0).add(right.scale(0.45)).add(look.scale(0.5));
 				Vec3 to = target.add(0, 0.1, 0);
 				double length = from.distanceTo(to);
+				double lift = Math.min(12.0, length * Math.max(0, Math.min(100, cfg.previewCurve)) / 100.0 * 0.3);
 				int steps = Math.max(2, (int) (length * density / 2.0));
 				DustParticleOptions small = new DustParticleOptions(color, 0.5F);
 				for (int i = 1; i <= steps; i++) {
+					double t = i / (double) steps;
+					Vec3 p = from.lerp(to, t).add(0, lift * 4.0 * t * (1.0 - t), 0);
+					if (p.distanceToSqr(eye) < 4.0) {
+						continue; // too close: it would cover the view
+					}
 					if (random.nextFloat() < chance) {
-						Vec3 p = from.lerp(to, i / (double) steps);
 						level.addParticle(small, p.x, p.y, p.z, 0, 0, 0);
 					}
 				}

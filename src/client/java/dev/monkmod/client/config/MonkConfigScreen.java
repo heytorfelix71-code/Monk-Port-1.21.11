@@ -208,11 +208,23 @@ public final class MonkConfigScreen {
 						.build())
 				.option(color("blink.preview_color", bd.previewColor, () -> b.previewColor, v -> b.previewColor = v))
 				.option(intSlider("blink.preview_density", bd.previewDensity, 1, 10, 1, () -> b.previewDensity, v -> b.previewDensity = v))
+				.option(intSlider("blink.preview_curve", bd.previewCurve, 0, 100, 5, () -> b.previewCurve, v -> b.previewCurve = v))
 				.option(bool("blink.sound", bd.sound, () -> b.sound, v -> b.sound = v))
 				.option(intSlider("blink.sound_volume", bd.soundVolume, 0, 100, 5, () -> b.soundVolume, v -> b.soundVolume = v))
 				.build();
+		OptionGroup shadow = OptionGroup.createBuilder().name(t("blink_shadow")).description(d("blink_shadow"))
+				.option(Option.<MonkConfig.ShadowMode>createBuilder().name(t("blink.shadow_mode")).description(d("blink.shadow_mode"))
+						.binding(bd.shadowMode, () -> b.shadowMode, v -> b.shadowMode = v)
+						.controller(o -> EnumControllerBuilder.create(o).enumClass(MonkConfig.ShadowMode.class)
+								.formatValue(v -> t("blink.shadow_mode." + v.name().toLowerCase())))
+						.build())
+				.option(intSlider("blink.shadow_count", bd.shadowCount, 1, 16, 1, () -> b.shadowCount, v -> b.shadowCount = v))
+				.option(floatSlider("blink.shadow_spacing", bd.shadowSpacing, 1F, 32F, 0.5F, () -> b.shadowSpacing, v -> b.shadowSpacing = v))
+				.option(color("blink.shadow_color", bd.shadowColor, () -> b.shadowColor, v -> b.shadowColor = v))
+				.option(intSlider("blink.shadow_opacity", bd.shadowOpacity, 10, 100, 5, () -> b.shadowOpacity, v -> b.shadowOpacity = v))
+				.build();
 		return ConfigCategory.createBuilder().name(t("category.performance")).tooltip(t("category.performance.desc"))
-				.group(checks).group(preview).build();
+				.group(checks).group(preview).group(shadow).build();
 	}
 
 	// ------------------------------------------------------------------ abilities (everything about each power)

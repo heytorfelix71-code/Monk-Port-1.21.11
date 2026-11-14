@@ -66,6 +66,26 @@ public final class MonkConfig {
 		public boolean sound = true;
 		/** Teleport sound volume in percent. */
 		public int soundVolume = 100;
+		/** How much the preview line bends upward like a thrown arc (0 = straight, 100 = high arc). */
+		public int previewCurve = 35;
+		/** Translucent copy of your own player model where you will land. */
+		public ShadowMode shadowMode = ShadowMode.TARGET;
+		/** "Along the path": how many shadows at most (the last one is at the destination). */
+		public int shadowCount = 4;
+		/** "Along the path": smallest distance between two shadows, in blocks. */
+		public float shadowSpacing = 3.0F;
+		public int shadowColor = 0x9966FF;
+		/** Shadow opacity in percent (100 = solid). */
+		public int shadowOpacity = 40;
+	}
+
+	public enum ShadowMode {
+		/** No shadow. */
+		OFF,
+		/** One shadow at the destination. */
+		TARGET,
+		/** Several shadows along the way, the last one at the destination. */
+		PATH
 	}
 
 	public enum PreviewMode {
@@ -170,6 +190,13 @@ public final class MonkConfig {
 		blink.climbHeight = clamp(blink.climbHeight, 0, 255);
 		blink.previewDensity = clamp(blink.previewDensity, 1, 10);
 		blink.previewColor &= 0xFFFFFF;
+		blink.previewCurve = clamp(blink.previewCurve, 0, 100);
+		if (blink.shadowMode == null) blink.shadowMode = ShadowMode.TARGET;
+		blink.shadowCount = clamp(blink.shadowCount, 1, 16);
+		blink.shadowSpacing = Math.max(1F, Math.min(32F, blink.shadowSpacing));
+		blink.shadowColor &= 0xFFFFFF;
+		blink.shadowOpacity = clamp(blink.shadowOpacity, 10, 100);
+		blink.soundVolume = clamp(blink.soundVolume, 0, 100);
 		if (configVersion < 2) {
 			// 2.5.0: monk flight was far too fast.
 			flight.minSpeed = Math.min(flight.minSpeed, 0.01F);

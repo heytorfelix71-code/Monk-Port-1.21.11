@@ -84,6 +84,8 @@ public final class MonkModClient implements ClientModInitializer {
 			SwimClient.tick(client);
 			MonkControls.tick(client);
 		});
+		// Blink shadow: your own see-through model at the landing spot (only drawn on your client).
+		net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents.AFTER_ENTITIES.register(BlinkShadow::render);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, MonkMod.id("progress"), MonkHud::render);
 		// Water breathing with "hide_bubbles": no air bubbles above the hotbar.
 		HudElementRegistry.replaceElement(VanillaHudElements.AIR_BAR, vanilla -> (graphics, tick) -> {
