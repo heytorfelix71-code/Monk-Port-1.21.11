@@ -111,7 +111,9 @@ public final class PassiveAbilities {
 		}
 
 		public float multiplier(Player player) {
-			double bonus = increase * (player.isSprinting() ? sprintMultiplier : 1.0F);
+			// walking only gets a share of the bonus (still following the chosen %), sprinting gets all of it
+			double bonus = increase * (player.isSprinting() ? sprintMultiplier
+					: dev.monkmod.config.MonkConfigManager.config().controls.walkShare);
 			if (player.level().isClientSide()) {
 				bonus *= runScale.getAsDouble();
 			}

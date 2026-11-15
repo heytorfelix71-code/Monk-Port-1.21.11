@@ -144,6 +144,8 @@ public final class MonkConfig {
 		public float blinkStep = 1.0F;
 		/** Step of the running bonus scale (1.0 = the full bonus of your level). */
 		public float runStep = 0.1F;
+		/** Share of the running bonus used while walking (not sprinting): 0.25 = a quarter, still following the chosen %. */
+		public float walkShare = 0.25F;
 		public float maxRunScale = 2.0F;
 		public float flyStep = 0.005F;
 		/** Show the new value in the action bar when it changes. */
@@ -253,6 +255,7 @@ public final class MonkConfig {
 		flight.maxSpeed = Math.max(flight.minSpeed, Math.min(2F, flight.maxSpeed));
 		controls.blinkStep = Math.max(0.1F, Math.min(100_000F, controls.blinkStep));
 		controls.runStep = Math.max(0.01F, Math.min(5F, controls.runStep));
+		controls.walkShare = Math.max(0F, Math.min(1F, controls.walkShare));
 		controls.maxRunScale = Math.max(0F, Math.min(10F, controls.maxRunScale));
 		controls.flyStep = Math.max(0.001F, Math.min(0.5F, controls.flyStep));
 		if (hud.style == null) hud.style = HudStyle.RING;
@@ -260,7 +263,7 @@ public final class MonkConfig {
 		hud.size = clamp(hud.size, 8, 128);
 		hud.opacity = Math.max(0.05F, Math.min(1F, hud.opacity));
 		hud.visibleTicks = clamp(hud.visibleTicks, 0, 1200);
-		blink.range = Math.max(1F, Math.min(1_000_000F, blink.range));
+		blink.range = Math.max(1F, Math.min(29_999_984F, blink.range));
 		blink.cooldownTicks = clamp(blink.cooldownTicks, 0, 1200);
 		blink.fallDamage = Math.max(0F, blink.fallDamage);
 		if (equipment.whitelist == null) equipment.whitelist = new ArrayList<>();

@@ -133,6 +133,7 @@ public final class MonkConfigScreen {
 				.option(bool("controls.scroll_fly", cd.scrollFlySpeed, () -> c.scrollFlySpeed, v -> c.scrollFlySpeed = v))
 				.option(floatField("controls.blink_step", cd.blinkStep, 0.1F, 100_000F, () -> c.blinkStep, v -> c.blinkStep = v))
 				.option(floatSlider("controls.run_step", cd.runStep, 0.05F, 1F, 0.05F, () -> c.runStep, v -> c.runStep = v))
+				.option(floatSlider("controls.walk_share", cd.walkShare, 0F, 1F, 0.05F, () -> c.walkShare, v -> c.walkShare = v))
 				.option(floatSlider("controls.max_run_scale", cd.maxRunScale, 0.5F, 5F, 0.25F, () -> c.maxRunScale, v -> c.maxRunScale = v))
 				.option(floatSlider("controls.fly_step", cd.flyStep, 0.001F, 0.05F, 0.001F, () -> c.flyStep, v -> c.flyStep = v))
 				.option(bool("controls.show_changes", cd.showChanges, () -> c.showChanges, v -> c.showChanges = v))
@@ -314,7 +315,7 @@ public final class MonkConfigScreen {
 			case "blink" -> {
 				MonkConfig.Blink b = cfg.blink;
 				MonkConfig.Blink bd = def.blink;
-				list.add(floatField("blink.range", bd.range, 1F, 1_000_000F, () -> b.range, v -> b.range = v));
+				list.add(logSlider("blink.range", bd.range, 1F, 29_999_984F, () -> b.range, v -> b.range = v));
 				list.add(floatSlider("blink.min_range", bd.minRange, 0.5F, 16F, 0.5F, () -> b.minRange, v -> b.minRange = v));
 				list.add(intSlider("blink.cooldown", bd.cooldownTicks, 0, 400, 5, () -> b.cooldownTicks, v -> b.cooldownTicks = v));
 				list.add(floatSlider("blink.fall_damage", bd.fallDamage, 0F, 20F, 0.5F, () -> b.fallDamage, v -> b.fallDamage = v));
@@ -502,6 +503,31 @@ public final class MonkConfigScreen {
 	private static Option<Float> floatSlider(String key, float def, float min, float max, float step, Supplier<Float> get, Consumer<Float> set) {
 		return Option.<Float>createBuilder().name(t(key)).description(d(key))
 				.binding(def, get, set).controller(o -> FloatSliderControllerBuilder.create(o).range(min, max).step(step)).build();
+	}
+
+	/**
+	 * A slider for a very wide range (1 to 30,000,000 blocks): it moves on a logarithmic scale, so every part of it is
+	 * usable, and shows the real value in blocks.
+	 */
+	private static Option<Float> logSlider(String key, float def, float min, float max, Supplier<Float> get, Consumer<Float> set) {
+		double lmin = Math.log(min);
+		double lmax = Math.log(max);
+		java.util.function.Function<Float, Float> pos = v -> (float) ((Math.log(Math.max(min, Math.min(max, v))) - lmin) / (lmax - lmin) * 1000.0);
+		java.util.function.Function<Float, Float> val = p -> {
+			double v = Math.exp(lmin + (lmax - lmin) * Math.max(0, Math.min(1000, p)) / 1000.0);
+			if (v >= 100) {
+				double mag = Math.pow(10, Math.floor(Math.log10(v)) - 1); // two significant digits: 120, 4500, 1,000,000
+				v = Math.round(v / mag) * mag;
+			} else {
+				v = Math.round(v);
+			}
+			return (float) Math.max(min, Math.min(max, v));
+		};
+		return Option.<Float>createBuilder().name(t(key)).description(d(key))
+				.binding(pos.apply(def), () -> pos.apply(get.get()), p -> set.accept(val.apply(p)))
+				.controller(o -> FloatSliderControllerBuilder.create(o).range(0F, 1000F).step(1F)
+						.formatValue(p -> Component.literal(String.format(java.util.Locale.ROOT, "%,d", (long) (float) val.apply(p)).replace(',', '.'))))
+				.build();
 	}
 
 	private static Option<Float> floatField(String key, float def, float min, float max, Supplier<Float> get, Consumer<Float> set) {

@@ -163,7 +163,7 @@
   "monk.config.blink": "Teleporte (Blink)",
   "monk.config.blink.desc": "A habilidade Blink (nível 11 por padrão). Configurações do servidor.",
   "monk.config.blink.range": "Distância máxima",
-  "monk.config.blink.range.desc": "Distância máxima do blink, em blocos (até 1.000.000). Longe da sua visão (Voxy/Distant Horizons), o servidor procura o chão aos poucos, sem travar.",
+  "monk.config.blink.range.desc": "Distância máxima do blink, em blocos, até a borda do mundo (30.000.000). Arraste para a esquerda e direita. Longe da sua visão (Voxy/Distant Horizons), o servidor acha o chão pelo gerador do mundo, sem travar.",
   "monk.config.blink.cooldown": "Recarga (ticks)",
   "monk.config.blink.cooldown.desc": "Tempo entre teleportes (20 ticks = 1 segundo).",
   "monk.config.blink.fall_damage": "Dano por teleporte",
@@ -657,5 +657,7 @@
   "monk.param.withering_stare.paralyze_max": "Paralisia (nível máximo)",
   "monk.param.withering_stare.paralyze_max.desc": "Ticks de paralisia no nível máximo de monge (100 = 5 segundos).",
   "key.monk.speed_up": "Monge: mais velocidade (voo, só voando / CTRL + tecla: corrida)",
-  "key.monk.speed_down": "Monge: menos velocidade (voo, só voando / CTRL + tecla: corrida)"
+  "key.monk.speed_down": "Monge: menos velocidade (voo, só voando / CTRL + tecla: corrida)",
+  "monk.config.controls.walk_share": "Velocidade andando",
+  "monk.config.controls.walk_share.desc": "Quanto do bônus de corrida vale andando (sem correr): 0,25 = um quarto. Continua acompanhando a % escolhida nas setas."
 }

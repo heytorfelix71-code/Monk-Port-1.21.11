@@ -150,6 +150,7 @@ public final class MonkNetwork {
 		final Vec3 dir;
 		final double dist;
 		double d = 1.0;
+		double last = 1.0;
 		int shown;
 
 		FarJob(ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
@@ -197,12 +198,42 @@ public final class MonkNetwork {
 					job.d += 0.5;
 					continue;
 				}
-				int top = surface(job.level, (int) Math.floor(at.x), (int) Math.floor(at.z));
-				if (at.y <= top) {
-					hit = new Vec3(Math.floor(at.x) + 0.5, top, Math.floor(at.z) + 0.5);
+				// Past the loaded chunks the terrain height comes straight from the world generator (no chunk is generated),
+				// and the step grows with the distance: 1,000,000 blocks takes about 2,000 samples instead of
+				// generating tens of thousands of chunks (which took many minutes, so it seemed nothing happened).
+				if (at.y <= height(job.level, (int) Math.floor(at.x), (int) Math.floor(at.z))) {
+					// the line went into the ground between the last sample and this one: narrow it down
+					double lo = job.last;
+					double hi = job.d;
+					for (int i = 0; i < 24 && hi - lo > 1.0; i++) {
+						double mid = (lo + hi) / 2;
+						Vec3 m = job.eye.add(job.dir.scale(mid));
+						if (m.y <= height(job.level, (int) Math.floor(m.x), (int) Math.floor(m.z))) {
+							hi = mid;
+						} else {
+							lo = mid;
+						}
+					}
+					Vec3 col = job.eye.add(job.dir.scale(hi));
+					hit = new Vec3(Math.floor(col.x) + 0.5, surface(job.level, (int) Math.floor(col.x), (int) Math.floor(col.z)),
+							Math.floor(col.z) + 0.5);
 					break;
 				}
-				job.d += 2.0;
+				job.last = job.d;
+				job.d += Math.max(2.0, job.d * 0.004);
+			}
+			if (over && hit == null && !done) {
+				// aiming over the land (into the sky): land on the ground at the end of the blink distance, like a teleport
+				double end = Math.min(job.d, job.dist);
+				Vec3 col = job.eye.add(job.dir.scale(end));
+				for (int back = 0; back < 64 && !job.level.getWorldBorder().isWithinBounds(BlockPos.containing(col)); back++) {
+					end *= 0.98;
+					col = job.eye.add(job.dir.scale(end));
+				}
+				if (job.level.getWorldBorder().isWithinBounds(BlockPos.containing(col))) {
+					hit = new Vec3(Math.floor(col.x) + 0.5, surface(job.level, (int) Math.floor(col.x), (int) Math.floor(col.z)),
+							Math.floor(col.z) + 0.5);
+				}
 			}
 			if (done) {
 				it.remove();
@@ -223,6 +254,15 @@ public final class MonkNetwork {
 				player.displayClientMessage(net.minecraft.network.chat.Component.literal("Blink: " + (int) job.d + " / " + (int) job.dist), true);
 			}
 		}
+	}
+
+	/** Ground height at a column without generating anything: the loaded chunk's height map, or the world generator's noise. */
+	private static int height(ServerLevel level, int x, int z) {
+		if (level.hasChunk(x >> 4, z >> 4)) {
+			return level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x, z);
+		}
+		return level.getChunkSource().getGenerator().getBaseHeight(x, z, net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG,
+				level, level.getChunkSource().randomState());
 	}
 
 	/** Height of the ground (first free block above it) at a column; loads or generates the chunk as needed. */
