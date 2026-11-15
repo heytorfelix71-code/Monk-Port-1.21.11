@@ -322,6 +322,7 @@ public final class MonkConfigScreen {
 				list.add(bool("blink.allow_air", bd.allowAirTarget, () -> b.allowAirTarget, v -> b.allowAirTarget = v));
 				list.add(bool("blink.climb", bd.climbWalls, () -> b.climbWalls, v -> b.climbWalls = v));
 				list.add(bool("blink.land_on_tops", bd.landOnTops, () -> b.landOnTops, v -> b.landOnTops = v));
+				list.add(bool("blink.far", bd.farBlink, () -> b.farBlink, v -> b.farBlink = v));
 				list.add(floatSlider("blink.top_tolerance", bd.topTolerance, 0.5F, 4F, 0.25F, () -> b.topTolerance, v -> b.topTolerance = v));
 				list.add(intSlider("blink.climb_height", bd.climbHeight, 0, 255, 1, () -> b.climbHeight, v -> b.climbHeight = v));
 				list.add(intSlider("blink.ground_depth", bd.groundSearchDepth, 0, 64, 1, () -> b.groundSearchDepth, v -> b.groundSearchDepth = v));

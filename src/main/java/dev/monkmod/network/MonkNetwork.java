@@ -3,6 +3,7 @@ package dev.monkmod.network;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -33,7 +34,10 @@ public final class MonkNetwork {
 		PayloadTypeRegistry.playS2C().register(BlinkDonePayload.TYPE, BlinkDonePayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(BlinkPayload.TYPE, BlinkPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(BlinkPayload.TYPE, (payload, context) ->
-				handleBlink(context.player(), new Vec3(payload.x(), payload.y(), payload.z())));
+				handleBlink(context.player(), new Vec3(payload.x(), payload.y(), payload.z()), 3.0));
+		PayloadTypeRegistry.playC2S().register(BlinkFarPayload.TYPE, BlinkFarPayload.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(BlinkFarPayload.TYPE, (payload, context) ->
+				handleFarBlink(context.player(), new Vec3(payload.dx(), payload.dy(), payload.dz())));
 		PayloadTypeRegistry.playC2S().register(FlySpeedPayload.TYPE, FlySpeedPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(FlySpeedPayload.TYPE, (payload, context) -> handleFlySpeed(context.player(), payload.speed()));
 		PayloadTypeRegistry.playC2S().register(StareTogglePayload.TYPE, StareTogglePayload.CODEC);
@@ -79,7 +83,66 @@ public final class MonkNetwork {
 	}
 
 	/** Validates and performs a blink. The client only suggests a destination. */
-	private static void handleBlink(ServerPlayer player, Vec3 target) {
+	private static void handleFarBlink(ServerPlayer player, Vec3 aim) {
+		MonkPlayerState state = MonkPlayers.get(player);
+		MonkConfig.Blink cfg = MonkConfigManager.config().blink;
+		if (!cfg.farBlink || !state.abilities().has("blink") || player.level().getGameTime() < state.blinkReadyAt
+				|| !Double.isFinite(aim.x) || !Double.isFinite(aim.y) || !Double.isFinite(aim.z)) {
+			return;
+		}
+		double dist = Math.min(aim.length(), cfg.range);
+		if (dist < 1.0) {
+			return;
+		}
+		Vec3 dir = aim.normalize();
+		ServerLevel level = (ServerLevel) player.level();
+		Vec3 eye = player.getEyePosition();
+		BlockPos prev = null;
+		BlockPos hit = null;
+		// walks along the aim line; reading a block loads its chunk (from the save, or generates it) on the server
+		for (double d = 0.5; d <= dist; d += 0.5) {
+			Vec3 at = eye.add(dir.scale(d));
+			if (at.y < level.getMinY() || at.y > level.getMaxY()) {
+				break;
+			}
+			BlockPos pos = BlockPos.containing(at);
+			if (pos.equals(prev)) {
+				continue;
+			}
+			if (!level.getWorldBorder().isWithinBounds(pos)) {
+				break;
+			}
+			if (solid(level, pos)) {
+				hit = pos;
+				break;
+			}
+			prev = pos;
+		}
+		if (hit == null || prev == null) {
+			return;
+		}
+		BlockPos feet = prev;
+		for (int i = 0; i < 64 && feet.getY() > level.getMinY() && !solid(level, feet.below()); i++) {
+			feet = feet.below();
+		}
+		for (int up = 0; up < 6; up++, feet = feet.above()) {
+			BlockPos below = feet.below();
+			net.minecraft.world.phys.shapes.VoxelShape floor = level.getBlockState(below).getCollisionShape(level, below);
+			double y = floor.isEmpty() ? feet.getY() : below.getY() + floor.max(net.minecraft.core.Direction.Axis.Y);
+			Vec3 target = new Vec3(feet.getX() + 0.5, y, feet.getZ() + 0.5);
+			if (level.noCollision(player, player.getBoundingBox().move(target.subtract(player.position())))) {
+				handleBlink(player, target, 72.0);
+				return;
+			}
+		}
+	}
+
+	private static boolean solid(ServerLevel level, BlockPos pos) {
+		net.minecraft.world.level.block.state.BlockState s = level.getBlockState(pos);
+		return !s.getFluidState().isEmpty() || !s.getCollisionShape(level, pos).isEmpty();
+	}
+
+	private static void handleBlink(ServerPlayer player, Vec3 target, double slack) {
 		MonkPlayerState state = MonkPlayers.get(player);
 		MonkConfig.Blink cfg = MonkConfigManager.config().blink;
 		if (!state.abilities().has("blink") || player.isSleeping() || player.isSpectator() || !player.isAlive()) {
@@ -93,7 +156,7 @@ public final class MonkNetwork {
 			return;
 		}
 		if (!Double.isFinite(target.x) || !Double.isFinite(target.y) || !Double.isFinite(target.z)
-				|| target.distanceTo(player.getEyePosition()) > cfg.range + 3.0) {
+				|| target.distanceTo(player.getEyePosition()) > cfg.range + slack) {
 			return;
 		}
 		ServerLevel level = (ServerLevel) player.level();

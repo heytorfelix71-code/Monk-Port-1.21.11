@@ -57,6 +57,8 @@ public final class MonkConfig {
 		public boolean climbWalls = true;
 		/** Aiming just above a block (a tree, a pillar...) lands on its top. */
 		public boolean landOnTops = true;
+		/** Aiming past the loaded chunks (far islands seen with Voxy/Distant Horizons): the server loads the way and finds the ground. */
+		public boolean farBlink = true;
 		/** How close above a block top the aim must pass to land on it (blocks). */
 		public float topTolerance = 1.5F;
 		/** Highest wall the blink climbs, in blocks above the point you aimed at. */

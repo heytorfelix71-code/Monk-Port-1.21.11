@@ -160,10 +160,12 @@ public final class MonkTypes {
 		ability("fly", "Creative-style flight while unarmored.", MovementAbilities.Fly::new);
 		ability("withering_stare", "Looking at undead withers them.", WitheringStare::new,
 				ofInt("range", 20, 1, 128, "Stare distance in blocks."),
-				ofInt("duration", 200, 1, 72000, "Wither effect duration in ticks."),
+				ofInt("duration", 100, 1, 72000, "Wither effect duration in ticks when the stare is unlocked (100 = 5 seconds)."),
+				ofInt("duration_max", 200, 1, 72000, "Wither effect duration in ticks at the max monk level (200 = 10 seconds); grows level by level."),
 				ofFloat("wither_boss_damage", 5, 0, 1000, "Damage dealt to the Wither boss per stare check."),
 				ofBool("hostile_mobs", true, "Also withers every hostile mob (creepers, spiders...), not only the undead."),
-				ofInt("paralyze_ticks", 60, 0, 1200, "Ticks the stared mob is paralyzed (60 = 3 seconds, 0 = off). Bosses are never paralyzed."));
+				ofInt("paralyze_ticks", 20, 0, 1200, "Ticks the stared mob is paralyzed when the stare is unlocked (20 = 1 second, 0 = off). Bosses are never paralyzed."),
+				ofInt("paralyze_max", 100, 0, 1200, "Paralysis ticks at the max monk level (100 = 5 seconds); grows level by level."));
 		ability("counter_attack", "Chance to parry a melee hit and strike back.", CombatAbilities.CounterAttack::new,
 				ofFloat("chance", 0.05, 0, 1, "Chance to counter a melee hit (0.05 = 5%)."),
 				ofFloat("damage_multiplier", 1, 0, 10, "Counter damage = your bare-hand damage x this."),

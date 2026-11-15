@@ -90,6 +90,11 @@ final class BlinkClient {
 				ClientPlayNetworking.send(new BlinkPayload(target.x, target.y, target.z));
 				cooldown = ClientMonkState.blinkCooldown();
 				// the sound plays when the server confirms the blink (onDone), never for a refused one
+			} else if (target == null && pastLoaded(player, level) && ClientPlayNetworking.canSend(dev.monkmod.network.BlinkFarPayload.TYPE)) {
+				// aiming at land beyond the loaded chunks (far horizon, Voxy): the server looks for the spot
+				Vec3 aim = player.getViewVector(1.0F).scale(MonkControls.blinkDistance());
+				ClientPlayNetworking.send(new dev.monkmod.network.BlinkFarPayload(aim.x, aim.y, aim.z));
+				cooldown = ClientMonkState.blinkCooldown();
 			}
 		}
 		wasDown = down;
@@ -234,6 +239,27 @@ final class BlinkClient {
 			}
 		}
 		return null;
+	}
+
+	/** The aim line finds no block in the loaded chunks and goes on into chunks this client does not have. */
+	private static boolean pastLoaded(LocalPlayer player, ClientLevel level) {
+		Vec3 eye = player.getEyePosition();
+		Vec3 dir = player.getViewVector(1.0F);
+		double max = MonkControls.blinkDistance();
+		BlockHitResult hit = level.clip(new ClipContext(eye, eye.add(dir.scale(max)), ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, player));
+		if (hit.getType() != HitResult.Type.MISS) {
+			return false;
+		}
+		for (double d = 8; d <= max; d += 8) {
+			Vec3 at = eye.add(dir.scale(d));
+			if (at.y < level.getMinY() || at.y > level.getMaxY()) {
+				return false;
+			}
+			if (!level.hasChunk(net.minecraft.core.SectionPos.blockToSectionCoord(at.x), net.minecraft.core.SectionPos.blockToSectionCoord(at.z))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static Vec3 aimPoint(LocalPlayer player, ClientLevel level) {

@@ -19,6 +19,8 @@ public final class WitheringStare extends MonkAbility {
 	private final float witherDamage;
 	private final boolean hostile;
 	private final int paralyze;
+	private final int durationMax;
+	private final int paralyzeMax;
 
 	public WitheringStare(Params params) {
 		super("withering_stare", params);
@@ -27,6 +29,23 @@ public final class WitheringStare extends MonkAbility {
 		this.witherDamage = params.getFloat("wither_boss_damage");
 		this.hostile = params.getBool("hostile_mobs");
 		this.paralyze = params.getInt("paralyze_ticks");
+		this.durationMax = params.getInt("duration_max");
+		this.paralyzeMax = params.getInt("paralyze_max");
+	}
+
+	/** 0 at the level that unlocks the stare, 1 at the max monk level. */
+	private static double growth(ServerPlayer player) {
+		dev.monkmod.level.LevelTable table = MonkConfigManager.table();
+		int level = dev.monkmod.data.MonkAttachments.data(player).level();
+		int max = table.maxLevel();
+		int unlock = max;
+		for (int l = 0; l <= max; l++) {
+			if (table.abilitiesAt(l).has("withering_stare")) {
+				unlock = l;
+				break;
+			}
+		}
+		return max <= unlock ? 1.0 : Math.max(0.0, Math.min(1.0, (level - unlock) / (double) (max - unlock)));
 	}
 
 	@Override
@@ -47,8 +66,11 @@ public final class WitheringStare extends MonkAbility {
 		if (target == null) {
 			return;
 		}
+		double f = growth(player);
+		int duration = (int) Math.round(this.duration + (durationMax - this.duration) * f);
+		int paralyze = this.paralyze <= 0 ? 0 : (int) Math.round(this.paralyze + (paralyzeMax - this.paralyze) * f);
 		target.addEffect(new MobEffectInstance(MobEffects.WITHER, duration), player);
-		if (paralyze > 0 && target instanceof dev.monkmod.logic.Paralyzable p && target.getType() != EntityType.WITHER
+		if (paralyze > 0 &&target instanceof dev.monkmod.logic.Paralyzable p && target.getType() != EntityType.WITHER
 				&& target.getType() != EntityType.ENDER_DRAGON && !p.monk$isParalyzed()) {
 			p.monk$paralyze(player.level().getGameTime() + paralyze);
 			((net.minecraft.server.level.ServerLevel) player.level()).sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,
