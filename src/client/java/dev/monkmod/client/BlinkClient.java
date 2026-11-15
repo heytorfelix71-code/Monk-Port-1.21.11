@@ -172,8 +172,9 @@ final class BlinkClient {
 		}
 		Vec3 eye = player.getEyePosition();
 		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
+		// walls (side faces) and ceilings / tree canopies above you (bottom face): land on top of that block
 		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-		if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection().getAxis() == Direction.Axis.Y) {
+		if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection() == Direction.UP) {
 			return null;
 		}
 		BlockPos column = hit.getBlockPos();
