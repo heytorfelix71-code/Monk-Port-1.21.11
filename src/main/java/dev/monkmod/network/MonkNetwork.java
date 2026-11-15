@@ -36,6 +36,7 @@ public final class MonkNetwork {
 		ServerPlayNetworking.registerGlobalReceiver(BlinkPayload.TYPE, (payload, context) ->
 				handleBlink(context.player(), new Vec3(payload.x(), payload.y(), payload.z()), 3.0));
 		PayloadTypeRegistry.playC2S().register(BlinkFarPayload.TYPE, BlinkFarPayload.CODEC);
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(MonkNetwork::tickJobs);
 		ServerPlayNetworking.registerGlobalReceiver(BlinkFarPayload.TYPE, (payload, context) ->
 				handleFarBlink(context.player(), new Vec3(payload.dx(), payload.dy(), payload.dz())));
 		PayloadTypeRegistry.playC2S().register(FlySpeedPayload.TYPE, FlySpeedPayload.CODEC);
@@ -97,6 +98,11 @@ public final class MonkNetwork {
 		Vec3 dir = aim.normalize();
 		ServerLevel level = (ServerLevel) player.level();
 		Vec3 eye = player.getEyePosition();
+		if (dist > 512) {
+			// very far (thousands of blocks): searched a little every tick so the server never freezes
+			JOBS.put(player.getUUID(), new FarJob(level, eye, dir, dist));
+			return;
+		}
 		BlockPos prev = null;
 		BlockPos hit = null;
 		// walks along the aim line; reading a block loads its chunk (from the save, or generates it) on the server
@@ -135,6 +141,102 @@ public final class MonkNetwork {
 				return;
 			}
 		}
+	}
+
+	/** A far blink being searched over several ticks: walks the aim line on the terrain height maps. */
+	private static final class FarJob {
+		final ServerLevel level;
+		final Vec3 eye;
+		final Vec3 dir;
+		final double dist;
+		double d = 1.0;
+		int shown;
+
+		FarJob(ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
+			this.level = level;
+			this.eye = eye;
+			this.dir = dir;
+			this.dist = dist;
+		}
+	}
+
+	private static final java.util.Map<java.util.UUID, FarJob> JOBS = new java.util.HashMap<>();
+
+	private static void tickJobs(net.minecraft.server.MinecraftServer server) {
+		if (JOBS.isEmpty()) {
+			return;
+		}
+		long budget = System.nanoTime() + 15_000_000L / Math.max(1, JOBS.size());
+		for (java.util.Iterator<java.util.Map.Entry<java.util.UUID, FarJob>> it = JOBS.entrySet().iterator(); it.hasNext();) {
+			java.util.Map.Entry<java.util.UUID, FarJob> e = it.next();
+			ServerPlayer player = server.getPlayerList().getPlayer(e.getKey());
+			FarJob job = e.getValue();
+			if (player == null || !player.isAlive() || player.level() != job.level) {
+				it.remove();
+				continue;
+			}
+			Vec3 hit = null;
+			boolean over = false;
+			boolean done = false;
+			while (System.nanoTime() < budget) {
+				if (job.d > job.dist) {
+					over = true;
+					break;
+				}
+				Vec3 at = job.eye.add(job.dir.scale(job.d));
+				if (at.y < job.level.getMinY() || !job.level.getWorldBorder().isWithinBounds(BlockPos.containing(at))) {
+					over = true;
+					break;
+				}
+				if (job.d < 500 && job.level.hasChunk((int) Math.floor(at.x) >> 4, (int) Math.floor(at.z) >> 4)) {
+					// still in loaded chunks: exact blocks (trees, roofs), like a normal far blink
+					if (solid(job.level, BlockPos.containing(at))) {
+						done = true;
+						break;
+					}
+					job.d += 0.5;
+					continue;
+				}
+				int top = surface(job.level, (int) Math.floor(at.x), (int) Math.floor(at.z));
+				if (at.y <= top) {
+					hit = new Vec3(Math.floor(at.x) + 0.5, top, Math.floor(at.z) + 0.5);
+					break;
+				}
+				job.d += 2.0;
+			}
+			if (done) {
+				it.remove();
+				handleFarBlink(player, job.dir.scale(job.d + 2)); // under 512 blocks: exact search right now
+			} else if (hit != null) {
+				it.remove();
+				for (int up = 0; up < 8; up++) {
+					Vec3 target = hit.add(0, up, 0);
+					if (job.level.noCollision(player, player.getBoundingBox().move(target.subtract(player.position())))) {
+						handleBlink(player, target, job.dist);
+						break;
+					}
+				}
+			} else if (over) {
+				it.remove();
+			} else if (job.d - job.shown > 4000) {
+				job.shown = (int) job.d;
+				player.displayClientMessage(net.minecraft.network.chat.Component.literal("Blink: " + (int) job.d + " / " + (int) job.dist), true);
+			}
+		}
+	}
+
+	/** Height of the ground (first free block above it) at a column; loads or generates the chunk as needed. */
+	private static int surface(ServerLevel level, int x, int z) {
+		net.minecraft.world.level.chunk.ChunkAccess chunk = level.getChunkSource().getChunk(x >> 4, z >> 4,
+				net.minecraft.world.level.chunk.status.ChunkStatus.SURFACE, true);
+		if (chunk == null) {
+			return level.getMinY();
+		}
+		int h = chunk.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x & 15, z & 15);
+		if (h <= level.getMinY()) {
+			h = chunk.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x & 15, z & 15);
+		}
+		return h + 1;
 	}
 
 	private static boolean solid(ServerLevel level, BlockPos pos) {

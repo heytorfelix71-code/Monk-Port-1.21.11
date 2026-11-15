@@ -163,7 +163,7 @@
   "monk.config.blink": "Blink",
   "monk.config.blink.desc": "The Blink ability (level 11 by default). Server settings.",
   "monk.config.blink.range": "Maximum distance",
-  "monk.config.blink.range.desc": "Maximum teleport distance in blocks, up to 5000. Very long blinks may lag while the chunks load.",
+  "monk.config.blink.range.desc": "Longest blink in blocks (up to 1,000,000). Past your view (Voxy/Distant Horizons) the server searches the ground a little every tick, without freezing.",
   "monk.config.blink.cooldown": "Cooldown (ticks)",
   "monk.config.blink.cooldown.desc": "Time between blinks (20 ticks = 1 second).",
   "monk.config.blink.fall_damage": "Damage per blink",
@@ -655,5 +655,7 @@
   "monk.param.withering_stare.duration_max": "Wither duration (max level)",
   "monk.param.withering_stare.duration_max.desc": "Wither effect ticks at the max monk level (200 = 10 seconds).",
   "monk.param.withering_stare.paralyze_max": "Paralysis (max level)",
-  "monk.param.withering_stare.paralyze_max.desc": "Paralysis ticks at the max monk level (100 = 5 seconds)."
+  "monk.param.withering_stare.paralyze_max.desc": "Paralysis ticks at the max monk level (100 = 5 seconds).",
+  "key.monk.speed_up": "Monk speed up (running / flight)",
+  "key.monk.speed_down": "Monk speed down (running / flight)"
 }

@@ -118,22 +118,16 @@ public final class MonkControls {
 		while (MonkModClient.nightVisionKey.consumeClick()) {
 			if (ClientMonkState.abilities().has("night_vision") && ClientPlayNetworking.canSend(NightVisionPayload.TYPE)) {
 				ClientPlayNetworking.send(NightVisionPayload.INSTANCE);
-			} else if (ClientMonkState.connectedToMonkServer()) {
-				show(player, Component.translatable("monk.controls.night_vision.locked").withStyle(ChatFormatting.GRAY));
 			}
 		}
 		while (MonkModClient.timeStopKey.consumeClick()) {
 			if (ClientMonkState.abilities().has("time_stop") && ClientPlayNetworking.canSend(TimeStopPayload.TYPE)) {
 				ClientPlayNetworking.send(TimeStopPayload.INSTANCE);
-			} else if (ClientMonkState.connectedToMonkServer()) {
-				show(player, Component.translatable("monk.time_stop.locked").withStyle(ChatFormatting.GRAY));
 			}
 		}
 		while (MonkModClient.stareKey.consumeClick()) {
 			if (ClientMonkState.abilities().has("withering_stare") && ClientPlayNetworking.canSend(StareTogglePayload.TYPE)) {
 				ClientPlayNetworking.send(StareTogglePayload.INSTANCE);
-			} else if (ClientMonkState.connectedToMonkServer()) {
-				show(player, Component.translatable("monk.controls.stare.locked").withStyle(ChatFormatting.GRAY));
 			}
 		}
 		while (MonkModClient.blinkFarther.consumeClick()) {
@@ -153,6 +147,21 @@ public final class MonkControls {
 		}
 		while (MonkModClient.flySlower.consumeClick()) {
 			adjustFly(player, -1);
+		}
+		// arrow keys by default: flight speed while flying, otherwise running speed
+		while (MonkModClient.speedUp.consumeClick()) {
+			speed(player, 1);
+		}
+		while (MonkModClient.speedDown.consumeClick()) {
+			speed(player, -1);
+		}
+	}
+
+	private static void speed(LocalPlayer player, int dir) {
+		if (player.getAbilities().flying && ClientMonkState.abilities().has("fly")) {
+			adjustFly(player, dir);
+		} else if (ClientMonkState.abilities().has("swift")) {
+			adjustRun(player, dir);
 		}
 	}
 

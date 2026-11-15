@@ -163,7 +163,7 @@
   "monk.config.blink": "Teleporte (Blink)",
   "monk.config.blink.desc": "A habilidade Blink (nível 11 por padrão). Configurações do servidor.",
   "monk.config.blink.range": "Distância máxima",
-  "monk.config.blink.range.desc": "Distância máxima do teleporte em blocos, até 5000. Blinks muito longos podem travar um pouco enquanto os chunks carregam.",
+  "monk.config.blink.range.desc": "Distância máxima do blink, em blocos (até 1.000.000). Longe da sua visão (Voxy/Distant Horizons), o servidor procura o chão aos poucos, sem travar.",
   "monk.config.blink.cooldown": "Recarga (ticks)",
   "monk.config.blink.cooldown.desc": "Tempo entre teleportes (20 ticks = 1 segundo).",
   "monk.config.blink.fall_damage": "Dano por teleporte",
@@ -655,5 +655,7 @@
   "monk.param.withering_stare.duration_max": "Duração do definhar (nível máximo)",
   "monk.param.withering_stare.duration_max.desc": "Ticks do efeito de definhar no nível máximo de monge (200 = 10 segundos).",
   "monk.param.withering_stare.paralyze_max": "Paralisia (nível máximo)",
-  "monk.param.withering_stare.paralyze_max.desc": "Ticks de paralisia no nível máximo de monge (100 = 5 segundos)."
+  "monk.param.withering_stare.paralyze_max.desc": "Ticks de paralisia no nível máximo de monge (100 = 5 segundos).",
+  "key.monk.speed_up": "Monge: mais velocidade (corrida / voo)",
+  "key.monk.speed_down": "Monge: menos velocidade (corrida / voo)"
 }

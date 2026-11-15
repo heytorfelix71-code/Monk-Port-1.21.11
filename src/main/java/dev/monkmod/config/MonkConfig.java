@@ -138,9 +138,9 @@ public final class MonkConfig {
 		/** Blink key + mouse wheel changes the blink distance. */
 		public boolean scrollBlinkDistance = true;
 		/** Sprint key (Ctrl) + mouse wheel changes the running speed bonus. */
-		public boolean scrollRunSpeed = true;
+		public boolean scrollRunSpeed = false;
 		/** Jump key (Space) + mouse wheel changes the flight speed while flying. */
-		public boolean scrollFlySpeed = true;
+		public boolean scrollFlySpeed = false;
 		public float blinkStep = 1.0F;
 		/** Step of the running bonus scale (1.0 = the full bonus of your level). */
 		public float runStep = 0.1F;
@@ -235,6 +235,14 @@ public final class MonkConfig {
 			}
 			configVersion = 3;
 		}
+		if (configVersion < 4) {
+			// 2.9.3: running / flight speed moved from Ctrl/Space + mouse wheel to the arrow keys
+			if (controls != null) {
+				controls.scrollRunSpeed = false;
+				controls.scrollFlySpeed = false;
+			}
+			configVersion = 4;
+		}
 		flight.defaultSpeed = Math.max(flight.minSpeed, Math.min(flight.maxSpeed, flight.defaultSpeed));
 		if (controls == null) controls = new Controls();
 		if (gameplay.heavyArmor == null) gameplay.heavyArmor = new ArrayList<>();
@@ -243,7 +251,7 @@ public final class MonkConfig {
 		blink.groundSearchDepth = clamp(blink.groundSearchDepth, 0, 64);
 		flight.minSpeed = Math.max(0.001F, Math.min(1F, flight.minSpeed));
 		flight.maxSpeed = Math.max(flight.minSpeed, Math.min(2F, flight.maxSpeed));
-		controls.blinkStep = Math.max(0.1F, Math.min(500F, controls.blinkStep));
+		controls.blinkStep = Math.max(0.1F, Math.min(100_000F, controls.blinkStep));
 		controls.runStep = Math.max(0.01F, Math.min(5F, controls.runStep));
 		controls.maxRunScale = Math.max(0F, Math.min(10F, controls.maxRunScale));
 		controls.flyStep = Math.max(0.001F, Math.min(0.5F, controls.flyStep));
@@ -252,7 +260,7 @@ public final class MonkConfig {
 		hud.size = clamp(hud.size, 8, 128);
 		hud.opacity = Math.max(0.05F, Math.min(1F, hud.opacity));
 		hud.visibleTicks = clamp(hud.visibleTicks, 0, 1200);
-		blink.range = Math.max(1F, Math.min(5000F, blink.range));
+		blink.range = Math.max(1F, Math.min(1_000_000F, blink.range));
 		blink.cooldownTicks = clamp(blink.cooldownTicks, 0, 1200);
 		blink.fallDamage = Math.max(0F, blink.fallDamage);
 		if (equipment.whitelist == null) equipment.whitelist = new ArrayList<>();

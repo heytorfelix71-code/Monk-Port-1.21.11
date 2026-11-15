@@ -131,7 +131,7 @@ public final class MonkConfigScreen {
 				.option(bool("controls.scroll_blink", cd.scrollBlinkDistance, () -> c.scrollBlinkDistance, v -> c.scrollBlinkDistance = v))
 				.option(bool("controls.scroll_run", cd.scrollRunSpeed, () -> c.scrollRunSpeed, v -> c.scrollRunSpeed = v))
 				.option(bool("controls.scroll_fly", cd.scrollFlySpeed, () -> c.scrollFlySpeed, v -> c.scrollFlySpeed = v))
-				.option(floatField("controls.blink_step", cd.blinkStep, 0.1F, 500F, () -> c.blinkStep, v -> c.blinkStep = v))
+				.option(floatField("controls.blink_step", cd.blinkStep, 0.1F, 100_000F, () -> c.blinkStep, v -> c.blinkStep = v))
 				.option(floatSlider("controls.run_step", cd.runStep, 0.05F, 1F, 0.05F, () -> c.runStep, v -> c.runStep = v))
 				.option(floatSlider("controls.max_run_scale", cd.maxRunScale, 0.5F, 5F, 0.25F, () -> c.maxRunScale, v -> c.maxRunScale = v))
 				.option(floatSlider("controls.fly_step", cd.flyStep, 0.001F, 0.05F, 0.001F, () -> c.flyStep, v -> c.flyStep = v))
@@ -314,7 +314,7 @@ public final class MonkConfigScreen {
 			case "blink" -> {
 				MonkConfig.Blink b = cfg.blink;
 				MonkConfig.Blink bd = def.blink;
-				list.add(floatField("blink.range", bd.range, 1F, 5000F, () -> b.range, v -> b.range = v));
+				list.add(floatField("blink.range", bd.range, 1F, 1_000_000F, () -> b.range, v -> b.range = v));
 				list.add(floatSlider("blink.min_range", bd.minRange, 0.5F, 16F, 0.5F, () -> b.minRange, v -> b.minRange = v));
 				list.add(intSlider("blink.cooldown", bd.cooldownTicks, 0, 400, 5, () -> b.cooldownTicks, v -> b.cooldownTicks = v));
 				list.add(floatSlider("blink.fall_damage", bd.fallDamage, 0F, 20F, 0.5F, () -> b.fallDamage, v -> b.fallDamage = v));

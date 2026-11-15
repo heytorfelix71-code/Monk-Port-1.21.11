@@ -39,6 +39,8 @@ public final class MonkModClient implements ClientModInitializer {
 	public static KeyMapping runSlower;
 	public static KeyMapping flyFaster;
 	public static KeyMapping flySlower;
+	public static KeyMapping speedUp;
+	public static KeyMapping speedDown;
 
 	private static KeyMapping unbound(String name) {
 		return KeyBindingHelper.registerKeyBinding(new KeyMapping(name, InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY));
@@ -63,6 +65,8 @@ public final class MonkModClient implements ClientModInitializer {
 		runSlower = unbound("key.monk.run_slower");
 		flyFaster = unbound("key.monk.fly_faster");
 		flySlower = unbound("key.monk.fly_slower");
+		speedUp = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.speed_up", InputConstants.Type.KEYSYM, InputConstants.KEY_UP, CATEGORY));
+		speedDown = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.speed_down", InputConstants.Type.KEYSYM, InputConstants.KEY_DOWN, CATEGORY));
 		MonkControls.init();
 
 		MonkAccess.installClient(
