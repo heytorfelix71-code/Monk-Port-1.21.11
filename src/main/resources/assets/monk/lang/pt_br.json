@@ -656,6 +656,6 @@
   "monk.param.withering_stare.duration_max.desc": "Ticks do efeito de definhar no nível máximo de monge (200 = 10 segundos).",
   "monk.param.withering_stare.paralyze_max": "Paralisia (nível máximo)",
   "monk.param.withering_stare.paralyze_max.desc": "Ticks de paralisia no nível máximo de monge (100 = 5 segundos).",
-  "key.monk.speed_up": "Monge: mais velocidade (corrida / voo)",
-  "key.monk.speed_down": "Monge: menos velocidade (corrida / voo)"
+  "key.monk.speed_up": "Monge: mais velocidade (voo, só voando / CTRL + tecla: corrida)",
+  "key.monk.speed_down": "Monge: menos velocidade (voo, só voando / CTRL + tecla: corrida)"
 }

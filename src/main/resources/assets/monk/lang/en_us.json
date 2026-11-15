@@ -656,6 +656,6 @@
   "monk.param.withering_stare.duration_max.desc": "Wither effect ticks at the max monk level (200 = 10 seconds).",
   "monk.param.withering_stare.paralyze_max": "Paralysis (max level)",
   "monk.param.withering_stare.paralyze_max.desc": "Paralysis ticks at the max monk level (100 = 5 seconds).",
-  "key.monk.speed_up": "Monk speed up (running / flight)",
-  "key.monk.speed_down": "Monk speed down (running / flight)"
+  "key.monk.speed_up": "Monk: more speed (flight while flying / CTRL + key: running)",
+  "key.monk.speed_down": "Monk: less speed (flight while flying / CTRL + key: running)"
 }

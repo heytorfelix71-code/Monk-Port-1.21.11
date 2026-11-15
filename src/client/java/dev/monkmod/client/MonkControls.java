@@ -148,20 +148,22 @@ public final class MonkControls {
 		while (MonkModClient.flySlower.consumeClick()) {
 			adjustFly(player, -1);
 		}
-		// arrow keys by default: flight speed while flying, otherwise running speed
+		// arrow keys by default: flight speed only while flying; CTRL + arrow: running speed (so they don't clash with other keys)
 		while (MonkModClient.speedUp.consumeClick()) {
-			speed(player, 1);
+			speed(client, player, 1);
 		}
 		while (MonkModClient.speedDown.consumeClick()) {
-			speed(player, -1);
+			speed(client, player, -1);
 		}
 	}
 
-	private static void speed(LocalPlayer player, int dir) {
-		if (player.getAbilities().flying && ClientMonkState.abilities().has("fly")) {
+	private static void speed(Minecraft client, LocalPlayer player, int dir) {
+		if (client.hasControlDown()) {
+			if (ClientMonkState.abilities().has("swift")) {
+				adjustRun(player, dir);
+			}
+		} else if (player.getAbilities().flying && ClientMonkState.abilities().has("fly")) {
 			adjustFly(player, dir);
-		} else if (ClientMonkState.abilities().has("swift")) {
-			adjustRun(player, dir);
 		}
 	}
 
