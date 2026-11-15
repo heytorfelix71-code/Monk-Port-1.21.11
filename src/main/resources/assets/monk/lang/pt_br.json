@@ -664,5 +664,9 @@
   "monk.config.controls.scheme.desc": "Quais teclas mudam a distância do blink, a velocidade de corrida e a de voo. Setas: segurando a tecla do Blink mudam a distância, com Ctrl a corrida, senão o voo (só voando). Roda do mouse: o mesmo com a roda. Teclas próprias: só as teclas separadas (Opções > Controles > Monge), qualquer tecla que você quiser. Essas teclas separadas funcionam em todos os modos.",
   "monk.config.controls.scheme.arrows": "Setas",
   "monk.config.controls.scheme.scroll": "Roda do mouse",
-  "monk.config.controls.scheme.custom": "Teclas próprias"
+  "monk.config.controls.scheme.custom": "Teclas próprias",
+  "monk.config.mining.speed_multiplier": "Velocidade de quebra das mãos (todos os blocos)",
+  "monk.config.mining.speed_multiplier.desc": "Multiplica a rapidez com que suas mãos quebram qualquer bloco, além da habilidade. 1 = como a habilidade dá.",
+  "monk.config.mining.block_speeds": "Velocidade por bloco",
+  "monk.config.mining.block_speeds.desc": "Velocidade extra para blocos escolhidos, separados por vírgula: bloco=fator ou #tag=fator. Vale o primeiro que combinar. Exemplos: minecraft:obsidian=1000 (instantâneo), #minecraft:dirt=12 (quase instantâneo), #minecraft:sand=1.5 (um pouco mais rápido). Use um fator bem grande para instantâneo; 1 = sem mudança."
 }

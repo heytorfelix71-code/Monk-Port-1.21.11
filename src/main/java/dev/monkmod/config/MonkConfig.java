@@ -18,6 +18,17 @@ public final class MonkConfig {
 	public Flight flight = new Flight();
 	public Water water = new Water();
 	public Controls controls = new Controls();
+	public Mining mining = new Mining();
+
+	/** Bare-hand break speed on top of the Mining ability. */
+	public static final class Mining {
+		/** Multiplies the break speed of the hands on every block (1 = as the ability gives). */
+		public float speedMultiplier = 1.0F;
+		/** "block=factor" or "#tag=factor": extra speed for those blocks (first match wins). Huge factors break at once. */
+		public List<String> blockSpeeds = new ArrayList<>(List.of(
+				"minecraft:obsidian=1000", "minecraft:crying_obsidian=1000",
+				"#minecraft:dirt=12", "#minecraft:sand=1.5", "minecraft:snow_block=1.5", "minecraft:snow=1.5"));
+	}
 
 	public enum HudStyle { RING, BAR, TEXT }
 
@@ -248,6 +259,9 @@ public final class MonkConfig {
 		}
 		flight.defaultSpeed = Math.max(flight.minSpeed, Math.min(flight.maxSpeed, flight.defaultSpeed));
 		if (controls == null) controls = new Controls();
+		if (mining == null) mining = new Mining();
+		if (mining.blockSpeeds == null) mining.blockSpeeds = new ArrayList<>();
+		mining.speedMultiplier = Math.max(0F, Math.min(100_000F, mining.speedMultiplier));
 		if (controls.scheme == null) controls.scheme = ControlScheme.ARROWS;
 		if (gameplay.heavyArmor == null) gameplay.heavyArmor = new ArrayList<>();
 		gameplay.heavyArmorSlowdown = Math.max(0F, Math.min(0.25F, gameplay.heavyArmorSlowdown));

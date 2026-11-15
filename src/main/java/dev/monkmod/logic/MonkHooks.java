@@ -143,7 +143,7 @@ public final class MonkHooks {
 			}
 			hands = Math.min(1.0F, hands);
 		}
-		return Math.max(speed, mining.modifySpeed(hands));
+		return Math.max(speed, mining.modifySpeed(hands)) * dev.monkmod.config.MiningSpeeds.factor(state);
 	}
 
 	/** Heavy armor pieces worn (configurable list). */

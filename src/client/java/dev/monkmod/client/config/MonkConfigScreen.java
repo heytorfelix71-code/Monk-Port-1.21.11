@@ -342,6 +342,21 @@ public final class MonkConfigScreen {
 				list.add(floatSlider("flight.max_speed", fd.maxSpeed, 0.02F, 0.5F, 0.005F, () -> f.maxSpeed, v -> f.maxSpeed = v));
 				list.add(floatSlider("flight.default_speed", fd.defaultSpeed, 0.01F, 0.2F, 0.005F, () -> f.defaultSpeed, v -> f.defaultSpeed = v));
 			}
+			case "mining" -> {
+				MonkConfig.Mining mn = cfg.mining;
+				MonkConfig.Mining md = def.mining;
+				list.add(floatSlider("mining.speed_multiplier", md.speedMultiplier, 0F, 20F, 0.25F, () -> mn.speedMultiplier, v -> mn.speedMultiplier = v));
+				list.add(Option.<String>createBuilder().name(t("mining.block_speeds")).description(d("mining.block_speeds"))
+						.binding(String.join(", ", md.blockSpeeds), () -> String.join(", ", mn.blockSpeeds), v -> {
+							mn.blockSpeeds = new ArrayList<>();
+							for (String part : v.split(",")) {
+								if (!part.isBlank()) {
+									mn.blockSpeeds.add(part.trim());
+								}
+							}
+						})
+						.controller(StringControllerBuilder::create).build());
+			}
 			case "water_breathing_partial" -> {
 				MonkConfig.Water w = cfg.water;
 				MonkConfig.Water wd = def.water;

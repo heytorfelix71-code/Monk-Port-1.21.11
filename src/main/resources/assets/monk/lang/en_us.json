@@ -664,5 +664,9 @@
   "monk.config.controls.scheme.desc": "Which keys change the blink distance, the running speed and the flight speed. Arrows: holding the Blink key they change the distance, with Ctrl the running speed, otherwise the flight speed (while flying). Mouse wheel: the same with the wheel. Own keys: only the separate keys (Options > Controls > Monk), any key you like. Those separate keys work in every mode.",
   "monk.config.controls.scheme.arrows": "Arrow keys",
   "monk.config.controls.scheme.scroll": "Mouse wheel",
-  "monk.config.controls.scheme.custom": "Own keys"
+  "monk.config.controls.scheme.custom": "Own keys",
+  "monk.config.mining.speed_multiplier": "Hand mining speed (all blocks)",
+  "monk.config.mining.speed_multiplier.desc": "Multiplies how fast your hands break every block, on top of the ability. 1 = as given.",
+  "monk.config.mining.block_speeds": "Speed per block",
+  "monk.config.mining.block_speeds.desc": "Extra speed for chosen blocks, separated by commas: block=factor or #tag=factor. The first match wins. Examples: minecraft:obsidian=1000 (instant), #minecraft:dirt=12 (almost instant), #minecraft:sand=1.5 (a bit faster). Use a big factor for instant; 1 = no change."
 }
