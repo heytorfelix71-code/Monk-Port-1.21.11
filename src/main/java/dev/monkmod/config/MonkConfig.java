@@ -23,6 +23,13 @@ public final class MonkConfig {
 
 	public enum HudCorner { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT }
 
+	/**
+	 * Which keys change the blink distance, the running speed and the flight speed:
+	 * ARROWS = the two speed keys (arrows by default), SCROLL = the mouse wheel with a modifier, CUSTOM = only the
+	 * separate keys (unbound by default, pick any key you like).
+	 */
+	public enum ControlScheme { ARROWS, SCROLL, CUSTOM }
+
 	public static final class Hud {
 		public boolean enabled = true;
 		public HudStyle style = HudStyle.RING;
@@ -135,16 +142,10 @@ public final class MonkConfig {
 
 	/** Client-side controls (scroll wheel modifiers and step sizes). */
 	public static final class Controls {
-		/** Blink key + mouse wheel changes the blink distance. */
-		public boolean scrollBlinkDistance = true;
-		/** Blink key + the speed keys (arrows by default) change the blink distance. */
-		public boolean arrowsBlinkDistance = true;
+		/** Which keys adjust the blink distance, the running speed and the flight speed. */
+		public ControlScheme scheme = ControlScheme.ARROWS;
 		/** Each change of the blink distance is at least this % of the current distance (0 = always the fixed step). */
 		public float blinkStepPercent = 10.0F;
-		/** Sprint key (Ctrl) + mouse wheel changes the running speed bonus. */
-		public boolean scrollRunSpeed = false;
-		/** Jump key (Space) + mouse wheel changes the flight speed while flying. */
-		public boolean scrollFlySpeed = false;
 		public float blinkStep = 1.0F;
 		/** Step of the running bonus scale (1.0 = the full bonus of your level). */
 		public float runStep = 0.1F;
@@ -243,14 +244,11 @@ public final class MonkConfig {
 		}
 		if (configVersion < 4) {
 			// 2.9.3: running / flight speed moved from Ctrl/Space + mouse wheel to the arrow keys
-			if (controls != null) {
-				controls.scrollRunSpeed = false;
-				controls.scrollFlySpeed = false;
-			}
 			configVersion = 4;
 		}
 		flight.defaultSpeed = Math.max(flight.minSpeed, Math.min(flight.maxSpeed, flight.defaultSpeed));
 		if (controls == null) controls = new Controls();
+		if (controls.scheme == null) controls.scheme = ControlScheme.ARROWS;
 		if (gameplay.heavyArmor == null) gameplay.heavyArmor = new ArrayList<>();
 		gameplay.heavyArmorSlowdown = Math.max(0F, Math.min(0.25F, gameplay.heavyArmorSlowdown));
 		blink.minRange = Math.max(0.5F, Math.min(blink.range, blink.minRange));

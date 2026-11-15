@@ -149,16 +149,21 @@ public final class MonkControls {
 			adjustFly(player, -1);
 		}
 		// arrow keys by default: flight speed only while flying; CTRL + arrow: running speed (so they don't clash with other keys)
+		boolean arrows = cfg().scheme == MonkConfig.ControlScheme.ARROWS;
 		while (MonkModClient.speedUp.consumeClick()) {
-			speed(client, player, 1);
+			if (arrows) {
+				speed(client, player, 1);
+			}
 		}
 		while (MonkModClient.speedDown.consumeClick()) {
-			speed(client, player, -1);
+			if (arrows) {
+				speed(client, player, -1);
+			}
 		}
 	}
 
 	private static void speed(Minecraft client, LocalPlayer player, int dir) {
-		if (cfg().arrowsBlinkDistance && isDown(MonkModClient.blinkKey) && ClientMonkState.abilities().has("blink")) {
+		if (isDown(MonkModClient.blinkKey) && ClientMonkState.abilities().has("blink")) {
 			adjustBlink(player, dir); // holding Blink: the arrows change the blink distance
 		} else if (client.hasControlDown()) {
 			if (ClientMonkState.abilities().has("swift")) {
@@ -176,27 +181,20 @@ public final class MonkControls {
 		if (player == null || client.screen != null || amount == 0 || player.isSpectator()) {
 			return false;
 		}
+		if (cfg().scheme != MonkConfig.ControlScheme.SCROLL) {
+			return false; // the wheel keeps scrolling the hotbar
+		}
 		int dir = amount > 0 ? 1 : -1;
-		MonkConfig.Controls c = cfg();
 		// Priority: blink key, then sprint key, then jump key. Only one acts.
 		if (isDown(MonkModClient.blinkKey) && ClientMonkState.abilities().has("blink")) {
-			if (!c.scrollBlinkDistance) {
-				return false;
-			}
 			adjustBlink(player, dir);
 			return true;
 		}
 		if (isDown(client.options.keySprint) && ClientMonkState.abilities().has("swift")) {
-			if (!c.scrollRunSpeed) {
-				return false;
-			}
 			adjustRun(player, dir);
 			return true;
 		}
 		if (isDown(client.options.keyJump) && player.getAbilities().flying && ClientMonkState.abilities().has("fly")) {
-			if (!c.scrollFlySpeed) {
-				return false;
-			}
 			adjustFly(player, dir);
 			return true;
 		}

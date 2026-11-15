@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
+import dev.monkmod.MonkMod;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -99,8 +100,8 @@ public final class MonkNetwork {
 		ServerLevel level = (ServerLevel) player.level();
 		Vec3 eye = player.getEyePosition();
 		if (dist > 512) {
-			// very far (thousands of blocks): searched a little every tick so the server never freezes
-			JOBS.put(player.getUUID(), new FarJob(level, eye, dir, dist));
+			// very far: like an ender pearl, the arrival chunk is requested and loaded in the background, then you land there
+			startFarJob(player, level, eye, dir, dist);
 			return;
 		}
 		BlockPos prev = null;
@@ -143,31 +144,59 @@ public final class MonkNetwork {
 		}
 	}
 
-	/** A far blink being searched over several ticks: walks the aim line on the terrain height maps. */
+	/** A far blink in progress: the arrival chunk is being loaded (the way an ender pearl does it). */
 	private static final class FarJob {
 		final ServerLevel level;
-		final Vec3 eye;
-		final Vec3 dir;
-		final double dist;
-		double d = 1.0;
-		double last = 1.0;
-		int shown;
+		final double x;
+		final double z;
+		final int cx;
+		final int cz;
+		int waited;
 
-		FarJob(ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
+		FarJob(ServerLevel level, double x, double z) {
 			this.level = level;
-			this.eye = eye;
-			this.dir = dir;
-			this.dist = dist;
+			this.x = x;
+			this.z = z;
+			this.cx = (int) Math.floor(x) >> 4;
+			this.cz = (int) Math.floor(z) >> 4;
 		}
 	}
 
 	private static final java.util.Map<java.util.UUID, FarJob> JOBS = new java.util.HashMap<>();
 
+	private static void say(ServerPlayer player, String key) {
+		player.displayClientMessage(net.minecraft.network.chat.Component.translatable(key), true);
+	}
+
+	/**
+	 * The end of the blink distance, kept inside the world and its border. No terrain is searched on the way: nothing
+	 * between you and there is loaded or generated (that is what made a million-block blink take minutes, or nothing).
+	 */
+	private static void startFarJob(ServerPlayer player, ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
+		double d = dist;
+		Vec3 end = eye.add(dir.scale(d));
+		for (int i = 0; i < 300 && (Math.abs(end.x) > 29_999_000.0 || Math.abs(end.z) > 29_999_000.0
+				|| !level.getWorldBorder().isWithinBounds(BlockPos.containing(end.x, 0, end.z))); i++) {
+			d *= 0.97;
+			end = eye.add(dir.scale(d));
+		}
+		if (Math.abs(end.x) > 29_999_000.0 || Math.abs(end.z) > 29_999_000.0
+				|| !level.getWorldBorder().isWithinBounds(BlockPos.containing(end.x, 0, end.z))) {
+			say(player, "monk.blink.no_ground");
+			return;
+		}
+		FarJob job = new FarJob(level, end.x, end.z);
+		level.getChunkSource().addTicketAndLoadWithRadius(net.minecraft.server.level.TicketType.PORTAL,
+				new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 2);
+		JOBS.put(player.getUUID(), job);
+		say(player, "monk.blink.loading");
+		MonkMod.LOGGER.info("Far blink of {}: {} blocks, loading the chunk at {} {}", player.getName().getString(), (long) d, job.cx, job.cz);
+	}
+
 	private static void tickJobs(net.minecraft.server.MinecraftServer server) {
 		if (JOBS.isEmpty()) {
 			return;
 		}
-		long budget = System.nanoTime() + 15_000_000L / Math.max(1, JOBS.size());
 		for (java.util.Iterator<java.util.Map.Entry<java.util.UUID, FarJob>> it = JOBS.entrySet().iterator(); it.hasNext();) {
 			java.util.Map.Entry<java.util.UUID, FarJob> e = it.next();
 			ServerPlayer player = server.getPlayerList().getPlayer(e.getKey());
@@ -176,124 +205,75 @@ public final class MonkNetwork {
 				it.remove();
 				continue;
 			}
-			Vec3 hit = null;
-			boolean over = false;
-			boolean done = false;
-			while (System.nanoTime() < budget) {
-				if (job.d > job.dist) {
-					over = true;
-					break;
-				}
-				Vec3 at = job.eye.add(job.dir.scale(job.d));
-				if (at.y < job.level.getMinY() || !job.level.getWorldBorder().isWithinBounds(BlockPos.containing(at))) {
-					over = true;
-					break;
-				}
-				if (job.d < 500 && job.level.hasChunk((int) Math.floor(at.x) >> 4, (int) Math.floor(at.z) >> 4)) {
-					// still in loaded chunks: exact blocks (trees, roofs), like a normal far blink
-					if (solid(job.level, BlockPos.containing(at))) {
-						done = true;
-						break;
-					}
-					job.d += 0.5;
-					continue;
-				}
-				// Past the loaded chunks the terrain height comes straight from the world generator (no chunk is generated),
-				// and the step grows with the distance: 1,000,000 blocks takes about 2,000 samples instead of
-				// generating tens of thousands of chunks (which took many minutes, so it seemed nothing happened).
-				if (at.y <= height(job.level, (int) Math.floor(at.x), (int) Math.floor(at.z))) {
-					// the line went into the ground between the last sample and this one: narrow it down
-					double lo = job.last;
-					double hi = job.d;
-					for (int i = 0; i < 24 && hi - lo > 1.0; i++) {
-						double mid = (lo + hi) / 2;
-						Vec3 m = job.eye.add(job.dir.scale(mid));
-						if (m.y <= height(job.level, (int) Math.floor(m.x), (int) Math.floor(m.z))) {
-							hi = mid;
-						} else {
-							lo = mid;
-						}
-					}
-					Vec3 col = job.eye.add(job.dir.scale(hi));
-					hit = new Vec3(Math.floor(col.x) + 0.5, surface(job.level, (int) Math.floor(col.x), (int) Math.floor(col.z)),
-							Math.floor(col.z) + 0.5);
-					break;
-				}
-				job.last = job.d;
-				job.d += Math.max(2.0, job.d * 0.004);
-			}
-			if (over && hit == null && !done) {
-				// aiming over the land (into the sky): land on the ground at the end of the blink distance, like a teleport
-				double end = Math.min(job.d, job.dist);
-				Vec3 col = job.eye.add(job.dir.scale(end));
-				for (int back = 0; back < 64 && !job.level.getWorldBorder().isWithinBounds(BlockPos.containing(col)); back++) {
-					end *= 0.98;
-					col = job.eye.add(job.dir.scale(end));
-				}
-				if (job.level.getWorldBorder().isWithinBounds(BlockPos.containing(col))) {
-					hit = new Vec3(Math.floor(col.x) + 0.5, surface(job.level, (int) Math.floor(col.x), (int) Math.floor(col.z)),
-							Math.floor(col.z) + 0.5);
-				}
-			}
-			if (done) {
+			job.waited++;
+			if (job.level.getChunkSource().getChunkNow(job.cx, job.cz) != null) {
 				it.remove();
-				handleFarBlink(player, job.dir.scale(job.d + 2)); // under 512 blocks: exact search right now
-			} else if (hit != null) {
-				it.remove();
-				if (!land(player, job.level, hit, job.dist)) {
-					player.displayClientMessage(net.minecraft.network.chat.Component.translatable("monk.blink.no_ground"), true);
+				Vec3 spot = landSpot(player, job.level, job.x, job.z);
+				if (spot == null || !handleBlink(player, spot, 4096.0)) {
+					say(player, "monk.blink.no_ground");
 				}
-			} else if (over) {
+			} else if (job.waited > 20 * 60) {
 				it.remove();
-				player.displayClientMessage(net.minecraft.network.chat.Component.translatable("monk.blink.no_ground"), true);
-			} else if (job.d - job.shown > 4000) {
-				job.shown = (int) job.d;
-				player.displayClientMessage(net.minecraft.network.chat.Component.literal("Blink: " + (int) job.d + " / " + (int) job.dist), true);
+				say(player, "monk.blink.timeout");
+			} else if (job.waited % 40 == 0) {
+				say(player, "monk.blink.loading");
 			}
 		}
 	}
 
-	/**
-	 * Far blink arrival: the chunk there was only generated up to its terrain, and collision checks see a chunk that is
-	 * not fully loaded as empty (no ground under you), so the blink was silently refused. The chunk is loaded completely
-	 * first, then the first free spot with ground is searched from the surface up.
-	 */
-	private static boolean land(ServerPlayer player, ServerLevel level, Vec3 column, double slack) {
-		int x = (int) Math.floor(column.x);
-		int z = (int) Math.floor(column.z);
-		level.getChunk(x >> 4, z >> 4); // loads (or generates) the arrival chunk completely
+	/** Somewhere to stand in the loaded arrival chunk: the column itself, or the closest one around it. */
+	private static Vec3 landSpot(ServerPlayer player, ServerLevel level, double x, double z) {
+		int bx = (int) Math.floor(x);
+		int bz = (int) Math.floor(z);
+		for (int r = 0; r <= 6; r++) {
+			for (int dx = -r; dx <= r; dx++) {
+				for (int dz = -r; dz <= r; dz++) {
+					if (Math.max(Math.abs(dx), Math.abs(dz)) != r) {
+						continue;
+					}
+					Vec3 spot = standing(player, level, bx + dx, bz + dz);
+					if (spot != null) {
+						return spot;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private static boolean fitsAt(ServerPlayer player, ServerLevel level, Vec3 at) {
+		AABB box = player.getBoundingBox().move(at.subtract(player.position()));
+		return level.noCollision(player, box) && (MonkConfigManager.config().blink.allowAirTarget || hasGround(player, level, box));
+	}
+
+	private static Vec3 standing(ServerPlayer player, ServerLevel level, int x, int z) {
+		int min = level.getMinY() + 1;
+		int max = level.getMaxY() - 2;
+		if (level.dimensionType().hasCeiling()) {
+			// Nether-like: no open sky, so the first room found going down from your own height, then up
+			int from = Math.max(min, Math.min(max, player.getBlockY()));
+			for (int y = from; y >= min; y--) {
+				Vec3 at = new Vec3(x + 0.5, y, z + 0.5);
+				if (fitsAt(player, level, at)) {
+					return at;
+				}
+			}
+			for (int y = from + 1; y <= max; y++) {
+				Vec3 at = new Vec3(x + 0.5, y, z + 0.5);
+				if (fitsAt(player, level, at)) {
+					return at;
+				}
+			}
+			return null;
+		}
 		int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x, z);
-		for (int up = 0; up < 12; up++) {
-			Vec3 target = new Vec3(x + 0.5, top + up, z + 0.5);
-			AABB box = player.getBoundingBox().move(target.subtract(player.position()));
-			if (level.noCollision(player, box) && (MonkConfigManager.config().blink.allowAirTarget || hasGround(player, level, box))) {
-				return handleBlink(player, target, slack);
+		for (int y = Math.max(min, top); y <= Math.min(max, top + 8); y++) {
+			Vec3 at = new Vec3(x + 0.5, y, z + 0.5);
+			if (fitsAt(player, level, at)) {
+				return at;
 			}
 		}
-		return false;
-	}
-
-	/** Ground height at a column without generating anything: the loaded chunk's height map, or the world generator's noise. */
-	private static int height(ServerLevel level, int x, int z) {
-		if (level.hasChunk(x >> 4, z >> 4)) {
-			return level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x, z);
-		}
-		return level.getChunkSource().getGenerator().getBaseHeight(x, z, net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG,
-				level, level.getChunkSource().randomState());
-	}
-
-	/** Height of the ground (first free block above it) at a column; loads or generates the chunk as needed. */
-	private static int surface(ServerLevel level, int x, int z) {
-		net.minecraft.world.level.chunk.ChunkAccess chunk = level.getChunkSource().getChunk(x >> 4, z >> 4,
-				net.minecraft.world.level.chunk.status.ChunkStatus.SURFACE, true);
-		if (chunk == null) {
-			return level.getMinY();
-		}
-		int h = chunk.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x & 15, z & 15);
-		if (h <= level.getMinY()) {
-			h = chunk.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x & 15, z & 15);
-		}
-		return h + 1;
+		return null;
 	}
 
 	private static boolean solid(ServerLevel level, BlockPos pos) {
@@ -308,6 +288,7 @@ public final class MonkNetwork {
 			return false;
 		}
 		if (cfg.requireUnarmored && !state.unarmored()) {
+			say(player, "monk.blink.armor");
 			return false;
 		}
 		long now = player.level().getGameTime();
@@ -320,10 +301,8 @@ public final class MonkNetwork {
 		}
 		ServerLevel level = (ServerLevel) player.level();
 		AABB moved = player.getBoundingBox().move(target.subtract(player.position()));
-		if (!level.noCollision(player, moved)) {
-			return false;
-		}
-		if (!cfg.allowAirTarget && !hasGround(player, level, moved)) {
+		if (!level.noCollision(player, moved) || (!cfg.allowAirTarget && !hasGround(player, level, moved))) {
+			say(player, "monk.blink.no_ground");
 			return false;
 		}
 		if (player.isPassenger()) {
