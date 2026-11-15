@@ -40,6 +40,9 @@ public final class MonkNetwork {
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(MonkNetwork::tickJobs);
 		ServerPlayNetworking.registerGlobalReceiver(BlinkFarPayload.TYPE, (payload, context) ->
 				handleFarBlink(context.player(), new Vec3(payload.dx(), payload.dy(), payload.dz())));
+		PayloadTypeRegistry.playC2S().register(BlinkPreloadPayload.TYPE, BlinkPreloadPayload.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(BlinkPreloadPayload.TYPE, (payload, context) ->
+				handlePreload(context.player(), new Vec3(payload.dx(), payload.dy(), payload.dz())));
 		PayloadTypeRegistry.playC2S().register(FlySpeedPayload.TYPE, FlySpeedPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(FlySpeedPayload.TYPE, (payload, context) -> handleFlySpeed(context.player(), payload.speed()));
 		PayloadTypeRegistry.playC2S().register(StareTogglePayload.TYPE, StareTogglePayload.CODEC);
@@ -172,7 +175,7 @@ public final class MonkNetwork {
 	 * The end of the blink distance, kept inside the world and its border. No terrain is searched on the way: nothing
 	 * between you and there is loaded or generated (that is what made a million-block blink take minutes, or nothing).
 	 */
-	private static void startFarJob(ServerPlayer player, ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
+	private static Vec3 farEnd(ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
 		double d = dist;
 		Vec3 end = eye.add(dir.scale(d));
 		for (int i = 0; i < 300 && (Math.abs(end.x) > 29_999_000.0 || Math.abs(end.z) > 29_999_000.0
@@ -182,12 +185,43 @@ public final class MonkNetwork {
 		}
 		if (Math.abs(end.x) > 29_999_000.0 || Math.abs(end.z) > 29_999_000.0
 				|| !level.getWorldBorder().isWithinBounds(BlockPos.containing(end.x, 0, end.z))) {
+			return null;
+		}
+		return end;
+	}
+
+	/**
+	 * While the key is held on a far target, the arrival chunks start loading (3x3 around it, enough to land): by the time the key
+	 * is released they are usually ready and the blink is almost instant. The ticket expires by itself if you change your mind.
+	 */
+	private static void handlePreload(ServerPlayer player, Vec3 aim) {
+		MonkConfig.Blink cfg = MonkConfigManager.config().blink;
+		if (!cfg.farBlink || !MonkPlayers.get(player).abilities().has("blink") || !Double.isFinite(aim.x) || !Double.isFinite(aim.y)
+				|| !Double.isFinite(aim.z)) {
+			return;
+		}
+		double dist = Math.min(aim.length(), cfg.range);
+		if (dist <= 512) {
+			return;
+		}
+		ServerLevel level = (ServerLevel) player.level();
+		Vec3 end = farEnd(level, player.getEyePosition(), aim.normalize(), dist);
+		if (end != null) {
+			level.getChunkSource().addTicketAndLoadWithRadius(net.minecraft.server.level.TicketType.PORTAL,
+					new net.minecraft.world.level.ChunkPos((int) Math.floor(end.x) >> 4, (int) Math.floor(end.z) >> 4), 1);
+		}
+	}
+
+	private static void startFarJob(ServerPlayer player, ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
+		Vec3 end = farEnd(level, eye, dir, dist);
+		if (end == null) {
 			say(player, "monk.blink.no_ground");
 			return;
 		}
+		double d = eye.distanceTo(end);
 		FarJob job = new FarJob(level, end.x, end.z);
 		level.getChunkSource().addTicketAndLoadWithRadius(net.minecraft.server.level.TicketType.PORTAL,
-				new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 2);
+				new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 1);
 		JOBS.put(player.getUUID(), job);
 		say(player, "monk.blink.loading");
 		MonkMod.LOGGER.info("Far blink of {}: {} blocks, loading the chunk at {} {}", player.getName().getString(), (long) d, job.cx, job.cz);
