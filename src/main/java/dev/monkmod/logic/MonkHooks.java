@@ -195,7 +195,7 @@ public final class MonkHooks {
 		return exhaustion;
 	}
 
-	/** Swiftness: multiplies ground speed (no attribute, so the FOV stays the same). */
+	/** Swiftness: adds its bonus to the ground speed (no attribute, so the FOV stays the same). */
 	public static float modifySpeed(Player player, float speed) {
 		AbilitySet set = MonkAccess.abilities(player);
 		if (set.isEmpty()) {
@@ -212,7 +212,10 @@ public final class MonkHooks {
 		if (swift == null || (swift.unarmoredOnly() && !MonkAccess.unarmored(player))) {
 			return speed;
 		}
-		return speed * swift.multiplier(player);
+		// The bonus is added to the base speed, not multiplied by what other mods already gave: another +100% (a speed
+		// passive of another mod, a potion...) and a +50% monk run add up to +150%, instead of multiplying to +200%.
+		float base = (float) player.getAttributeBaseValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+		return speed + base * (swift.multiplier(player) - 1.0F);
 	}
 
 	/** Infinite air from the water breathing abilities. */
