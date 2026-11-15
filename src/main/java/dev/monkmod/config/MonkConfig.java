@@ -137,6 +137,10 @@ public final class MonkConfig {
 	public static final class Controls {
 		/** Blink key + mouse wheel changes the blink distance. */
 		public boolean scrollBlinkDistance = true;
+		/** Blink key + the speed keys (arrows by default) change the blink distance. */
+		public boolean arrowsBlinkDistance = true;
+		/** Each change of the blink distance is at least this % of the current distance (0 = always the fixed step). */
+		public float blinkStepPercent = 10.0F;
 		/** Sprint key (Ctrl) + mouse wheel changes the running speed bonus. */
 		public boolean scrollRunSpeed = false;
 		/** Jump key (Space) + mouse wheel changes the flight speed while flying. */
@@ -254,6 +258,7 @@ public final class MonkConfig {
 		flight.minSpeed = Math.max(0.001F, Math.min(1F, flight.minSpeed));
 		flight.maxSpeed = Math.max(flight.minSpeed, Math.min(2F, flight.maxSpeed));
 		controls.blinkStep = Math.max(0.1F, Math.min(100_000F, controls.blinkStep));
+		controls.blinkStepPercent = Math.max(0F, Math.min(100F, controls.blinkStepPercent));
 		controls.runStep = Math.max(0.01F, Math.min(5F, controls.runStep));
 		controls.walkShare = Math.max(0F, Math.min(1F, controls.walkShare));
 		controls.maxRunScale = Math.max(0F, Math.min(10F, controls.maxRunScale));

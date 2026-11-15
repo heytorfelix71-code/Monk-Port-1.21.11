@@ -254,8 +254,11 @@ final class BlinkClient {
 		}
 		for (double d = 8; d <= max; d += 8) {
 			Vec3 at = eye.add(dir.scale(d));
-			if (at.y < level.getMinY() || at.y > level.getMaxY()) {
+			if (at.y < level.getMinY()) {
 				return false;
+			}
+			if (at.y > level.getMaxY()) {
+				return max > seen(); // aiming into the sky far away: the server lands you on the ground at the blink distance
 			}
 			if (!level.hasChunk(net.minecraft.core.SectionPos.blockToSectionCoord(at.x), net.minecraft.core.SectionPos.blockToSectionCoord(at.z))) {
 				return true;

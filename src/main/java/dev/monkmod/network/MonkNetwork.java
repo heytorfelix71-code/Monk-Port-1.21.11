@@ -240,20 +240,37 @@ public final class MonkNetwork {
 				handleFarBlink(player, job.dir.scale(job.d + 2)); // under 512 blocks: exact search right now
 			} else if (hit != null) {
 				it.remove();
-				for (int up = 0; up < 8; up++) {
-					Vec3 target = hit.add(0, up, 0);
-					if (job.level.noCollision(player, player.getBoundingBox().move(target.subtract(player.position())))) {
-						handleBlink(player, target, job.dist);
-						break;
-					}
+				if (!land(player, job.level, hit, job.dist)) {
+					player.displayClientMessage(net.minecraft.network.chat.Component.translatable("monk.blink.no_ground"), true);
 				}
 			} else if (over) {
 				it.remove();
+				player.displayClientMessage(net.minecraft.network.chat.Component.translatable("monk.blink.no_ground"), true);
 			} else if (job.d - job.shown > 4000) {
 				job.shown = (int) job.d;
 				player.displayClientMessage(net.minecraft.network.chat.Component.literal("Blink: " + (int) job.d + " / " + (int) job.dist), true);
 			}
 		}
+	}
+
+	/**
+	 * Far blink arrival: the chunk there was only generated up to its terrain, and collision checks see a chunk that is
+	 * not fully loaded as empty (no ground under you), so the blink was silently refused. The chunk is loaded completely
+	 * first, then the first free spot with ground is searched from the surface up.
+	 */
+	private static boolean land(ServerPlayer player, ServerLevel level, Vec3 column, double slack) {
+		int x = (int) Math.floor(column.x);
+		int z = (int) Math.floor(column.z);
+		level.getChunk(x >> 4, z >> 4); // loads (or generates) the arrival chunk completely
+		int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x, z);
+		for (int up = 0; up < 12; up++) {
+			Vec3 target = new Vec3(x + 0.5, top + up, z + 0.5);
+			AABB box = player.getBoundingBox().move(target.subtract(player.position()));
+			if (level.noCollision(player, box) && (MonkConfigManager.config().blink.allowAirTarget || hasGround(player, level, box))) {
+				return handleBlink(player, target, slack);
+			}
+		}
+		return false;
 	}
 
 	/** Ground height at a column without generating anything: the loaded chunk's height map, or the world generator's noise. */
@@ -284,30 +301,30 @@ public final class MonkNetwork {
 		return !s.getFluidState().isEmpty() || !s.getCollisionShape(level, pos).isEmpty();
 	}
 
-	private static void handleBlink(ServerPlayer player, Vec3 target, double slack) {
+	private static boolean handleBlink(ServerPlayer player, Vec3 target, double slack) {
 		MonkPlayerState state = MonkPlayers.get(player);
 		MonkConfig.Blink cfg = MonkConfigManager.config().blink;
 		if (!state.abilities().has("blink") || player.isSleeping() || player.isSpectator() || !player.isAlive()) {
-			return;
+			return false;
 		}
 		if (cfg.requireUnarmored && !state.unarmored()) {
-			return;
+			return false;
 		}
 		long now = player.level().getGameTime();
 		if (now < state.blinkReadyAt) {
-			return;
+			return false;
 		}
 		if (!Double.isFinite(target.x) || !Double.isFinite(target.y) || !Double.isFinite(target.z)
 				|| target.distanceTo(player.getEyePosition()) > cfg.range + slack) {
-			return;
+			return false;
 		}
 		ServerLevel level = (ServerLevel) player.level();
 		AABB moved = player.getBoundingBox().move(target.subtract(player.position()));
 		if (!level.noCollision(player, moved)) {
-			return;
+			return false;
 		}
 		if (!cfg.allowAirTarget && !hasGround(player, level, moved)) {
-			return;
+			return false;
 		}
 		if (player.isPassenger()) {
 			player.stopRiding();
@@ -324,7 +341,9 @@ public final class MonkNetwork {
 			player.hurtServer(level, player.damageSources().fall(), cfg.fallDamage);
 		}
 		state.blinkReadyAt = now + cfg.cooldownTicks;
+		return true;
 	}
+
 
 	/** Something to stand on (a block or water) right below the box. */
 	public static boolean hasGround(net.minecraft.world.entity.Entity entity, net.minecraft.world.level.Level level, AABB box) {

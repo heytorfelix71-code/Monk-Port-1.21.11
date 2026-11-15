@@ -659,5 +659,10 @@
   "key.monk.speed_up": "Monk: more speed (flight while flying / CTRL + key: running)",
   "key.monk.speed_down": "Monk: less speed (flight while flying / CTRL + key: running)",
   "monk.config.controls.walk_share": "Walking share of the speed",
-  "monk.config.controls.walk_share.desc": "How much of the running bonus you get while walking (not sprinting): 0.25 = a quarter. It still follows the % you chose with the arrows."
+  "monk.config.controls.walk_share.desc": "How much of the running bonus you get while walking (not sprinting): 0.25 = a quarter. It still follows the % you chose with the arrows.",
+  "monk.blink.no_ground": "Blink: no safe ground at the destination",
+  "monk.config.controls.arrows_blink": "Blink key + arrows",
+  "monk.config.controls.arrows_blink.desc": "While holding the Blink key, the speed keys (arrows by default) change the blink distance. The keys can be changed in Options > Controls (Monk: more / less speed); there are also own keys \"Monk: blink farther / closer\" for any key you like.",
+  "monk.config.controls.blink_step_percent": "Blink step (% of the distance)",
+  "monk.config.controls.blink_step_percent.desc": "Each change of the blink distance is at least this % of the current distance (10 = 10%), so a million blocks doesn't take thousands of presses. 0 = always the fixed step."
 }

@@ -659,5 +659,10 @@
   "key.monk.speed_up": "Monge: mais velocidade (voo, só a voar / CTRL + tecla: corrida)",
   "key.monk.speed_down": "Monge: menos velocidade (voo, só a voar / CTRL + tecla: corrida)",
   "monk.config.controls.walk_share": "Velocidade a andar",
-  "monk.config.controls.walk_share.desc": "Quanto do bónus de corrida vale a andar (sem correr): 0,25 = um quarto. Continua a acompanhar a % escolhida nas setas."
+  "monk.config.controls.walk_share.desc": "Quanto do bónus de corrida vale a andar (sem correr): 0,25 = um quarto. Continua a acompanhar a % escolhida nas setas.",
+  "monk.blink.no_ground": "Blink: sem chão seguro no destino",
+  "monk.config.controls.arrows_blink": "Tecla do Blink + setas",
+  "monk.config.controls.arrows_blink.desc": "Com a tecla do Blink premida, as teclas de velocidade (setas por omissão) mudam a distância do blink. Podes trocar as teclas em Opções > Controlos (Monge: mais / menos velocidade); também existem as teclas próprias \"Monge: blink mais longe / mais perto\" para usar qualquer tecla.",
+  "monk.config.controls.blink_step_percent": "Passo do blink (% da distância)",
+  "monk.config.controls.blink_step_percent.desc": "Cada mudança da distância do blink é de pelo menos essa % da distância atual (10 = 10%), assim um milhão de blocos não exige milhares de cliques. 0 = sempre o passo fixo."
 }

@@ -158,7 +158,9 @@ public final class MonkControls {
 	}
 
 	private static void speed(Minecraft client, LocalPlayer player, int dir) {
-		if (client.hasControlDown()) {
+		if (cfg().arrowsBlinkDistance && isDown(MonkModClient.blinkKey) && ClientMonkState.abilities().has("blink")) {
+			adjustBlink(player, dir); // holding Blink: the arrows change the blink distance
+		} else if (client.hasControlDown()) {
 			if (ClientMonkState.abilities().has("swift")) {
 				adjustRun(player, dir);
 			}
@@ -213,7 +215,15 @@ public final class MonkControls {
 		}
 		float max = ClientMonkState.blinkRange();
 		float min = Math.min(ClientMonkState.blinkMinRange(), max);
-		float value = Math.max(min, Math.min(max, blinkDistance() + dir * cfg().blinkStep));
+		// the step follows the distance (10% by default), so huge distances don't take thousands of presses
+		float current = blinkDistance();
+		double step = Math.max(cfg().blinkStep, current * cfg().blinkStepPercent / 100.0);
+		double next = current + dir * step;
+		if (next >= 100) {
+			double mag = Math.pow(10, Math.floor(Math.log10(next)) - 1); // round to two significant digits
+			next = Math.round(next / mag) * mag;
+		}
+		float value = (float) Math.max(min, Math.min(max, next));
 		saved.blinkDistance = value;
 		markDirty();
 		show(player, Component.translatable("monk.controls.blink_distance", fmt(value), fmt(max)));
