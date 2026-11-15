@@ -54,8 +54,9 @@ final class BlinkShadow {
 		}
 		for (int i = 1; i <= count; i++) {
 			Vec3 spot = from.lerp(target, i / (double) count);
-			// A shadow on top of yourself would fill the screen in first person.
-			if (spot.distanceTo(from) >= 1.5) {
+			// A shadow on top of yourself would fill the screen in first person; one past the loaded area can't be seen.
+			double d = spot.distanceTo(from);
+			if (d >= 1.5 && d <= BlinkClient.seenDistance()) {
 				SPOTS.add(spot);
 			}
 		}

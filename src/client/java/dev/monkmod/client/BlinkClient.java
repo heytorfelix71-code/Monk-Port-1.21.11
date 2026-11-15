@@ -176,9 +176,8 @@ final class BlinkClient {
 			return null;
 		}
 		Vec3 eye = player.getEyePosition();
-		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
 		// walls (side faces) and ceilings / tree canopies above you (bottom face): land on top of that block
-		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+		BlockHitResult hit = clipSeen(player, level, MonkControls.blinkDistance(), ClipContext.Fluid.NONE);
 		if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection() == Direction.UP) {
 			return null;
 		}
@@ -215,8 +214,11 @@ final class BlinkClient {
 		Vec3 eye = player.getEyePosition();
 		Vec3 dir = player.getViewVector(1.0F);
 		double max = MonkControls.blinkDistance();
-		BlockHitResult hit = level.clip(new ClipContext(eye, eye.add(dir.scale(max)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+		BlockHitResult hit = clipSeen(player, level, max, ClipContext.Fluid.NONE);
 		double limit = hit.getType() == HitResult.Type.MISS ? max : eye.distanceTo(hit.getLocation());
+		// a top farther than the blink range is never used, and past the loaded chunks there are no blocks:
+		// without this, a 1,000,000-block aim walked 2 million spots every tick
+		limit = Math.min(limit, Math.min(seen(), ClientMonkState.blinkRange() + 1.0));
 		double tolerance = Math.max(0.5, cfg.topTolerance);
 		for (double d = 1.5; d < limit; d += 0.5) {
 			Vec3 at = eye.add(dir.scale(d));
@@ -246,7 +248,7 @@ final class BlinkClient {
 		Vec3 eye = player.getEyePosition();
 		Vec3 dir = player.getViewVector(1.0F);
 		double max = MonkControls.blinkDistance();
-		BlockHitResult hit = level.clip(new ClipContext(eye, eye.add(dir.scale(max)), ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, player));
+		BlockHitResult hit = clipSeen(player, level, max, ClipContext.Fluid.ANY);
 		if (hit.getType() != HitResult.Type.MISS) {
 			return false;
 		}
@@ -262,10 +264,28 @@ final class BlinkClient {
 		return false;
 	}
 
+	/** How far this client has blocks (render distance plus a margin); past that a raycast only walks empty, unloaded space. */
+	private static double seen() {
+		Minecraft mc = Minecraft.getInstance();
+		int chunks = Math.max(mc.options.renderDistance().get(), mc.options.getEffectiveRenderDistance()) + 3;
+		return chunks * 16.0 * 1.5;
+	}
+
+	/** The aim raycast, cut at the loaded area: aiming 1,000,000 blocks away no longer walks a million blocks each tick. */
+	private static BlockHitResult clipSeen(LocalPlayer player, ClientLevel level, double max, ClipContext.Fluid fluid) {
+		Vec3 eye = player.getEyePosition();
+		Vec3 to = eye.add(player.getViewVector(1.0F).scale(Math.min(max, seen())));
+		return level.clip(new ClipContext(eye, to, ClipContext.Block.COLLIDER, fluid, player));
+	}
+
+	static double seenDistance() {
+		return seen();
+	}
+
 	private static Vec3 aimPoint(LocalPlayer player, ClientLevel level) {
 		Vec3 eye = player.getEyePosition();
 		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
-		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+		BlockHitResult hit = clipSeen(player, level, MonkControls.blinkDistance(), ClipContext.Fluid.NONE);
 		return hit.getType() == HitResult.Type.MISS ? end : hit.getLocation();
 	}
 
@@ -311,7 +331,7 @@ final class BlinkClient {
 	private static Vec3 rawTarget(LocalPlayer player, ClientLevel level) {
 		Vec3 eye = player.getEyePosition();
 		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
-		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+		BlockHitResult hit = clipSeen(player, level, MonkControls.blinkDistance(), ClipContext.Fluid.NONE);
 		if (hit.getType() == HitResult.Type.BLOCK) {
 			BlockPos pos = hit.getBlockPos();
 			Direction face = hit.getDirection();
