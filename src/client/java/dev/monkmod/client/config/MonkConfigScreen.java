@@ -131,7 +131,7 @@ public final class MonkConfigScreen {
 				.option(bool("controls.scroll_blink", cd.scrollBlinkDistance, () -> c.scrollBlinkDistance, v -> c.scrollBlinkDistance = v))
 				.option(bool("controls.scroll_run", cd.scrollRunSpeed, () -> c.scrollRunSpeed, v -> c.scrollRunSpeed = v))
 				.option(bool("controls.scroll_fly", cd.scrollFlySpeed, () -> c.scrollFlySpeed, v -> c.scrollFlySpeed = v))
-				.option(floatSlider("controls.blink_step", cd.blinkStep, 0.5F, 8F, 0.5F, () -> c.blinkStep, v -> c.blinkStep = v))
+				.option(floatField("controls.blink_step", cd.blinkStep, 0.1F, 500F, () -> c.blinkStep, v -> c.blinkStep = v))
 				.option(floatSlider("controls.run_step", cd.runStep, 0.05F, 1F, 0.05F, () -> c.runStep, v -> c.runStep = v))
 				.option(floatSlider("controls.max_run_scale", cd.maxRunScale, 0.5F, 5F, 0.25F, () -> c.maxRunScale, v -> c.maxRunScale = v))
 				.option(floatSlider("controls.fly_step", cd.flyStep, 0.001F, 0.05F, 0.001F, () -> c.flyStep, v -> c.flyStep = v))
@@ -314,13 +314,15 @@ public final class MonkConfigScreen {
 			case "blink" -> {
 				MonkConfig.Blink b = cfg.blink;
 				MonkConfig.Blink bd = def.blink;
-				list.add(floatSlider("blink.range", bd.range, 1F, 255F, 0.5F, () -> b.range, v -> b.range = v));
+				list.add(floatField("blink.range", bd.range, 1F, 5000F, () -> b.range, v -> b.range = v));
 				list.add(floatSlider("blink.min_range", bd.minRange, 0.5F, 16F, 0.5F, () -> b.minRange, v -> b.minRange = v));
 				list.add(intSlider("blink.cooldown", bd.cooldownTicks, 0, 400, 5, () -> b.cooldownTicks, v -> b.cooldownTicks = v));
 				list.add(floatSlider("blink.fall_damage", bd.fallDamage, 0F, 20F, 0.5F, () -> b.fallDamage, v -> b.fallDamage = v));
 				list.add(bool("blink.require_unarmored", bd.requireUnarmored, () -> b.requireUnarmored, v -> b.requireUnarmored = v));
 				list.add(bool("blink.allow_air", bd.allowAirTarget, () -> b.allowAirTarget, v -> b.allowAirTarget = v));
 				list.add(bool("blink.climb", bd.climbWalls, () -> b.climbWalls, v -> b.climbWalls = v));
+				list.add(bool("blink.land_on_tops", bd.landOnTops, () -> b.landOnTops, v -> b.landOnTops = v));
+				list.add(floatSlider("blink.top_tolerance", bd.topTolerance, 0.5F, 4F, 0.25F, () -> b.topTolerance, v -> b.topTolerance = v));
 				list.add(intSlider("blink.climb_height", bd.climbHeight, 0, 255, 1, () -> b.climbHeight, v -> b.climbHeight = v));
 				list.add(intSlider("blink.ground_depth", bd.groundSearchDepth, 0, 64, 1, () -> b.groundSearchDepth, v -> b.groundSearchDepth = v));
 			}
@@ -341,6 +343,20 @@ public final class MonkConfigScreen {
 				list.add(bool("water.hide_bubbles", wd.hideAirBubbles, () -> w.hideAirBubbles, v -> w.hideAirBubbles = v));
 				list.add(bool("water.underwater_mining", wd.underwaterMining, () -> w.underwaterMining, v -> w.underwaterMining = v));
 				list.add(bool("water.ignore_currents", wd.ignoreCurrents, () -> w.ignoreCurrents, v -> w.ignoreCurrents = v));
+				list.add(Option.<MonkConfig.SneakMode>createBuilder().name(t("water.sneak_mode")).description(d("water.sneak_mode"))
+						.binding(wd.sneakMode, () -> w.sneakMode, v -> w.sneakMode = v)
+						.controller(o -> EnumControllerBuilder.create(o).enumClass(MonkConfig.SneakMode.class)
+								.formatValue(v -> t("water.sneak_mode." + v.name().toLowerCase())))
+						.build());
+				list.add(bool("water.let_go_currents", wd.letGoCurrents, () -> w.letGoCurrents, v -> w.letGoCurrents = v));
+				list.add(bool("water.let_go_columns", wd.letGoColumns, () -> w.letGoColumns, v -> w.letGoColumns = v));
+				list.add(floatSlider("water.sink_speed", wd.sinkSpeed, 0F, 0.3F, 0.01F, () -> w.sinkSpeed, v -> w.sinkSpeed = v));
+			}
+			case "catch_arrows" -> {
+				MonkConfig.Gameplay gp = cfg.gameplay;
+				MonkConfig.Gameplay gd = def.gameplay;
+				list.add(bool("gameplay.back_dodge", gd.backDodge, () -> gp.backDodge, v -> gp.backDodge = v));
+				list.add(bool("gameplay.back_catch", gd.backCatch, () -> gp.backCatch, v -> gp.backCatch = v));
 			}
 			default -> {
 			}
@@ -485,6 +501,11 @@ public final class MonkConfigScreen {
 	private static Option<Float> floatSlider(String key, float def, float min, float max, float step, Supplier<Float> get, Consumer<Float> set) {
 		return Option.<Float>createBuilder().name(t(key)).description(d(key))
 				.binding(def, get, set).controller(o -> FloatSliderControllerBuilder.create(o).range(min, max).step(step)).build();
+	}
+
+	private static Option<Float> floatField(String key, float def, float min, float max, Supplier<Float> get, Consumer<Float> set) {
+		return Option.<Float>createBuilder().name(t(key)).description(d(key))
+				.binding(def, get, set).controller(o -> FloatFieldControllerBuilder.create(o).range(min, max)).build();
 	}
 
 	private static Option<Color> color(String key, int def, Supplier<Integer> get, Consumer<Integer> set) {

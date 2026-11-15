@@ -70,6 +70,7 @@ public final class MonkModClient implements ClientModInitializer {
 				MonkEquipment::computeUnarmored);
 
 		ClientPlayNetworking.registerGlobalReceiver(StatePayload.TYPE, (payload, context) -> ClientMonkState.apply(payload));
+		ClientPlayNetworking.registerGlobalReceiver(dev.monkmod.network.BlinkDonePayload.TYPE, (payload, context) -> BlinkClient.onDone(payload));
 		ClientPlayNetworking.registerGlobalReceiver(ProgressPayload.TYPE, (payload, context) -> MonkHud.onProgress(payload.progress(), payload.max()));
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			ClientMonkState.reset();

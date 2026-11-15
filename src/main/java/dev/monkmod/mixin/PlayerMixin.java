@@ -32,13 +32,9 @@ public abstract class PlayerMixin {
 	}
 
 	/** Swiftness without a speed attribute: the camera FOV does not stretch. */
-	@Inject(method = "getSpeed", at = @At("RETURN"), cancellable = true)
-	private void monk$swift(CallbackInfoReturnable<Float> cir) {
-		float vanilla = cir.getReturnValueF();
-		float modified = MonkHooks.modifySpeed((Player) (Object) this, vanilla);
-		if (modified != vanilla) {
-			cir.setReturnValue(modified);
-		}
+	@com.llamalad7.mixinextras.injector.ModifyReturnValue(method = "getSpeed", at = @At("RETURN"))
+	private float monk$swift(float speed) {
+		return MonkHooks.modifySpeed((Player) (Object) this, speed);
 	}
 
 	/** Water currents don't drag a monk who holds their depth. */

@@ -335,8 +335,16 @@ public final class MonkHooks {
 	}
 
 	/** River currents don't push a monk who holds their depth in the water (vanilla flow and Streams-style mods). */
+	/** Set by the client while the local monk has let go of their depth underwater (sneak). */
+	public static volatile boolean clientLetGo;
+
+	/** The monk let go of their depth: sneak tapped (client) or held (server / other players). */
+	public static boolean letGo(Player player) {
+		return player.level().isClientSide() ? clientLetGo || player.isShiftKeyDown() : player.isShiftKeyDown();
+	}
+
 	public static boolean ignoresCurrents(Player player) {
-		if (!MonkConfigManager.config().water.ignoreCurrents || player.isShiftKeyDown()) {
+		if (!MonkConfigManager.config().water.ignoreCurrents || (letGo(player) && MonkConfigManager.config().water.letGoCurrents)) {
 			return false;
 		}
 		AbilitySet set = MonkAccess.abilities(player);
@@ -351,7 +359,7 @@ public final class MonkHooks {
 
 	/** 0..1: how much of a magma bubble column's downward pull this monk resists (0 while sneaking on purpose). */
 	public static float columnResist(Player player) {
-		if (player.isShiftKeyDown()) {
+		if (letGo(player) && MonkConfigManager.config().water.letGoColumns) {
 			return 0.0F;
 		}
 		AbilitySet set = MonkAccess.abilities(player);

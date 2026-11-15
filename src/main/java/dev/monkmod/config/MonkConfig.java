@@ -55,6 +55,10 @@ public final class MonkConfig {
 		public int groundSearchDepth = 6;
 		/** Aiming at a wall (or hill) that is too high to land on: land on its top if it is within range. */
 		public boolean climbWalls = true;
+		/** Aiming just above a block (a tree, a pillar...) lands on its top. */
+		public boolean landOnTops = true;
+		/** How close above a block top the aim must pass to land on it (blocks). */
+		public float topTolerance = 1.5F;
 		/** Highest wall the blink climbs, in blocks above the point you aimed at. */
 		public int climbHeight = 32;
 		/** What the aim preview shows while the blink key is held. */
@@ -100,6 +104,8 @@ public final class MonkConfig {
 	}
 
 	/** Water related settings of the water breathing abilities. */
+	public enum SneakMode { TAP, HOLD }
+
 	public static final class Water {
 		/** Hide the air bubbles above the hotbar while you have infinite air. */
 		public boolean hideAirBubbles = false;
@@ -107,6 +113,14 @@ public final class MonkConfig {
 		public boolean underwaterMining = true;
 		/** River currents (vanilla flowing water or mods like Streams) don't push monks who hold their depth. */
 		public boolean ignoreCurrents = true;
+		/** How sneak lets go of your depth: TAP = tap once to sink and be carried (tap again or jump to hold), HOLD = only while held. */
+		public SneakMode sneakMode = SneakMode.TAP;
+		/** While you let go, currents (also Streams) carry you. */
+		public boolean letGoCurrents = true;
+		/** While you let go, magma bubble columns pull you down normally. */
+		public boolean letGoColumns = true;
+		/** Extra downward speed while you let go (0 = only the normal water gravity). */
+		public float sinkSpeed = 0.03F;
 	}
 
 	public static final class Flight {
@@ -148,6 +162,10 @@ public final class MonkConfig {
 		public boolean announceLevelUps = true;
 		/** The "Blindness" level gives no blindness at all. */
 		public boolean noBlindness = false;
+		/** Catch Arrows: dodge projectiles coming from behind. Off = for every level, whatever levels.json says. */
+		public boolean backDodge = true;
+		/** Catch Arrows: chance to catch projectiles from behind. Off = for every level. */
+		public boolean backCatch = true;
 		/** Ability types switched off everywhere, whatever levels.json says. */
 		public List<String> disabledAbilities = new ArrayList<>();
 		/** Progress messages in the action bar when progress changes. */
@@ -182,6 +200,8 @@ public final class MonkConfig {
 		if (performance == null) performance = new Performance();
 		if (flight == null) flight = new Flight();
 		if (water == null) water = new Water();
+		if (water.sneakMode == null) water.sneakMode = SneakMode.TAP;
+		water.sinkSpeed = Math.max(0F, Math.min(1F, water.sinkSpeed));
 		if (blink.previewMode == null) blink.previewMode = PreviewMode.FULL;
 		if (!blink.previewParticles) {
 			blink.previewMode = PreviewMode.OFF;
@@ -197,6 +217,13 @@ public final class MonkConfig {
 		blink.shadowColor &= 0xFFFFFF;
 		blink.shadowOpacity = clamp(blink.shadowOpacity, 10, 100);
 		blink.soundVolume = clamp(blink.soundVolume, 0, 100);
+		if (configVersion >= 2 && configVersion < 3) {
+			// 2.9.0: the blink goes up to 5000 blocks; whoever had the old maximum gets the new one
+			if (blink.range >= 255F) {
+				blink.range = 5000F;
+			}
+			configVersion = 3;
+		}
 		if (configVersion < 2) {
 			// 2.5.0: monk flight was far too fast.
 			flight.minSpeed = Math.min(flight.minSpeed, 0.01F);
@@ -204,7 +231,7 @@ public final class MonkConfig {
 			if (controls != null) {
 				controls.flyStep = Math.min(controls.flyStep, 0.005F);
 			}
-			configVersion = 2;
+			configVersion = 3;
 		}
 		flight.defaultSpeed = Math.max(flight.minSpeed, Math.min(flight.maxSpeed, flight.defaultSpeed));
 		if (controls == null) controls = new Controls();
@@ -214,7 +241,7 @@ public final class MonkConfig {
 		blink.groundSearchDepth = clamp(blink.groundSearchDepth, 0, 64);
 		flight.minSpeed = Math.max(0.001F, Math.min(1F, flight.minSpeed));
 		flight.maxSpeed = Math.max(flight.minSpeed, Math.min(2F, flight.maxSpeed));
-		controls.blinkStep = Math.max(0.1F, Math.min(16F, controls.blinkStep));
+		controls.blinkStep = Math.max(0.1F, Math.min(500F, controls.blinkStep));
 		controls.runStep = Math.max(0.01F, Math.min(5F, controls.runStep));
 		controls.maxRunScale = Math.max(0F, Math.min(10F, controls.maxRunScale));
 		controls.flyStep = Math.max(0.001F, Math.min(0.5F, controls.flyStep));
@@ -223,7 +250,7 @@ public final class MonkConfig {
 		hud.size = clamp(hud.size, 8, 128);
 		hud.opacity = Math.max(0.05F, Math.min(1F, hud.opacity));
 		hud.visibleTicks = clamp(hud.visibleTicks, 0, 1200);
-		blink.range = Math.max(1F, Math.min(255F, blink.range));
+		blink.range = Math.max(1F, Math.min(5000F, blink.range));
 		blink.cooldownTicks = clamp(blink.cooldownTicks, 0, 1200);
 		blink.fallDamage = Math.max(0F, blink.fallDamage);
 		if (equipment.whitelist == null) equipment.whitelist = new ArrayList<>();

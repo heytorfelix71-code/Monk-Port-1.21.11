@@ -30,6 +30,7 @@ public final class MonkNetwork {
 	public static void init() {
 		PayloadTypeRegistry.playS2C().register(StatePayload.TYPE, StatePayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(ProgressPayload.TYPE, ProgressPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(BlinkDonePayload.TYPE, BlinkDonePayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(BlinkPayload.TYPE, BlinkPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(BlinkPayload.TYPE, (payload, context) ->
 				handleBlink(context.player(), new Vec3(payload.x(), payload.y(), payload.z())));
@@ -108,7 +109,11 @@ public final class MonkNetwork {
 		}
 		// No sound or particles from the server: the blinking player's own client plays them, so nobody else
 		// sees or hears the blink (only the player moving).
+		Vec3 from = player.position();
 		player.teleportTo(target.x, target.y, target.z);
+		if (ServerPlayNetworking.canSend(player, BlinkDonePayload.TYPE)) {
+			ServerPlayNetworking.send(player, new BlinkDonePayload(from.x, from.y, from.z, target.x, target.y, target.z));
+		}
 		player.resetFallDistance();
 		if (cfg.fallDamage > 0) {
 			player.hurtServer(level, player.damageSources().fall(), cfg.fallDamage);

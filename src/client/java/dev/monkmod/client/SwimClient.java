@@ -15,6 +15,7 @@ final class SwimClient {
 	private static boolean sinking;
 	private static double anchorY = Double.NaN;
 	private static boolean jumpWasDown;
+	private static boolean sneakWasDown;
 
 	private SwimClient() {
 	}
@@ -39,11 +40,16 @@ final class SwimClient {
 		boolean jumpPressed = jump && !jumpWasDown;
 		jumpWasDown = jump;
 		PassiveAbilities.WaterBreathing ability = ability();
+		boolean sneak = player.isShiftKeyDown();
+		boolean sneakPressed = sneak && !sneakWasDown;
+		sneakWasDown = sneak;
 		if (ability == null || !player.isInWater() || player.isPassenger() || player.getAbilities().flying || player.isSpectator()) {
 			sinking = false;
 			anchorY = Double.NaN;
+			dev.monkmod.logic.MonkHooks.clientLetGo = false;
 			return;
 		}
+		dev.monkmod.config.MonkConfig.Water water = dev.monkmod.config.MonkConfigManager.config().water;
 		Vec3 motion = player.getDeltaMovement();
 
 		// Faster swimming: a small push in the direction you are already moving (bounded, it never runs away).
@@ -60,10 +66,16 @@ final class SwimClient {
 		}
 
 		if (ability.params().getBool("hold_depth")) {
-			if (player.isShiftKeyDown()) {
-				sinking = true;
+			if (water.sneakMode == dev.monkmod.config.MonkConfig.SneakMode.HOLD) {
+				sinking = sneak;
+			} else if (sneakPressed) {
+				sinking = !sinking; // tap: let go / tap again: hold the depth
 			} else if (jumpPressed) {
 				sinking = false;
+			}
+			dev.monkmod.logic.MonkHooks.clientLetGo = sinking;
+			if (sinking && !jump && !player.onGround() && water.sinkSpeed > 0) {
+				motion = new Vec3(motion.x, Math.max(-0.6, motion.y - water.sinkSpeed), motion.z);
 			}
 			if (sinking || jump || player.isSwimming() || player.onGround()) {
 				anchorY = player.getY(); // moving on purpose: follow

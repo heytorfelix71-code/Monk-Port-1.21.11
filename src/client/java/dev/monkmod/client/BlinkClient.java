@@ -33,6 +33,19 @@ final class BlinkClient {
 	private BlinkClient() {
 	}
 
+	/** The server teleported us: only now the blink sound plays (out of range / refused blinks stay silent). */
+	static void onDone(dev.monkmod.network.BlinkDonePayload p) {
+		Minecraft client = Minecraft.getInstance();
+		ClientLevel level = client.level;
+		dev.monkmod.config.MonkConfig.Blink cfg = MonkConfigManager.config().blink;
+		float volume = cfg.sound ? Math.max(0, Math.min(100, cfg.soundVolume)) / 100.0F : 0.0F;
+		if (level == null || volume <= 0) {
+			return;
+		}
+		level.playLocalSound(p.fx(), p.fy(), p.fz(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, volume, 1.0F, false);
+		level.playLocalSound(p.tx(), p.ty(), p.tz(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, volume, 1.0F, false);
+	}
+
 	static void tick(Minecraft client) {
 		if (client.isPaused()) {
 			return;
@@ -76,12 +89,7 @@ final class BlinkClient {
 				Vec3 from = player.position();
 				ClientPlayNetworking.send(new BlinkPayload(target.x, target.y, target.z));
 				cooldown = ClientMonkState.blinkCooldown();
-				dev.monkmod.config.MonkConfig.Blink cfg = MonkConfigManager.config().blink;
-				float volume = cfg.sound ? Math.max(0, Math.min(100, cfg.soundVolume)) / 100.0F : 0.0F;
-				if (volume > 0) {
-					level.playLocalSound(from.x, from.y, from.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, volume, 1.0F, false);
-					level.playLocalSound(target.x, target.y, target.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, volume, 1.0F, false);
-				}
+				// the sound plays when the server confirms the blink (onDone), never for a refused one
 			}
 		}
 		wasDown = down;
@@ -117,7 +125,7 @@ final class BlinkClient {
 				Vec3 to = target.add(0, 0.1, 0);
 				double length = from.distanceTo(to);
 				double lift = Math.min(12.0, length * Math.max(0, Math.min(100, cfg.previewCurve)) / 100.0 * 0.3);
-				int steps = Math.max(2, (int) (length * density / 2.0));
+				int steps = Math.min(400, Math.max(2, (int) (length * density / 2.0)));
 				DustParticleOptions small = new DustParticleOptions(color, 0.5F);
 				for (int i = 1; i <= steps; i++) {
 					double t = i / (double) steps;
@@ -189,6 +197,44 @@ final class BlinkClient {
 		return null;
 	}
 
+	/**
+	 * Aiming just over the top of something tall (a tree, a pillar, a wall top): the aim line passes a little above
+	 * its top and goes on; land on that top. Only for tops at least 2 blocks above your feet, so flat ground is not affected.
+	 */
+	private static Vec3 overTop(LocalPlayer player, ClientLevel level) {
+		dev.monkmod.config.MonkConfig.Blink cfg = MonkConfigManager.config().blink;
+		if (!cfg.landOnTops) {
+			return null;
+		}
+		Vec3 eye = player.getEyePosition();
+		Vec3 dir = player.getViewVector(1.0F);
+		double max = MonkControls.blinkDistance();
+		BlockHitResult hit = level.clip(new ClipContext(eye, eye.add(dir.scale(max)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+		double limit = hit.getType() == HitResult.Type.MISS ? max : eye.distanceTo(hit.getLocation());
+		double tolerance = Math.max(0.5, cfg.topTolerance);
+		for (double d = 1.5; d < limit; d += 0.5) {
+			Vec3 at = eye.add(dir.scale(d));
+			BlockPos pos = BlockPos.containing(at);
+			for (int down = 1; down <= (int) Math.ceil(tolerance) + 1; down++) {
+				BlockPos below = pos.below(down);
+				VoxelShape shape = level.getBlockState(below).getCollisionShape(level, below);
+				if (shape.isEmpty()) {
+					continue;
+				}
+				double top = below.getY() + shape.max(Direction.Axis.Y);
+				if (at.y - top > tolerance || top < player.getY() + 2.0) {
+					break;
+				}
+				Vec3 spot = fits(player, level, new Vec3(below.getX() + 0.5, top, below.getZ() + 0.5));
+				if (spot != null && eye.distanceTo(spot) <= ClientMonkState.blinkRange() + 0.5) {
+					return spot;
+				}
+				break;
+			}
+		}
+		return null;
+	}
+
 	private static Vec3 aimPoint(LocalPlayer player, ClientLevel level) {
 		Vec3 eye = player.getEyePosition();
 		Vec3 end = eye.add(player.getViewVector(1.0F).scale(MonkControls.blinkDistance()));
@@ -202,6 +248,10 @@ final class BlinkClient {
 	 */
 	static Vec3 findTarget(LocalPlayer player, ClientLevel level) {
 		if (!ClientMonkState.blinkAllowAir()) {
+			Vec3 over = overTop(player, level);
+			if (over != null) {
+				return over;
+			}
 			Vec3 top = climb(player, level);
 			if (top != null) {
 				return top;

@@ -68,10 +68,11 @@ public final class MonkProjectiles {
 			grab(player, projectile, ability);
 			return true;
 		}
-		if (!ability.params().getBool("back_dodge")) {
+		dev.monkmod.config.MonkConfig.Gameplay g = dev.monkmod.config.MonkConfigManager.config().gameplay;
+		if (!g.backDodge || !ability.params().getBool("back_dodge")) {
 			return false;
 		}
-		if (handsOk && player.getRandom().nextFloat() < ability.params().getFloat("back_catch_chance")) {
+		if (g.backCatch && handsOk && player.getRandom().nextFloat() < ability.params().getFloat("back_catch_chance")) {
 			grab(player, projectile, ability);
 			return true;
 		}
