@@ -668,5 +668,6 @@
   "monk.config.mining.speed_multiplier": "Velocidade de quebra das mãos (todos os blocos)",
   "monk.config.mining.speed_multiplier.desc": "Multiplica a rapidez com que as tuas mãos partem qualquer bloco, além da habilidade. 1 = como a habilidade dá.",
   "monk.config.mining.block_speeds": "Velocidade por bloco",
-  "monk.config.mining.block_speeds.desc": "Velocidade extra para blocos escolhidos, separados por vírgula: bloco=fator ou #tag=fator. Vale o primeiro que combinar. Exemplos: minecraft:obsidian=1000 (instantâneo), #minecraft:dirt=12 (quase instantâneo), #minecraft:sand=1.5 (um pouco mais rápido). Usa um fator bem grande para instantâneo; 1 = sem mudança."
+  "monk.config.mining.block_speeds.desc": "Velocidade extra para blocos escolhidos, separados por vírgula: bloco=fator ou #tag=fator. Vale o primeiro que combinar. Exemplos: minecraft:obsidian=1000 (instantâneo), #minecraft:dirt=12 (quase instantâneo), #minecraft:sand=1.5 (um pouco mais rápido). Usa um fator bem grande para instantâneo; 1 = sem mudança.",
+  "monk.blink.far_off": "Blink distante desligado: ative Blink distante nas opções do Monk (Blink)"
 }

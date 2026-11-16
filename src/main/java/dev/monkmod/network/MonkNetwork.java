@@ -114,8 +114,12 @@ public final class MonkNetwork {
 	private static void handleFarBlink(ServerPlayer player, Vec3 aim) {
 		MonkPlayerState state = MonkPlayers.get(player);
 		MonkConfig.Blink cfg = MonkConfigManager.config().blink;
-		if (!cfg.farBlink || !state.abilities().has("blink") || player.level().getGameTime() < state.blinkReadyAt
+		if (!state.abilities().has("blink") || player.level().getGameTime() < state.blinkReadyAt
 				|| !Double.isFinite(aim.x) || !Double.isFinite(aim.y) || !Double.isFinite(aim.z)) {
+			return;
+		}
+		if (!cfg.farBlink) {
+			say(player, "monk.blink.far_off"); // never silent: tell why nothing happened
 			return;
 		}
 		double dist = Math.min(aim.length(), cfg.range);

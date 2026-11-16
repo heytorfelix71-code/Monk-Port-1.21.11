@@ -260,6 +260,11 @@ public final class MonkConfig {
 			// 2.9.3: running / flight speed moved from Ctrl/Space + mouse wheel to the arrow keys
 			configVersion = 4;
 		}
+		if (configVersion < 5) {
+			// 2.13.3: far blink off made every blink at a distance do nothing, silently; it is turned on once
+			blink.farBlink = true;
+			configVersion = 5;
+		}
 		flight.defaultSpeed = Math.max(flight.minSpeed, Math.min(flight.maxSpeed, flight.defaultSpeed));
 		if (controls == null) controls = new Controls();
 		if (mining == null) mining = new Mining();

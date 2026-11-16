@@ -668,5 +668,6 @@
   "monk.config.mining.speed_multiplier": "Hand mining speed (all blocks)",
   "monk.config.mining.speed_multiplier.desc": "Multiplies how fast your hands break every block, on top of the ability. 1 = as given.",
   "monk.config.mining.block_speeds": "Speed per block",
-  "monk.config.mining.block_speeds.desc": "Extra speed for chosen blocks, separated by commas: block=factor or #tag=factor. The first match wins. Examples: minecraft:obsidian=1000 (instant), #minecraft:dirt=12 (almost instant), #minecraft:sand=1.5 (a bit faster). Use a big factor for instant; 1 = no change."
+  "monk.config.mining.block_speeds.desc": "Extra speed for chosen blocks, separated by commas: block=factor or #tag=factor. The first match wins. Examples: minecraft:obsidian=1000 (instant), #minecraft:dirt=12 (almost instant), #minecraft:sand=1.5 (a bit faster). Use a big factor for instant; 1 = no change.",
+  "monk.blink.far_off": "Far blink is off: turn on Far blink in the Monk options (Blink)"
 }
