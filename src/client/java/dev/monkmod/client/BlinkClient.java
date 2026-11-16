@@ -83,12 +83,6 @@ final class BlinkClient {
 				preview(player, level, target);
 			}
 			BlinkShadow.update(player, shadow ? target : null, 1.0F - cooldown / 20.0F);
-			// aiming far past the loaded chunks: ask the server to start loading the arrival now, so the blink is quick on release
-			if (target == null && player.tickCount % 10 == 0 && pastLoaded(player, level)
-					&& ClientPlayNetworking.canSend(dev.monkmod.network.BlinkPreloadPayload.TYPE)) {
-				Vec3 aim = player.getViewVector(1.0F).scale(MonkControls.blinkDistance());
-				ClientPlayNetworking.send(new dev.monkmod.network.BlinkPreloadPayload(aim.x, aim.y, aim.z));
-			}
 		} else if (wasDown && cooldown == 0) {
 			Vec3 target = findTarget(player, level);
 			if (target != null && ClientPlayNetworking.canSend(BlinkPayload.TYPE)) {

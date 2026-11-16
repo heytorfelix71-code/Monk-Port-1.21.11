@@ -99,11 +99,7 @@ public final class MonkNetwork {
 			MonkPlayerState state = MonkPlayers.get(player);
 			if (state.abilities().has("blink") && level.getWorldBorder().isWithinBounds(at) && !level.hasChunkAt(at)
 					&& player.level().getGameTime() >= state.blinkReadyAt) {
-				FarJob job = new FarJob(level, target.x, target.y, target.z);
-				level.getChunkSource().addTicketAndLoadWithRadius(net.minecraft.server.level.TicketType.PORTAL,
-						new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 0);
-				JOBS.put(player.getUUID(), job);
-				say(player, "monk.blink.loading");
+				handleFarBlink(player, target.subtract(player.getEyePosition()));
 				return;
 			}
 		}
@@ -118,10 +114,6 @@ public final class MonkNetwork {
 				|| !Double.isFinite(aim.x) || !Double.isFinite(aim.y) || !Double.isFinite(aim.z)) {
 			return;
 		}
-		if (!cfg.farBlink) {
-			say(player, "monk.blink.far_off"); // never silent: tell why nothing happened
-			return;
-		}
 		double dist = Math.min(aim.length(), cfg.range);
 		if (dist < 1.0) {
 			return;
@@ -129,11 +121,7 @@ public final class MonkNetwork {
 		Vec3 dir = aim.normalize();
 		ServerLevel level = (ServerLevel) player.level();
 		Vec3 eye = player.getEyePosition();
-		if (dist > Math.max(64F, cfg.syncRange)) {
-			// beyond that: like an ender pearl, the arrival chunk is requested and loaded in the background, then you land there
-			startFarJob(player, level, eye, dir, dist);
-			return;
-		}
+		dist = Math.min(dist, Math.max(64F, cfg.syncRange)); // like the Ender Skills teleport: its range is the limit
 		// Same way the Ender Skills teleport does it: one ray along the aim (the server reads the blocks, loading what it needs), and
 		// the blink lands at the farthest spot on that line where you fit, settling down onto the ground. The ray does NOT have to hit
 		// anything: aiming at the horizon or a far island lands you at the end of the distance, on the ground there.
