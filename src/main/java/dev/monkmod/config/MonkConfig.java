@@ -77,6 +77,8 @@ public final class MonkConfig {
 		public boolean landOnTops = true;
 		/** Aiming past the loaded chunks (far islands seen with Voxy/Distant Horizons): the server loads the way and finds the ground. */
 		public boolean farBlink = true;
+		/** Blinks up to this far use the direct way (a ray, like the Ender Skills teleport); farther ones load the arrival in the background. */
+		public float syncRange = 2000F;
 		/** How close above a block top the aim must pass to land on it (blocks). */
 		public float topTolerance = 1.5F;
 		/** Highest wall the blink climbs, in blocks above the point you aimed at. */
@@ -228,6 +230,7 @@ public final class MonkConfig {
 			blink.previewParticles = true;
 		}
 		blink.climbHeight = clamp(blink.climbHeight, 0, 255);
+		blink.syncRange = Math.max(64F, Math.min(29_999_984F, blink.syncRange));
 		blink.previewDensity = clamp(blink.previewDensity, 1, 10);
 		blink.previewColor &= 0xFFFFFF;
 		blink.previewCurve = clamp(blink.previewCurve, 0, 100);

@@ -102,49 +102,46 @@ public final class MonkNetwork {
 		Vec3 dir = aim.normalize();
 		ServerLevel level = (ServerLevel) player.level();
 		Vec3 eye = player.getEyePosition();
-		if (dist > 512) {
-			// very far: like an ender pearl, the arrival chunk is requested and loaded in the background, then you land there
+		if (dist > Math.max(64F, cfg.syncRange)) {
+			// beyond that: like an ender pearl, the arrival chunk is requested and loaded in the background, then you land there
 			startFarJob(player, level, eye, dir, dist);
 			return;
 		}
-		BlockPos prev = null;
-		BlockPos hit = null;
-		// walks along the aim line; reading a block loads its chunk (from the save, or generates it) on the server
-		for (double d = 0.5; d <= dist; d += 0.5) {
-			Vec3 at = eye.add(dir.scale(d));
-			if (at.y < level.getMinY() || at.y > level.getMaxY()) {
-				break;
-			}
-			BlockPos pos = BlockPos.containing(at);
-			if (pos.equals(prev)) {
+		// Same way the Ender Skills teleport does it: one ray along the aim (the server reads the blocks, loading what it needs), and
+		// the blink lands at the farthest spot on that line where you fit, settling down onto the ground. The ray does NOT have to hit
+		// anything: aiming at the horizon or a far island lands you at the end of the distance, on the ground there.
+		Vec3 end = eye.add(dir.scale(dist));
+		net.minecraft.world.phys.BlockHitResult hit = level.clip(new net.minecraft.world.level.ClipContext(eye, end,
+				net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+		double reach = hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? dist : eye.distanceTo(hit.getLocation()) - 0.4;
+		Vec3 base = player.position();
+		double lift = eye.y - base.y > 1 ? 0.2 : eye.y - base.y;
+		int guard = 0;
+		for (double d = reach; d > 0.5 && guard++ < 6000; d -= 0.5) {
+			Vec3 feet = eye.add(dir.scale(d)).subtract(0, lift, 0);
+			if (feet.y < level.getMinY() || feet.y > level.getMaxY() || !level.getWorldBorder().isWithinBounds(BlockPos.containing(feet))) {
 				continue;
 			}
-			if (!level.getWorldBorder().isWithinBounds(pos)) {
-				break;
-			}
-			if (solid(level, pos)) {
-				hit = pos;
-				break;
-			}
-			prev = pos;
-		}
-		if (hit == null || prev == null) {
-			return;
-		}
-		BlockPos feet = prev;
-		for (int i = 0; i < 64 && feet.getY() > level.getMinY() && !solid(level, feet.below()); i++) {
-			feet = feet.below();
-		}
-		for (int up = 0; up < 6; up++, feet = feet.above()) {
-			BlockPos below = feet.below();
-			net.minecraft.world.phys.shapes.VoxelShape floor = level.getBlockState(below).getCollisionShape(level, below);
-			double y = floor.isEmpty() ? feet.getY() : below.getY() + floor.max(net.minecraft.core.Direction.Axis.Y);
-			Vec3 target = new Vec3(feet.getX() + 0.5, y, feet.getZ() + 0.5);
-			if (level.noCollision(player, player.getBoundingBox().move(target.subtract(player.position())))) {
-				handleBlink(player, target, 72.0);
-				return;
+			for (double up = 0; up <= 1.5; up += 0.5) {
+				Vec3 spot = feet.add(0, up, 0);
+				if (!level.noCollision(player, player.getBoundingBox().move(spot.subtract(base)))) {
+					continue;
+				}
+				if (cfg.allowAirTarget) {
+					handleBlink(player, spot, 72.0);
+					return;
+				}
+				for (int i = 0; i < 200 && spot.y > level.getMinY(); i++) { // settle down onto the ground
+					AABB box = player.getBoundingBox().move(spot.subtract(base));
+					if (hasGround(player, level, box)) {
+						handleBlink(player, spot, 72.0);
+						return;
+					}
+					spot = spot.add(0, -0.5, 0);
+				}
 			}
 		}
+		say(player, "monk.blink.no_ground");
 	}
 
 	/** A far blink in progress: the arrival chunk is being loaded (the way an ender pearl does it). */
