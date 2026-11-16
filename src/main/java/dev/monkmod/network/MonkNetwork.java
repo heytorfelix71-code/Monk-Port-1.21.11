@@ -154,11 +154,14 @@ public final class MonkNetwork {
 		final double z;
 		final int cx;
 		final int cz;
+		/** Height of the aim line where it ends: a landing near this height (an island in the sky) is preferred. */
+		final double y;
 		int waited;
 
-		FarJob(ServerLevel level, double x, double z) {
+		FarJob(ServerLevel level, double x, double y, double z) {
 			this.level = level;
 			this.x = x;
+			this.y = y;
 			this.z = z;
 			this.cx = (int) Math.floor(x) >> 4;
 			this.cz = (int) Math.floor(z) >> 4;
@@ -219,7 +222,7 @@ public final class MonkNetwork {
 			return;
 		}
 		double d = eye.distanceTo(end);
-		FarJob job = new FarJob(level, end.x, end.z);
+		FarJob job = new FarJob(level, end.x, end.y, end.z);
 		level.getChunkSource().addTicketAndLoadWithRadius(net.minecraft.server.level.TicketType.PORTAL,
 				new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 1);
 		JOBS.put(player.getUUID(), job);
@@ -242,7 +245,7 @@ public final class MonkNetwork {
 			job.waited++;
 			if (job.level.getChunkSource().getChunkNow(job.cx, job.cz) != null) {
 				it.remove();
-				Vec3 spot = landSpot(player, job.level, job.x, job.z);
+				Vec3 spot = landSpot(player, job.level, job.x, job.y, job.z);
 				if (spot == null || !handleBlink(player, spot, 4096.0)) {
 					say(player, "monk.blink.no_ground");
 				}
@@ -256,9 +259,28 @@ public final class MonkNetwork {
 	}
 
 	/** Somewhere to stand in the loaded arrival chunk: the column itself, or the closest one around it. */
-	private static Vec3 landSpot(ServerPlayer player, ServerLevel level, double x, double z) {
+	private static Vec3 landSpot(ServerPlayer player, ServerLevel level, double x, double y, double z) {
 		int bx = (int) Math.floor(x);
 		int bz = (int) Math.floor(z);
+		if (!level.dimensionType().hasCeiling()) {
+			// first: ground near the height you aimed at (an island in the sky, a ledge), highest spot below the aim line
+			int top = (int) Math.floor(y) + 12;
+			for (int r = 0; r <= 6; r++) {
+				for (int dx = -r; dx <= r; dx++) {
+					for (int dz = -r; dz <= r; dz++) {
+						if (Math.max(Math.abs(dx), Math.abs(dz)) != r) {
+							continue;
+						}
+						for (int yy = Math.min(level.getMaxY() - 2, top); yy >= Math.max(level.getMinY() + 1, top - 36); yy--) {
+							Vec3 at = new Vec3(bx + dx + 0.5, yy, bz + dz + 0.5);
+							if (fitsAt(player, level, at)) {
+								return at;
+							}
+						}
+					}
+				}
+			}
+		}
 		for (int r = 0; r <= 6; r++) {
 			for (int dx = -r; dx <= r; dx++) {
 				for (int dz = -r; dz <= r; dz++) {
