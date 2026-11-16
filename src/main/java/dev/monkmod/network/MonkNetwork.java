@@ -212,8 +212,51 @@ public final class MonkNetwork {
 		}
 	}
 
+	/**
+	 * Where the aim line first goes under the terrain, WITHOUT generating anything: the world generator is asked for the height of the
+	 * ground at points along the line (cheap compared with generating the chunks), so the blink goes to what you aimed at (the mountain,
+	 * the coast) and not to the end of the configured distance. Null when the line stays above the terrain all the way.
+	 */
+	private static Vec3 marchTerrain(ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
+		try {
+			net.minecraft.world.level.chunk.ChunkGenerator gen = level.getChunkSource().getGenerator();
+			net.minecraft.world.level.levelgen.RandomState random = level.getChunkSource().randomState();
+			double step = Math.max(16.0, dist / 500.0);
+			double prev = 0;
+			for (double d = step; d <= dist; d += step) {
+				Vec3 at = eye.add(dir.scale(d));
+				if (Math.abs(at.x) > 29_999_000.0 || Math.abs(at.z) > 29_999_000.0 || !level.getWorldBorder().isWithinBounds(BlockPos.containing(at.x, 0, at.z))) {
+					return null;
+				}
+				if (at.y <= gen.getBaseHeight((int) Math.floor(at.x), (int) Math.floor(at.z),
+						net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, level, random)) {
+					double lo = prev;
+					double hi = d;
+					for (int i = 0; i < 7; i++) { // narrow down where the line goes under the ground
+						double mid = (lo + hi) / 2;
+						Vec3 m = eye.add(dir.scale(mid));
+						if (m.y <= gen.getBaseHeight((int) Math.floor(m.x), (int) Math.floor(m.z),
+								net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, level, random)) {
+							hi = mid;
+						} else {
+							lo = mid;
+						}
+					}
+					return eye.add(dir.scale(hi));
+				}
+				prev = d;
+			}
+		} catch (RuntimeException e) {
+			MonkMod.LOGGER.warn("Could not read the terrain height along the blink line: {}", e.toString());
+		}
+		return null;
+	}
+
 	private static void startFarJob(ServerPlayer player, ServerLevel level, Vec3 eye, Vec3 dir, double dist) {
-		Vec3 end = farEnd(level, eye, dir, dist);
+		Vec3 end = marchTerrain(level, eye, dir, dist);
+		if (end == null) {
+			end = farEnd(level, eye, dir, dist); // the aim never goes under the terrain: the end of the distance, on the ground there
+		}
 		if (end == null) {
 			say(player, "monk.blink.no_ground");
 			return;
@@ -221,7 +264,7 @@ public final class MonkNetwork {
 		double d = eye.distanceTo(end);
 		FarJob job = new FarJob(level, end.x, end.y, end.z);
 		level.getChunkSource().addTicketAndLoadWithRadius(net.minecraft.server.level.TicketType.PORTAL,
-				new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 1);
+				new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 0);
 		JOBS.put(player.getUUID(), job);
 		say(player, "monk.blink.loading");
 		MonkMod.LOGGER.info("Far blink of {}: {} blocks, loading the chunk at {} {}", player.getName().getString(), (long) d, job.cx, job.cz);
@@ -257,12 +300,13 @@ public final class MonkNetwork {
 
 	/** Somewhere to stand in the loaded arrival chunk: the column itself, or the closest one around it. */
 	private static Vec3 landSpot(ServerPlayer player, ServerLevel level, double x, double y, double z) {
-		int bx = (int) Math.floor(x);
-		int bz = (int) Math.floor(z);
+		// only inside the loaded chunk (never read its neighbors: that would generate them one by one and freeze for a long time)
+		int bx = Math.max(((int) Math.floor(x) & ~15) + 3, Math.min(((int) Math.floor(x) & ~15) + 12, (int) Math.floor(x)));
+		int bz = Math.max(((int) Math.floor(z) & ~15) + 3, Math.min(((int) Math.floor(z) & ~15) + 12, (int) Math.floor(z)));
 		if (!level.dimensionType().hasCeiling()) {
 			// first: ground near the height you aimed at (an island in the sky, a ledge), highest spot below the aim line
 			int top = (int) Math.floor(y) + 12;
-			for (int r = 0; r <= 6; r++) {
+			for (int r = 0; r <= 2; r++) {
 				for (int dx = -r; dx <= r; dx++) {
 					for (int dz = -r; dz <= r; dz++) {
 						if (Math.max(Math.abs(dx), Math.abs(dz)) != r) {
@@ -278,7 +322,7 @@ public final class MonkNetwork {
 				}
 			}
 		}
-		for (int r = 0; r <= 6; r++) {
+		for (int r = 0; r <= 2; r++) {
 			for (int dx = -r; dx <= r; dx++) {
 				for (int dz = -r; dz <= r; dz++) {
 					if (Math.max(Math.abs(dx), Math.abs(dz)) != r) {
