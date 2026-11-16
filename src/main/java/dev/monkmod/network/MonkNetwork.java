@@ -35,7 +35,7 @@ public final class MonkNetwork {
 		PayloadTypeRegistry.playS2C().register(BlinkDonePayload.TYPE, BlinkDonePayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(BlinkPayload.TYPE, BlinkPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(BlinkPayload.TYPE, (payload, context) ->
-				handleBlink(context.player(), new Vec3(payload.x(), payload.y(), payload.z()), 3.0));
+				handleClientBlink(context.player(), new Vec3(payload.x(), payload.y(), payload.z())));
 		PayloadTypeRegistry.playC2S().register(BlinkFarPayload.TYPE, BlinkFarPayload.CODEC);
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(MonkNetwork::tickJobs);
 		ServerPlayNetworking.registerGlobalReceiver(BlinkFarPayload.TYPE, (payload, context) ->
@@ -85,6 +85,29 @@ public final class MonkNetwork {
 		if (ServerPlayNetworking.canSend(player, ProgressPayload.TYPE)) {
 			ServerPlayNetworking.send(player, new ProgressPayload(data.progress(), data.maxProgress()));
 		}
+	}
+
+	/**
+	 * A blink to a spot the CLIENT saw. With mods that keep chunks on the client past what the server has loaded (a chunk cache, LODs),
+	 * the spot can be in a chunk the server does not have: reading it there looks like empty air, so the old check said "no ground".
+	 * Then the arrival chunk is loaded first (like a far blink) and the landing is found there.
+	 */
+	private static void handleClientBlink(ServerPlayer player, Vec3 target) {
+		if (Double.isFinite(target.x) && Double.isFinite(target.y) && Double.isFinite(target.z)) {
+			ServerLevel level = (ServerLevel) player.level();
+			BlockPos at = BlockPos.containing(target);
+			MonkPlayerState state = MonkPlayers.get(player);
+			if (state.abilities().has("blink") && level.getWorldBorder().isWithinBounds(at) && !level.hasChunkAt(at)
+					&& player.level().getGameTime() >= state.blinkReadyAt) {
+				FarJob job = new FarJob(level, target.x, target.y, target.z);
+				level.getChunkSource().addTicketAndLoadWithRadius(net.minecraft.server.level.TicketType.PORTAL,
+						new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 0);
+				JOBS.put(player.getUUID(), job);
+				say(player, "monk.blink.loading");
+				return;
+			}
+		}
+		handleBlink(player, target, 3.0);
 	}
 
 	/** Validates and performs a blink. The client only suggests a destination. */
