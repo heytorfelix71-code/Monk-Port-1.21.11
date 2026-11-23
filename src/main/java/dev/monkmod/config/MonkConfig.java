@@ -31,7 +31,7 @@ public final class MonkConfig {
 		public int passiveColor = 0x3080FF;
 		public boolean showPassive = true;
 		/** Only mobs you cannot see directly (behind walls). Off = every mob in range. */
-		public boolean onlyHidden = true;
+		public boolean onlyHidden = false;
 		public int range = 48;
 		public int dotSize = 4;
 	}
@@ -282,6 +282,12 @@ public final class MonkConfig {
 			// 2.13.3: far blink off made every blink at a distance do nothing, silently; it is turned on once
 			blink.farBlink = true;
 			configVersion = 5;
+		}
+		if (configVersion < 6) {
+			// 2.16.1: Mob Sense shows every mob in range by default (the hidden-only check cost frames); set once
+			if (vision == null) vision = new Vision();
+			vision.onlyHidden = false;
+			configVersion = 6;
 		}
 		flight.defaultSpeed = Math.max(flight.minSpeed, Math.min(flight.maxSpeed, flight.defaultSpeed));
 		if (controls == null) controls = new Controls();
