@@ -122,41 +122,13 @@ public final class MonkNetwork {
 		ServerLevel level = (ServerLevel) player.level();
 		Vec3 eye = player.getEyePosition();
 		dist = Math.min(dist, Math.max(64F, cfg.syncRange)); // like the Ender Skills teleport: its range is the limit
-		// Same way the Ender Skills teleport does it: one ray along the aim (the server reads the blocks, loading what it needs), and
-		// the blink lands at the farthest spot on that line where you fit, settling down onto the ground. The ray does NOT have to hit
-		// anything: aiming at the horizon or a far island lands you at the end of the distance, on the ground there.
-		Vec3 end = eye.add(dir.scale(dist));
-		net.minecraft.world.phys.BlockHitResult hit = level.clip(new net.minecraft.world.level.ClipContext(eye, end,
-				net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
-		double reach = hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? dist : eye.distanceTo(hit.getLocation()) - 0.4;
-		Vec3 base = player.position();
-		double lift = eye.y - base.y > 1 ? 0.2 : eye.y - base.y;
-		int guard = 0;
-		for (double d = reach; d > 0.5 && guard++ < 6000; d -= 0.5) {
-			Vec3 feet = eye.add(dir.scale(d)).subtract(0, lift, 0);
-			if (feet.y < level.getMinY() || feet.y > level.getMaxY() || !level.getWorldBorder().isWithinBounds(BlockPos.containing(feet))) {
-				continue;
-			}
-			for (double up = 0; up <= 1.5; up += 0.5) {
-				Vec3 spot = feet.add(0, up, 0);
-				if (!level.noCollision(player, player.getBoundingBox().move(spot.subtract(base)))) {
-					continue;
-				}
-				if (cfg.allowAirTarget) {
-					handleBlink(player, spot, 72.0);
-					return;
-				}
-				for (int i = 0; i < 200 && spot.y > level.getMinY(); i++) { // settle down onto the ground
-					AABB box = player.getBoundingBox().move(spot.subtract(base));
-					if (hasGround(player, level, box)) {
-						handleBlink(player, spot, 72.0);
-						return;
-					}
-					spot = spot.add(0, -0.5, 0);
-				}
-			}
+		// one design for both mods: the loaded part with a ray, the rest from the terrain height, one chunk loaded where you land
+		Vec3 spot = dev.monkmod.logic.FarTeleport.find(level, player, eye, dir, dist, !cfg.allowAirTarget);
+		if (spot == null) {
+			say(player, "monk.blink.no_ground");
+			return;
 		}
-		say(player, "monk.blink.no_ground");
+		handleBlink(player, spot, 72.0);
 	}
 
 	/** A far blink in progress: the arrival chunk is being loaded (the way an ender pearl does it). */
