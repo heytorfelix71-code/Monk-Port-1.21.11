@@ -115,6 +115,7 @@ public final class MonkControls {
 		if (player == null) {
 			return;
 		}
+		MobSense.tick(client);
 		while (MonkModClient.nightVisionKey.consumeClick()) {
 			if (ClientMonkState.abilities().has("night_vision") && ClientPlayNetworking.canSend(NightVisionPayload.TYPE)) {
 				ClientPlayNetworking.send(NightVisionPayload.INSTANCE);

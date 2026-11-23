@@ -3,7 +3,9 @@
   "package": "dev.monkmod.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "MouseHandlerMixin"
+    "MouseHandlerMixin",
+    "MinecraftMixin",
+    "EntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

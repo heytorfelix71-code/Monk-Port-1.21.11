@@ -31,6 +31,7 @@ public final class MonkModClient implements ClientModInitializer {
 	public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(MonkMod.id("monk"));
 	public static KeyMapping blinkKey;
 	public static KeyMapping nightVisionKey;
+	public static KeyMapping mobSenseKey;
 	public static KeyMapping stareKey;
 	public static KeyMapping timeStopKey;
 	public static KeyMapping blinkFarther;
@@ -57,6 +58,7 @@ public final class MonkModClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		blinkKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.blink", InputConstants.Type.KEYSYM, InputConstants.KEY_G, CATEGORY));
 		nightVisionKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.night_vision", InputConstants.Type.KEYSYM, InputConstants.KEY_V, CATEGORY));
+		mobSenseKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.mob_sense", InputConstants.Type.KEYSYM, InputConstants.KEY_PERIOD, CATEGORY));
 		stareKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.withering_stare", InputConstants.Type.KEYSYM, InputConstants.KEY_K, CATEGORY));
 		timeStopKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.monk.time_stop", InputConstants.Type.KEYSYM, InputConstants.KEY_J, CATEGORY));
 		blinkFarther = unbound("key.monk.blink_farther");
@@ -92,6 +94,7 @@ public final class MonkModClient implements ClientModInitializer {
 		// Blink shadow: your own see-through model at the landing spot (only drawn on your client).
 		net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents.AFTER_ENTITIES.register(BlinkShadow::render);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, MonkMod.id("progress"), MonkHud::render);
+		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, MonkMod.id("mob_sense"), MobSense::renderDots);
 		// Water breathing with "hide_bubbles": no air bubbles above the hotbar.
 		HudElementRegistry.replaceElement(VanillaHudElements.AIR_BAR, vanilla -> (graphics, tick) -> {
 			if (!hideAirBubbles()) {

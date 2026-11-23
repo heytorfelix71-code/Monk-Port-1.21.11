@@ -19,6 +19,22 @@ public final class MonkConfig {
 	public Water water = new Water();
 	public Controls controls = new Controls();
 	public Mining mining = new Mining();
+	public Vision vision = new Vision();
+
+	public enum VisionMode { OUTLINE, DOT }
+
+	/** Mob Sense (see mobs through walls): how it looks. It is switched on and off with its key (. by default), off at the start. */
+	public static final class Vision {
+		/** OUTLINE = a glowing silhouette through the walls, DOT = a small colored square on the screen where the mob is. */
+		public VisionMode mode = VisionMode.OUTLINE;
+		public int hostileColor = 0xFF3030;
+		public int passiveColor = 0x3080FF;
+		public boolean showPassive = true;
+		/** Only mobs you cannot see directly (behind walls). Off = every mob in range. */
+		public boolean onlyHidden = true;
+		public int range = 48;
+		public int dotSize = 4;
+	}
 
 	/** Bare-hand break speed on top of the Mining ability. */
 	public static final class Mining {
@@ -188,6 +204,8 @@ public final class MonkConfig {
 		public boolean backDodge = true;
 		/** Catch Arrows: chance to catch projectiles from behind. Off = for every level. */
 		public boolean backCatch = true;
+		/** Chance to catch an arrow that comes from behind when the level has no back catch of its own; if it fails the arrow hits you. */
+		public float backCatchChance = 0.15F;
 		/** Ability types switched off everywhere, whatever levels.json says. */
 		public List<String> disabledAbilities = new ArrayList<>();
 		/** Progress messages in the action bar when progress changes. */
@@ -268,6 +286,13 @@ public final class MonkConfig {
 		flight.defaultSpeed = Math.max(flight.minSpeed, Math.min(flight.maxSpeed, flight.defaultSpeed));
 		if (controls == null) controls = new Controls();
 		if (mining == null) mining = new Mining();
+		if (vision == null) vision = new Vision();
+		if (vision.mode == null) vision.mode = VisionMode.OUTLINE;
+		vision.hostileColor &= 0xFFFFFF;
+		vision.passiveColor &= 0xFFFFFF;
+		vision.range = clamp(vision.range, 8, 128);
+		vision.dotSize = clamp(vision.dotSize, 2, 16);
+		gameplay.backCatchChance = Math.max(0F, Math.min(1F, gameplay.backCatchChance));
 		if (mining.blockSpeeds == null) mining.blockSpeeds = new ArrayList<>();
 		mining.speedMultiplier = Math.max(0F, Math.min(100_000F, mining.speedMultiplier));
 		if (controls.scheme == null) controls.scheme = ControlScheme.ARROWS;

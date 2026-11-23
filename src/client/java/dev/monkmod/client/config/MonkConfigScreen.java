@@ -315,6 +315,21 @@ public final class MonkConfigScreen {
 	private static List<Option<?>> globalOptions(String key, MonkConfig cfg, MonkConfig def) {
 		List<Option<?>> list = new ArrayList<>();
 		switch (key) {
+			case "mob_sense" -> {
+				MonkConfig.Vision vi = cfg.vision;
+				MonkConfig.Vision vd = def.vision;
+				list.add(Option.<MonkConfig.VisionMode>createBuilder().name(t("vision.mode")).description(d("vision.mode"))
+						.binding(vd.mode, () -> vi.mode, v -> vi.mode = v)
+						.controller(o -> EnumControllerBuilder.create(o).enumClass(MonkConfig.VisionMode.class)
+								.formatValue(v -> t("vision.mode." + v.name().toLowerCase())))
+						.build());
+				list.add(color("vision.hostile_color", vd.hostileColor, () -> vi.hostileColor, v -> vi.hostileColor = v));
+				list.add(color("vision.passive_color", vd.passiveColor, () -> vi.passiveColor, v -> vi.passiveColor = v));
+				list.add(bool("vision.show_passive", vd.showPassive, () -> vi.showPassive, v -> vi.showPassive = v));
+				list.add(bool("vision.only_hidden", vd.onlyHidden, () -> vi.onlyHidden, v -> vi.onlyHidden = v));
+				list.add(intSlider("vision.range", vd.range, 8, 128, 4, () -> vi.range, v -> vi.range = v));
+				list.add(intSlider("vision.dot_size", vd.dotSize, 2, 16, 1, () -> vi.dotSize, v -> vi.dotSize = v));
+			}
 			case "blink" -> {
 				MonkConfig.Blink b = cfg.blink;
 				MonkConfig.Blink bd = def.blink;
@@ -377,6 +392,7 @@ public final class MonkConfigScreen {
 				MonkConfig.Gameplay gd = def.gameplay;
 				list.add(bool("gameplay.back_dodge", gd.backDodge, () -> gp.backDodge, v -> gp.backDodge = v));
 				list.add(bool("gameplay.back_catch", gd.backCatch, () -> gp.backCatch, v -> gp.backCatch = v));
+				list.add(floatSlider("gameplay.back_catch_chance", gd.backCatchChance, 0F, 1F, 0.05F, () -> gp.backCatchChance, v -> gp.backCatchChance = v));
 			}
 			default -> {
 			}

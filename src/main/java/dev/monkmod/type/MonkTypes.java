@@ -196,6 +196,7 @@ public final class MonkTypes {
 				ofBool("flight", true, "You can fly while time is stopped."),
 				ofBool("freeze_players", true, "Other players are frozen too (they can't move, attack, use or break anything)."));
 		ability("night_vision", "Toggle night vision with its key (V by default).", PassiveAbilities.NightVision::new);
+		ability("mob_sense", "See mobs through walls (red = hostile, blue = passive). Toggle with its key (. by default); off at the start.", p -> new SimpleAbility("mob_sense", p));
 		ability("tame_animals", "Pet animals to calm them or make them fall in love.", p -> new SimpleAbility("tame_animals", p));
 		ability("water_walking", "Walk on water (sneak to sink).", p -> new SimpleAbility("water_walking", p),
 				ofFloat("height", 0.89, 0.6, 1.0, "Height of your feet above the bottom of the water block (0.89 = right on the surface, 1 = one pixel above)."),

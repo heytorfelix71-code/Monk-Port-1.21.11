@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 11;
+	public static final int CURRENT_VERSION = 12;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -125,6 +125,9 @@ public final class LevelsFile {
 		}
 		if (config_version < 11 && !rebalanced) {
 			mergeIronSkin();
+		}
+		if (config_version < 12 && !hasType("mob_sense") && looksLikeDefaults()) {
+			addTo("monk:icon/wither", "mob_sense", null, 0); // 2.16.0: Mob Sense at level 20
 		}
 		config_version = CURRENT_VERSION;
 		return true;

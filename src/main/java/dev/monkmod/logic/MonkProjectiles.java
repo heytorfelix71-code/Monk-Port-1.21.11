@@ -69,14 +69,21 @@ public final class MonkProjectiles {
 			return true;
 		}
 		dev.monkmod.config.MonkConfig.Gameplay g = dev.monkmod.config.MonkConfigManager.config().gameplay;
-		if (!g.backDodge || !ability.params().getBool("back_dodge")) {
-			return false;
-		}
-		if (g.backCatch && handsOk && player.getRandom().nextFloat() < ability.params().getFloat("back_catch_chance")) {
-			grab(player, projectile, ability);
-			return true;
-		}
-		if (state.dodgedProjectiles.size() > 64) {
+			// From behind: only a chance to catch it (the level's own, or the general one); if that fails the arrow hits you, unless
+			// "dodge from behind" is on for this level, then it flies through instead.
+			boolean dodge = g.backDodge && ability.params().getBool("back_dodge");
+			float backChance = ability.params().getFloat("back_catch_chance");
+			if (backChance <= 0F) {
+				backChance = g.backCatchChance;
+			}
+			if (g.backCatch && handsOk && player.getRandom().nextFloat() < backChance) {
+				grab(player, projectile, ability);
+				return true;
+			}
+			if (!dodge) {
+				return false;
+			}
+			if (state.dodgedProjectiles.size() > 64) {
 			state.dodgedProjectiles.clear();
 		}
 		state.dodgedProjectiles.add(projectile.getId());

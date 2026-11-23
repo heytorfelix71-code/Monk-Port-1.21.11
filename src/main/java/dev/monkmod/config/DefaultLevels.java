@@ -90,6 +90,7 @@ public final class DefaultLevels {
 		blind.remove.add("blindness");
 		level(f, "wither", req("kill_entity_type").p("kills", 1).p("entity_type", "minecraft:wither"),
 				ab("potion_immunity"),
+				ab("mob_sense"),
 				ab("armor").p("armor", 18.0),
 				ab("iron_body").p("multiplier", 0.7).p("armor_toughness", 10.0),
 				ab("water_breathing_full").p("swim_speed", 0.7).p("swim_boost", 0.08).p("swim_up", 0.05).p("column_resist", 1.0));
