@@ -42,7 +42,7 @@ public final class MonkAdvancements {
 					.append("\n").append(table.requirement(0).description());
 			put(map, MonkMod.id("root"), Advancement.Builder.advancement()
 					.display(icon(table.icon(0)), table.name(0) != null ? Component.literal(table.name(0)) : Component.translatable("monk.advancements.level.start"), rootDesc,
-							BACKGROUND, AdvancementType.TASK, true, false, false)
+							BACKGROUND, AdvancementType.TASK, false, false, false)
 					.addCriterion("level", criterion(0)));
 
 			for (int level = 1; level <= table.maxLevel(); level++) {

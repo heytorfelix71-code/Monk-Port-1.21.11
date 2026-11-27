@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 12;
+	public static final int CURRENT_VERSION = 13;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -128,6 +128,13 @@ public final class LevelsFile {
 		}
 		if (config_version < 12 && !hasType("mob_sense") && looksLikeDefaults()) {
 			addTo("monk:icon/wither", "mob_sense", null, 0); // 2.16.0: Mob Sense at level 20
+		}
+		if (config_version < 13 && looksLikeDefaults() && !levels.isEmpty()) {
+			JsonObject first = levels.get(0).requirement;
+			if (first != null && first.has("type") && "meditate".equals(first.get("type").getAsString())
+					&& first.has("time") && first.get("time").getAsInt() == 2400) {
+				first.addProperty("time", 6000); // 2.17.0: the first meditation takes five minutes
+			}
 		}
 		config_version = CURRENT_VERSION;
 		return true;

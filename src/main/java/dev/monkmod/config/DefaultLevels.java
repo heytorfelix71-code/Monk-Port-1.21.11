@@ -13,7 +13,7 @@ public final class DefaultLevels {
 	public static LevelsFile create() {
 		LevelsFile f = new LevelsFile();
 		// Becoming a monk: two full minutes of still meditation under the sky.
-		level(f, "meditate", req("meditate").p("time", 2400));
+		level(f, "meditate", req("meditate").p("time", 6000)); // five minutes: nobody becomes a monk by crouching for a moment
 		level(f, "tree", req("break_wood").p("number", 32),
 				ab("mining").p("harvest_level", 0).p("speed_increase", 0.5).list("harvest_tools", "", "shovel", "axe"),
 				ab("strength").p("damage", 1.0),

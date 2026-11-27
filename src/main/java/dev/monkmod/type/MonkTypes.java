@@ -206,7 +206,7 @@ public final class MonkTypes {
 
 		// ---------------------------------------------------------------- requirements
 		requirement("meditate", "Meditate: sneak without moving, unarmored and empty-handed, under the open sky.", MeditationRequirements.Meditate::new,
-				ofInt("time", 2400, 1, BIG, "Ticks of still meditation needed (2400 = 2 minutes)."),
+				ofInt("time", 6000, 1, BIG, "Ticks of still meditation needed (6000 = 5 minutes)."),
 				ofBool("open_sky", true, "Must be under the open sky."));
 		requirement("break_block", "Break N blocks (or a #tag) with an empty hand.", BlockRequirements.BreakBlock::fromSpec,
 				ofString("block", "minecraft:stone", "Block id, or #tag id."),

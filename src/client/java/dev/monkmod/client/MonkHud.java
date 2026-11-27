@@ -69,7 +69,7 @@ public final class MonkHud {
 	public static void render(GuiGraphics graphics, DeltaTracker delta) {
 		Minecraft mc = Minecraft.getInstance();
 		MonkConfig.Hud cfg = MonkConfigManager.config().hud;
-		if (!cfg.enabled || max <= 0 || mc.player == null || mc.options.hideGui) {
+		if (!cfg.enabled || max <= 0 || mc.player == null || mc.options.hideGui || (ClientMonkState.level() == 0 && progress < 200)) { // the first meditation shows its icon only after 10 seconds of it
 			return;
 		}
 		float partial = delta.getGameTimeDeltaPartialTick(false);
