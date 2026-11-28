@@ -59,8 +59,17 @@ public final class MonkEvents {
 
 	public static void register() {
 		// Stopped time: everyone except the monk who stopped it is frozen and can't act.
-		net.fabricmc.fabric.api.event.player.AttackEntityCallback.EVENT.register((player, level, hand, entity, hit) ->
-				frozen(player) ? InteractionResult.FAIL : InteractionResult.PASS);
+		net.fabricmc.fabric.api.event.player.AttackEntityCallback.EVENT.register((player, level, hand, entity, hit) -> {
+			if (frozen(player)) {
+				return InteractionResult.FAIL;
+			}
+			// with time stopped, the target's "just hurt" timer never runs out (it does not tick): reset it so every punch lands
+			if (!level.isClientSide() && dev.monkmod.ability.CombatAbilities.TimeStop.active() && entity instanceof net.minecraft.world.entity.LivingEntity living) {
+				living.invulnerableTime = 0;
+				living.hurtTime = 0;
+			}
+			return InteractionResult.PASS;
+		});
 		net.fabricmc.fabric.api.event.player.AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) ->
 				frozen(player) ? InteractionResult.FAIL : InteractionResult.PASS);
 		net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((player, level, hand) ->
@@ -72,6 +81,7 @@ public final class MonkEvents {
 			for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 				MonkLogic.tickPlayer(player);
 			}
+			TimeRewind.tick(server);
 			dev.monkmod.ability.CombatAbilities.TimeStop.serverTick(server);
 		});
 		ServerLifecycleEvents.SERVER_STOPPING.register(dev.monkmod.ability.CombatAbilities.TimeStop::end);
@@ -93,6 +103,8 @@ public final class MonkEvents {
 		});
 
 		ServerLivingEntityEvents.AFTER_DEATH.register(MonkEvents::onDeath);
+		ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> TimeRewind.died(entity));
+		ServerLifecycleEvents.SERVER_STOPPED.register(server -> TimeRewind.clear());
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register(MonkEvents::allowDamage);
 		ServerLivingEntityEvents.AFTER_DAMAGE.register((victim, source, base, taken, blocked) -> {
 			if (victim instanceof ServerPlayer hurt && taken > 0 && source.getEntity() != null) {

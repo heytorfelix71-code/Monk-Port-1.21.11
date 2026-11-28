@@ -51,6 +51,9 @@ public final class MonkNetwork {
 			dev.monkmod.logic.ShadowPortals.sync(server);
 		});
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(server -> dev.monkmod.logic.ShadowPortals.clear());
+		PayloadTypeRegistry.playC2S().register(CatchFrozenPayload.TYPE, CatchFrozenPayload.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(CatchFrozenPayload.TYPE, (payload, context) ->
+				dev.monkmod.logic.MonkProjectiles.catchFrozen(context.player(), context.player().level().getEntity(payload.entity())));
 		PayloadTypeRegistry.playC2S().register(FlySpeedPayload.TYPE, FlySpeedPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(FlySpeedPayload.TYPE, (payload, context) -> handleFlySpeed(context.player(), payload.speed()));
 		PayloadTypeRegistry.playC2S().register(StareTogglePayload.TYPE, StareTogglePayload.CODEC);

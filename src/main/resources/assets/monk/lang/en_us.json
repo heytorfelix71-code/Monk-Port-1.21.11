@@ -715,5 +715,13 @@
   "monk.config.portal.style.rift": "Rift",
   "monk.config.portal.color": "Portal color",
   "monk.config.portal.color.desc": "Color of the shadow or of the rift.",
-  "monk.blink.busy": "Still looking for the last spot..."
+  "monk.blink.busy": "Still looking for the last spot...",
+  "monk.rewind.going": "Rewinding... (%s s left)",
+  "monk.rewind.empty": "Nothing more to rewind",
+  "monk.config.gameplay.rewind": "Rewind (hold Shift with time stopped)",
+  "monk.config.gameplay.rewind.desc": "With time stopped, hold Shift: mobs, items, projectiles and other players go back to where they were, blocks come back and mobs killed come back to life. You keep your own place.",
+  "monk.config.gameplay.rewind_seconds": "Rewind: seconds remembered",
+  "monk.config.gameplay.rewind_seconds.desc": "How far back the rewind can go (what happened near you before stopping time).",
+  "monk.config.gameplay.rewind_blocks": "Rewind: blocks too",
+  "monk.config.gameplay.rewind_blocks.desc": "Also puts back the blocks that were broken or placed."
 }

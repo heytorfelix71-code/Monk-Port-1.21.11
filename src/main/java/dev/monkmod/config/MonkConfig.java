@@ -214,6 +214,12 @@ public final class MonkConfig {
 		public boolean backDodge = true;
 		/** Catch Arrows: chance to catch projectiles from behind. Off = for every level. */
 		public boolean backCatch = true;
+		/** With time stopped, hold Shift: the world around you runs backwards. */
+		public boolean rewindEnabled = true;
+		/** How far back it can go, in seconds (what was remembered before you stopped time). */
+		public int rewindSeconds = 10;
+		/** Rewind also puts back the blocks that changed. */
+		public boolean rewindBlocks = true;
 		/** Chance to catch an arrow that comes from behind when the level has no back catch of its own; if it fails the arrow hits you. */
 		public float backCatchChance = 0.15F;
 		/** Ability types switched off everywhere, whatever levels.json says. */
@@ -312,6 +318,7 @@ public final class MonkConfig {
 		vision.range = clamp(vision.range, 8, 128);
 		vision.dotSize = clamp(vision.dotSize, 2, 16);
 		gameplay.backCatchChance = Math.max(0F, Math.min(1F, gameplay.backCatchChance));
+		gameplay.rewindSeconds = clamp(gameplay.rewindSeconds, 1, 60);
 		if (mining.blockSpeeds == null) mining.blockSpeeds = new ArrayList<>();
 		mining.speedMultiplier = Math.max(0F, Math.min(100_000F, mining.speedMultiplier));
 		if (controls.scheme == null) controls.scheme = ControlScheme.ARROWS;

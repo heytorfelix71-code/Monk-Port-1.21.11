@@ -102,6 +102,20 @@ public final class MonkProjectiles {
 	}
 
 	/** The item a caught projectile turns into (empty when it must not be duplicated). */
+	/** With time stopped: the monk who stopped it grabs a projectile hanging in the air (it goes to the inventory). */
+	public static void catchFrozen(ServerPlayer player, Entity target) {
+		if (!(target instanceof Projectile projectile) || projectile.isRemoved() || !dev.monkmod.ability.CombatAbilities.TimeStop.active()
+				|| dev.monkmod.ability.CombatAbilities.TimeStop.isFrozen(player) || player.distanceToSqr(projectile) > 7.0 * 7.0) {
+			return;
+		}
+		ItemStack stack = itemOf(projectile);
+		if (!stack.isEmpty() && !player.getInventory().add(stack)) {
+			player.drop(stack, false);
+		}
+		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.5F, 1.4F);
+		projectile.discard();
+	}
+
 	private static ItemStack itemOf(Projectile projectile) {
 		if (projectile instanceof AbstractArrow arrow) {
 			// Player arrows that can't be picked up (Infinity, creative, multishot extras) would be duplicated.

@@ -315,6 +315,13 @@ public final class MonkConfigScreen {
 	private static List<Option<?>> globalOptions(String key, MonkConfig cfg, MonkConfig def) {
 		List<Option<?>> list = new ArrayList<>();
 		switch (key) {
+			case "time_stop" -> {
+				MonkConfig.Gameplay gr = cfg.gameplay;
+				MonkConfig.Gameplay gdr = def.gameplay;
+				list.add(bool("gameplay.rewind", gdr.rewindEnabled, () -> gr.rewindEnabled, v -> gr.rewindEnabled = v));
+				list.add(intSlider("gameplay.rewind_seconds", gdr.rewindSeconds, 1, 60, 1, () -> gr.rewindSeconds, v -> gr.rewindSeconds = v));
+				list.add(bool("gameplay.rewind_blocks", gdr.rewindBlocks, () -> gr.rewindBlocks, v -> gr.rewindBlocks = v));
+			}
 			case "shadow_portal" -> {
 				MonkConfig.PortalLook pl = cfg.portal;
 				MonkConfig.PortalLook pd = def.portal;

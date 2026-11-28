@@ -715,5 +715,13 @@
   "monk.config.portal.style.rift": "Fenda",
   "monk.config.portal.color": "Cor do portal",
   "monk.config.portal.color.desc": "Cor da sombra ou da fenda.",
-  "monk.blink.busy": "Ainda procurando o último lugar..."
+  "monk.blink.busy": "Ainda procurando o último lugar...",
+  "monk.rewind.going": "Rebobinando... (faltam %s s)",
+  "monk.rewind.empty": "Não há mais nada para rebobinar",
+  "monk.config.gameplay.rewind": "Rebobinar (segure Shift com o tempo parado)",
+  "monk.config.gameplay.rewind.desc": "Com o tempo parado, segure Shift: mobs, itens, projéteis e outros jogadores voltam para onde estavam, blocos voltam e mobs mortos revivem. Você fica onde está.",
+  "monk.config.gameplay.rewind_seconds": "Rebobinar: segundos lembrados",
+  "monk.config.gameplay.rewind_seconds.desc": "Até quanto tempo atrás dá para rebobinar (o que aconteceu perto de você antes de parar o tempo).",
+  "monk.config.gameplay.rewind_blocks": "Rebobinar: blocos também",
+  "monk.config.gameplay.rewind_blocks.desc": "Também devolve os blocos quebrados ou colocados."
 }

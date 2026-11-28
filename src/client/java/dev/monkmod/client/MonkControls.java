@@ -107,6 +107,35 @@ public final class MonkControls {
 
 	// ------------------------------------------------------------------ input
 
+	private static boolean useWasDown;
+
+	/** Time stopped by you: right click on an arrow (or anything thrown) hanging in the air grabs it. */
+	private static void catchFrozen(Minecraft client, LocalPlayer player) {
+		boolean down = client.options.keyUse.isDown();
+		boolean pressed = down && !useWasDown;
+		useWasDown = down;
+		if (!pressed || client.screen != null || client.level == null || !client.level.tickRateManager().isFrozen()
+				|| !ClientMonkState.abilities().has("time_stop")) {
+			return;
+		}
+		net.minecraft.world.phys.Vec3 eye = player.getEyePosition();
+		net.minecraft.world.phys.Vec3 end = eye.add(player.getViewVector(1.0F).scale(6.0));
+		net.minecraft.world.entity.Entity best = null;
+		double bestDist = Double.MAX_VALUE;
+		for (net.minecraft.world.entity.Entity e : client.level.getEntities(player, new net.minecraft.world.phys.AABB(eye, end).inflate(1.0),
+				x -> x instanceof net.minecraft.world.entity.projectile.Projectile && x.isAlive())) {
+			java.util.Optional<net.minecraft.world.phys.Vec3> hit = e.getBoundingBox().inflate(0.35).clip(eye, end);
+			if (hit.isPresent() && eye.distanceToSqr(hit.get()) < bestDist) {
+				bestDist = eye.distanceToSqr(hit.get());
+				best = e;
+			}
+		}
+		if (best != null && ClientPlayNetworking.canSend(dev.monkmod.network.CatchFrozenPayload.TYPE)) {
+			ClientPlayNetworking.send(new dev.monkmod.network.CatchFrozenPayload(best.getId()));
+			player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+		}
+	}
+
 	static void tick(Minecraft client) {
 		if (dirty && --saveDelay <= 0) {
 			save();
@@ -116,6 +145,7 @@ public final class MonkControls {
 			return;
 		}
 		MobSense.tick(client);
+		catchFrozen(client, player);
 		while (MonkModClient.nightVisionKey.consumeClick()) {
 			if (ClientMonkState.abilities().has("night_vision") && ClientPlayNetworking.canSend(NightVisionPayload.TYPE)) {
 				ClientPlayNetworking.send(NightVisionPayload.INSTANCE);

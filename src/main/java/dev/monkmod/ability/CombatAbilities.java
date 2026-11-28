@@ -198,6 +198,15 @@ public final class CombatAbilities {
 					}
 				}
 			}
+			if (player.isShiftKeyDown() && dev.monkmod.config.MonkConfigManager.config().gameplay.rewindEnabled) {
+				if (dev.monkmod.logic.TimeRewind.step(player)) {
+					endsAt++; // rewinding does not use up the stopped time
+					return;
+				}
+				if (now % 20 == 0) {
+					player.displayClientMessage(Component.translatable("monk.rewind.empty").withStyle(ChatFormatting.GRAY), true);
+				}
+			}
 			int left = endsAt - now;
 			if (left % 20 == 0) {
 				player.displayClientMessage(Component.translatable("monk.time_stop.left", left / 20).withStyle(ChatFormatting.AQUA), true);
