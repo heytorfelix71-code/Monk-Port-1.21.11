@@ -62,6 +62,52 @@ final class BlinkShadow {
 		}
 	}
 
+	/** Copies of your player model standing at these spots ({x, y, z, yaw}), in one see-through color (the shadow portals). */
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	static void drawFigures(WorldRenderContext context, List<double[]> spots, int rgb, float opacity) {
+		Minecraft client = Minecraft.getInstance();
+		LocalPlayer player = client.player;
+		if (player == null || spots.isEmpty() || !(client.getEntityRenderDispatcher().getRenderer(player) instanceof AvatarRenderer avatar)) {
+			return;
+		}
+		MultiBufferSource buffers = context.consumers();
+		if (buffers == null) {
+			return;
+		}
+		float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+		AvatarRenderState state = (AvatarRenderState) avatar.createRenderState();
+		avatar.extractRenderState(player, state, partialTick);
+		state.pose = Pose.STANDING;
+		state.isCrouching = false;
+		state.isVisuallySwimming = false;
+		state.isFallFlying = false;
+		state.swimAmount = 0.0F;
+		state.walkAnimationSpeed = 0.0F;
+		state.walkAnimationPos = 0.0F;
+		state.yRot = 0.0F;
+		state.xRot = 0.0F;
+		state.isUpsideDown = false;
+		state.isInvisible = false;
+		state.isInvisibleToPlayer = false;
+		PlayerModel model = (PlayerModel) avatar.getModel();
+		VertexConsumer consumer = buffers.getBuffer(RenderTypes.entityTranslucent(avatar.getTextureLocation(state)));
+		model.setupAnim(state);
+		PoseStack pose = context.matrices();
+		Vec3 camera = client.gameRenderer.getMainCamera().position();
+		float scale = state.scale * 0.9375F;
+		int alpha = Math.max(8, Math.min(255, Math.round(opacity * 255)));
+		for (double[] s : spots) {
+			pose.pushPose();
+			pose.translate(s[0] - camera.x, s[1] - camera.y, s[2] - camera.z);
+			pose.mulPose(Axis.YP.rotationDegrees(180.0F - (float) s[3]));
+			pose.scale(-1.0F, -1.0F, 1.0F);
+			pose.scale(scale, scale, scale);
+			pose.translate(0.0F, -1.501F, 0.0F);
+			model.renderToBuffer(pose, consumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, alpha << 24 | (rgb & 0xFFFFFF));
+			pose.popPose();
+		}
+	}
+
 	static void clear() {
 		SPOTS.clear();
 	}

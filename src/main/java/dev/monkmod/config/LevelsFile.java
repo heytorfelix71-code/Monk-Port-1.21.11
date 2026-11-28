@@ -10,7 +10,7 @@ import com.google.gson.JsonObject;
  * Each requirement / ability entry is {"type": "...", ...parameters}; abilities may also carry "enabled": false.
  */
 public final class LevelsFile {
-	public static final int CURRENT_VERSION = 13;
+	public static final int CURRENT_VERSION = 14;
 
 	public int config_version = CURRENT_VERSION;
 	public List<LevelEntry> levels = new ArrayList<>();
@@ -135,6 +135,9 @@ public final class LevelsFile {
 					&& first.has("time") && first.get("time").getAsInt() == 2400) {
 				first.addProperty("time", 6000); // 2.17.0: the first meditation takes five minutes
 			}
+		}
+		if (config_version < 14 && !hasType("shadow_portal") && looksLikeDefaults()) {
+			addTo("monk:icon/wither", "shadow_portal", null, 0); // 2.18.0: shadow portals at level 20
 		}
 		config_version = CURRENT_VERSION;
 		return true;

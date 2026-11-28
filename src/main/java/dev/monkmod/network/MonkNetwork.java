@@ -43,6 +43,14 @@ public final class MonkNetwork {
 		PayloadTypeRegistry.playC2S().register(BlinkPreloadPayload.TYPE, BlinkPreloadPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(BlinkPreloadPayload.TYPE, (payload, context) ->
 				handlePreload(context.player(), new Vec3(payload.dx(), payload.dy(), payload.dz())));
+		PayloadTypeRegistry.playC2S().register(ShadowPortalPayloads.Create.TYPE, ShadowPortalPayloads.Create.CODEC);
+		PayloadTypeRegistry.playS2C().register(ShadowPortalPayloads.Ends.TYPE, ShadowPortalPayloads.Ends.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(ShadowPortalPayloads.Create.TYPE, (payload, context) -> createShadowPortal(context.player(), payload));
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+			dev.monkmod.logic.ShadowPortals.tick(server);
+			dev.monkmod.logic.ShadowPortals.sync(server);
+		});
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(server -> dev.monkmod.logic.ShadowPortals.clear());
 		PayloadTypeRegistry.playC2S().register(FlySpeedPayload.TYPE, FlySpeedPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(FlySpeedPayload.TYPE, (payload, context) -> handleFlySpeed(context.player(), payload.speed()));
 		PayloadTypeRegistry.playC2S().register(StareTogglePayload.TYPE, StareTogglePayload.CODEC);
@@ -106,6 +114,30 @@ public final class MonkNetwork {
 		handleBlink(player, target, 3.0);
 	}
 
+	/** Shift + Blink at level 20: a shadow portal to the typed coordinates, in any dimension. */
+	private static void createShadowPortal(ServerPlayer player, ShadowPortalPayloads.Create p) {
+		dev.monkmod.ability.SimpleAbility ability = MonkPlayers.get(player).abilities().get("shadow_portal", dev.monkmod.ability.SimpleAbility.class);
+		if (ability == null || !player.isAlive() || !Double.isFinite(p.x()) || !Double.isFinite(p.y()) || !Double.isFinite(p.z())
+				|| Math.abs(p.x()) > 29_999_000 || Math.abs(p.z()) > 29_999_000) {
+			return;
+		}
+		ServerLevel dest = (ServerLevel) player.level();
+		if (p.dim() != null && !p.dim().isEmpty()) {
+			net.minecraft.resources.Identifier key = net.minecraft.resources.Identifier.tryParse(p.dim());
+			dest = key == null ? null : player.level().getServer().getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, key));
+			if (dest == null) {
+				say(player, "monk.portal.no_dim");
+				return;
+			}
+		}
+		double y = Math.max(dest.getMinY() + 1, Math.min(dest.getMaxY() - 2, p.y()));
+		if (!dest.getWorldBorder().isWithinBounds(BlockPos.containing(p.x(), y, p.z()))) {
+			say(player, "monk.portal.no_dim");
+			return;
+		}
+		dev.monkmod.logic.ShadowPortals.create(player, dest, new Vec3(p.x(), y, p.z()), ability.params().getInt("seconds"));
+	}
+
 	/** Validates and performs a blink. The client only suggests a destination. */
 	private static void handleFarBlink(ServerPlayer player, Vec3 aim) {
 		MonkPlayerState state = MonkPlayers.get(player);
@@ -121,15 +153,52 @@ public final class MonkNetwork {
 		Vec3 dir = aim.normalize();
 		ServerLevel level = (ServerLevel) player.level();
 		Vec3 eye = player.getEyePosition();
-		dist = Math.min(dist, Math.max(64F, cfg.syncRange)); // like the Ender Skills teleport: its range is the limit
-		// one design for both mods: the loaded part with a ray, the rest from the terrain height, one chunk loaded where you land
-		Vec3 spot = dev.monkmod.logic.FarTeleport.find(level, player, eye, dir, dist, !cfg.allowAirTarget);
-		if (spot == null) {
+		java.util.UUID id = player.getUUID();
+		if (JOBS.containsKey(id) || PENDING.contains(id)) {
+			return; // one far blink at a time: repeated far blinks used to pile up work and freeze the game
+		}
+		boolean groundOnly = !cfg.allowAirTarget;
+		// 1. what is already loaded is read right away (nothing is generated)
+		dev.monkmod.logic.FarTeleport.Plan plan = dev.monkmod.logic.FarTeleport.plan(level, player, eye, dir, dist, groundOnly);
+		if (plan.spot() != null) {
+			handleBlink(player, plan.spot(), 72.0);
+			return;
+		}
+		if (plan.failed()) {
 			say(player, "monk.blink.no_ground");
 			return;
 		}
-		handleBlink(player, spot, 72.0);
+		// 2. beyond it: where the aim meets the terrain is asked to the world generator OFF the server thread (no chunk is generated)
+		PENDING.add(id);
+		say(player, "monk.blink.loading");
+		double from = plan.frontier();
+		double far = dist;
+		net.minecraft.server.MinecraftServer server = level.getServer();
+		java.util.concurrent.CompletableFuture.supplyAsync(() -> dev.monkmod.logic.FarTeleport.marchTerrain(level, eye, dir, from, far),
+				net.minecraft.util.Util.backgroundExecutor())
+				.whenComplete((meet, error) -> server.execute(() -> {
+					PENDING.remove(id);
+					ServerPlayer now = server.getPlayerList().getPlayer(id);
+					if (now == null || !now.isAlive() || now.level() != level) {
+						return;
+					}
+					double m = error != null || meet == null || meet < 0 ? far : meet;
+					Vec3 end = farEnd(level, eye, dir, m);
+					if (end == null) {
+						say(now, "monk.blink.no_ground");
+						return;
+					}
+					// 3. only the arrival chunk is loaded, in the background; the blink happens when it is ready
+					FarJob job = new FarJob(level, end.x, end.y, end.z);
+					job.groundOnly = groundOnly;
+					level.getChunkSource().addTicketAndLoadWithRadius(net.minecraft.server.level.TicketType.PORTAL,
+							new net.minecraft.world.level.ChunkPos(job.cx, job.cz), 0);
+					JOBS.put(id, job);
+				}));
 	}
+
+	/** Players whose far blink is still asking the terrain height (off the server thread). */
+	private static final java.util.Set<java.util.UUID> PENDING = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
 	/** A far blink in progress: the arrival chunk is being loaded (the way an ender pearl does it). */
 	private static final class FarJob {
@@ -140,6 +209,7 @@ public final class MonkNetwork {
 		final int cz;
 		/** Height of the aim line where it ends: a landing near this height (an island in the sky) is preferred. */
 		final double y;
+		boolean groundOnly = true;
 		int waited;
 
 		FarJob(ServerLevel level, double x, double y, double z) {
@@ -276,7 +346,7 @@ public final class MonkNetwork {
 				if (spot == null || !handleBlink(player, spot, 4096.0)) {
 					say(player, "monk.blink.no_ground");
 				}
-			} else if (job.waited > 20 * 60) {
+			} else if (job.waited > 20 * 30) {
 				it.remove();
 				say(player, "monk.blink.timeout");
 			} else if (job.waited % 40 == 0) {

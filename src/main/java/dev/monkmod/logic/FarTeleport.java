@@ -24,6 +24,26 @@ public final class FarTeleport {
 	private FarTeleport() {
 	}
 
+	/**
+	 * What can be decided right away, without loading anything: a spot (done), a failure, or "the rest is beyond the loaded
+	 * area" from this distance on (then the terrain height is asked off the server thread and only the arrival chunk is loaded).
+	 */
+	public record Plan(Vec3 spot, boolean failed, double frontier) {
+	}
+
+	public static Plan plan(ServerLevel level, ServerPlayer p, Vec3 eye, Vec3 dir, double dist, boolean groundOnly) {
+		double frontier = loadedReach(level, eye, dir, dist);
+		boolean all = frontier >= dist - 0.01;
+		BlockHitResult hit = level.clip(new ClipContext(eye, eye.add(dir.scale(frontier)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
+		boolean hitSomething = hit.getType() != HitResult.Type.MISS;
+		if (hitSomething || all) {
+			double reach = hitSomething ? eye.distanceTo(hit.getLocation()) - 0.4 : dist;
+			Vec3 spot = scanBack(level, p, eye, dir, reach, groundOnly, !hitSomething);
+			return spot != null ? new Plan(spot, false, frontier) : new Plan(null, true, frontier);
+		}
+		return new Plan(null, false, frontier);
+	}
+
 	/** Spot to stand on, or null. groundOnly = it must have ground (or water) under it. */
 	public static Vec3 find(ServerLevel level, ServerPlayer p, Vec3 eye, Vec3 dir, double dist, boolean groundOnly) {
 		double frontier = loadedReach(level, eye, dir, dist);
@@ -102,7 +122,7 @@ public final class FarTeleport {
 	}
 
 	/** The line first goes under the terrain here (asked to the world generator: no chunk is generated), or -1. */
-	private static double marchTerrain(ServerLevel level, Vec3 eye, Vec3 dir, double from, double dist) {
+	public static double marchTerrain(ServerLevel level, Vec3 eye, Vec3 dir, double from, double dist) {
 		try {
 			ChunkGenerator gen = level.getChunkSource().getGenerator();
 			RandomState random = level.getChunkSource().randomState();
@@ -140,7 +160,7 @@ public final class FarTeleport {
 	}
 
 	/** Loads the chunk of this column (one chunk) and finds ground to stand on inside it. */
-	private static Vec3 landIn(ServerLevel level, ServerPlayer p, double x, double y, double z, boolean groundOnly) {
+	public static Vec3 landIn(ServerLevel level, ServerPlayer p, double x, double y, double z, boolean groundOnly) {
 		int bx = (int) Math.floor(x);
 		int bz = (int) Math.floor(z);
 		if (!level.getWorldBorder().isWithinBounds(new BlockPos(bx, 0, bz))) {

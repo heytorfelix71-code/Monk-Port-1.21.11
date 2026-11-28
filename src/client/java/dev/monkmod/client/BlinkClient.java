@@ -68,6 +68,13 @@ final class BlinkClient {
 				wasDown = false;
 				return;
 			}
+		} else if (!wasDown && client.options.keyShift.isDown() && ClientMonkState.abilities().has("shadow_portal")) {
+			// Shift + Blink: the shadow portal menu
+			cancelled = true;
+			wasDown = true;
+			BlinkShadow.clear();
+			client.setScreen(new MonkPortalScreen());
+			return;
 		} else if (client.options.keyShift.isDown() || cancelled) {
 			cancelled = true; // sneak cancels the blink, even with the key still held
 			wasDown = true;
@@ -90,7 +97,8 @@ final class BlinkClient {
 				ClientPlayNetworking.send(new BlinkPayload(target.x, target.y, target.z));
 				cooldown = ClientMonkState.blinkCooldown();
 				// the sound plays when the server confirms the blink (onDone), never for a refused one
-			} else if (target == null && pastLoaded(player, level) && ClientPlayNetworking.canSend(dev.monkmod.network.BlinkFarPayload.TYPE)) {
+			} else if (target == null && ClientPlayNetworking.canSend(dev.monkmod.network.BlinkFarPayload.TYPE)) {
+				// nothing found on this client (far, or ground the client does not have): the server looks for the spot
 				// aiming at land beyond the loaded chunks (far horizon, Voxy): the server looks for the spot
 				Vec3 aim = player.getViewVector(1.0F).scale(MonkControls.blinkDistance());
 				ClientPlayNetworking.send(new dev.monkmod.network.BlinkFarPayload(aim.x, aim.y, aim.z));

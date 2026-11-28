@@ -93,6 +93,10 @@ public final class MonkModClient implements ClientModInitializer {
 		});
 		// Blink shadow: your own see-through model at the landing spot (only drawn on your client).
 		net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents.AFTER_ENTITIES.register(BlinkShadow::render);
+		net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents.AFTER_ENTITIES.register(ShadowPortalClient::render);
+		ClientPlayNetworking.registerGlobalReceiver(dev.monkmod.network.ShadowPortalPayloads.Ends.TYPE, (payload, context) -> ShadowPortalClient.receive(payload));
+		ClientTickEvents.END_CLIENT_TICK.register(ShadowPortalClient::tick);
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ShadowPortalClient.reset());
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, MonkMod.id("progress"), MonkHud::render);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, MonkMod.id("mob_sense"), MobSense::renderDots);
 		// Water breathing with "hide_bubbles": no air bubbles above the hotbar.

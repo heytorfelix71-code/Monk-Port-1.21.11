@@ -20,8 +20,18 @@ public final class MonkConfig {
 	public Controls controls = new Controls();
 	public Mining mining = new Mining();
 	public Vision vision = new Vision();
+	public PortalLook portal = new PortalLook();
 
 	public enum VisionMode { OUTLINE, DOT }
+
+	public enum PortalStyle { SHADOW, RIFT }
+
+	/** How the shadow portals (Monk level 20) look on this client. */
+	public static final class PortalLook {
+		/** SHADOW = a see-through copy of a player standing as the door, RIFT = a tall glowing crack. */
+		public PortalStyle style = PortalStyle.SHADOW;
+		public int color = 0x9966FF;
+	}
 
 	/** Mob Sense (see mobs through walls): how it looks. It is switched on and off with its key (. by default), off at the start. */
 	public static final class Vision {
@@ -294,6 +304,9 @@ public final class MonkConfig {
 		if (mining == null) mining = new Mining();
 		if (vision == null) vision = new Vision();
 		if (vision.mode == null) vision.mode = VisionMode.OUTLINE;
+		if (portal == null) portal = new PortalLook();
+		if (portal.style == null) portal.style = PortalStyle.SHADOW;
+		portal.color &= 0xFFFFFF;
 		vision.hostileColor &= 0xFFFFFF;
 		vision.passiveColor &= 0xFFFFFF;
 		vision.range = clamp(vision.range, 8, 128);

@@ -315,6 +315,16 @@ public final class MonkConfigScreen {
 	private static List<Option<?>> globalOptions(String key, MonkConfig cfg, MonkConfig def) {
 		List<Option<?>> list = new ArrayList<>();
 		switch (key) {
+			case "shadow_portal" -> {
+				MonkConfig.PortalLook pl = cfg.portal;
+				MonkConfig.PortalLook pd = def.portal;
+				list.add(Option.<MonkConfig.PortalStyle>createBuilder().name(t("portal.style")).description(d("portal.style"))
+						.binding(pd.style, () -> pl.style, v -> pl.style = v)
+						.controller(o -> EnumControllerBuilder.create(o).enumClass(MonkConfig.PortalStyle.class)
+								.formatValue(v -> t("portal.style." + v.name().toLowerCase())))
+						.build());
+				list.add(color("portal.color", pd.color, () -> pl.color, v -> pl.color = v));
+			}
 			case "mob_sense" -> {
 				MonkConfig.Vision vi = cfg.vision;
 				MonkConfig.Vision vd = def.vision;
