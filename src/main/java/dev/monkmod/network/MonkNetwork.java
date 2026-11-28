@@ -457,6 +457,14 @@ public final class MonkNetwork {
 			return false;
 		}
 		ServerLevel level = (ServerLevel) player.level();
+		// landing on water with water walking: on top of it (the walking surface), not inside the water, which made you bounce
+		dev.monkmod.ability.SimpleAbility walker = state.abilities().get("water_walking", dev.monkmod.ability.SimpleAbility.class);
+		if (walker != null) {
+			BlockPos bp = BlockPos.containing(target);
+			if (level.getFluidState(bp).is(net.minecraft.tags.FluidTags.WATER) && !level.getFluidState(bp.above()).is(net.minecraft.tags.FluidTags.WATER)) {
+				target = new Vec3(target.x, bp.getY() + walker.params().getFloat("height") + 0.001, target.z);
+			}
+		}
 		AABB moved = player.getBoundingBox().move(target.subtract(player.position()));
 		if (!level.noCollision(player, moved) || (!cfg.allowAirTarget && !hasGround(player, level, moved))) {
 			say(player, "monk.blink.no_ground");

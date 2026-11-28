@@ -203,7 +203,8 @@ public final class MonkTypes {
 		ability("water_walking", "Walk on water (sneak to sink).", p -> new SimpleAbility("water_walking", p),
 				ofFloat("height", 0.89, 0.6, 1.0, "Height of your feet above the bottom of the water block (0.89 = right on the surface, 1 = one pixel above)."),
 				ofBool("lift", true, "Walking in from the shore or dropping in from low height puts you back on the surface."),
-				ofFloat("max_fall", 3, 0, 256, "Falls higher than this (in blocks) dive into the water instead of landing on it."));
+				ofFloat("max_fall", 3, 0, 256, "Falls higher than this (in blocks) dive into the water instead of landing on it."),
+				ofFloat("lift_depth", 0.5, 0, 3, "Only when you are at most this many blocks below the water surface are you lifted back onto it; deeper than that you are diving and stay where you are."));
 		ability("glass_touch", "Break glass bare-handed without shattering it.", p -> new SimpleAbility("glass_touch", p));
 
 		// ---------------------------------------------------------------- requirements

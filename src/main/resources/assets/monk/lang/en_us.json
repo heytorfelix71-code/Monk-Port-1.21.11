@@ -723,5 +723,7 @@
   "monk.config.gameplay.rewind_seconds": "Rewind: seconds remembered",
   "monk.config.gameplay.rewind_seconds.desc": "How far back the rewind can go (what happened near you before stopping time).",
   "monk.config.gameplay.rewind_blocks": "Rewind: blocks too",
-  "monk.config.gameplay.rewind_blocks.desc": "Also puts back the blocks that were broken or placed."
+  "monk.config.gameplay.rewind_blocks.desc": "Also puts back the blocks that were broken or placed.",
+  "monk.param.water_walking.lift_depth": "Lift depth (blocks)",
+  "monk.param.water_walking.lift_depth.desc": "How far below the water surface you are still lifted back onto it (0.5 = half a block). Deeper than that is a dive."
 }

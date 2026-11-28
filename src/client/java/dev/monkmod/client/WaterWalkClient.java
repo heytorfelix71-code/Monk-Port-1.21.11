@@ -42,10 +42,16 @@ final class WaterWalkClient {
 			onEnterWater(player);
 		}
 		if (liftWindow <= 0) {
+			// standing a little under the surface (after a teleport, a small step into the water): put back on top, but only
+			// when it is no deeper than "lift_depth" (default half a block); deeper is a dive and nothing pulls you up
+			SimpleAbility walker = MonkHooks.waterWalker(player);
+			if (walker != null) {
+				lift(player, walker.params().getFloat("lift_depth"));
+			}
 			return;
 		}
 		liftWindow--;
-		lift(player);
+		lift(player, 1.0F);
 	}
 
 	private static void onEnterWater(LocalPlayer player) {
@@ -62,7 +68,7 @@ final class WaterWalkClient {
 		}
 	}
 
-	private static void lift(LocalPlayer player) {
+	private static void lift(LocalPlayer player, float maxDepth) {
 		if (player.isEyeInFluid(FluidTags.WATER) || player.isPassenger()) {
 			liftWindow = 0;
 			return;
@@ -78,7 +84,7 @@ final class WaterWalkClient {
 		}
 		double surface = pos.getY() + height;
 		double below = surface - player.getY();
-		if (below <= 0.0 || !player.level().noCollision(player, player.getBoundingBox().move(0.0, below + 0.001, 0.0))) {
+		if (below <= 0.0 || below > maxDepth || !player.level().noCollision(player, player.getBoundingBox().move(0.0, below + 0.001, 0.0))) {
 			return;
 		}
 		player.setPos(player.getX(), surface + 0.001, player.getZ());

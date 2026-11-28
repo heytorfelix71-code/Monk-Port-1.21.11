@@ -723,5 +723,7 @@
   "monk.config.gameplay.rewind_seconds": "Rebobinar: segundos lembrados",
   "monk.config.gameplay.rewind_seconds.desc": "Até quanto tempo atrás dá para rebobinar (o que aconteceu perto de você antes de parar o tempo).",
   "monk.config.gameplay.rewind_blocks": "Rebobinar: blocos também",
-  "monk.config.gameplay.rewind_blocks.desc": "Também devolve os blocos quebrados ou colocados."
+  "monk.config.gameplay.rewind_blocks.desc": "Também devolve os blocos quebrados ou colocados.",
+  "monk.param.water_walking.lift_depth": "Profundidade de resgate (blocos)",
+  "monk.param.water_walking.lift_depth.desc": "Até quantos blocos abaixo da superfície você ainda é erguido de volta para cima da água (0,5 = meio bloco). Mais fundo que isso é mergulho."
 }
